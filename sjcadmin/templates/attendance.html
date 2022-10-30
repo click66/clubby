@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">SJC</a></li>
+        <li class="breadcrumb-item"><a href="/attendance">Attendance</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Standard Jiu Jitsu (Mon/Thur)</li>
+    </ol>
+</nav>
+
+<div class="rounded-3 bg-light p-3 mb-3">
+    <h1>Standard Jiu Jitsu (Mon/Thur)</h1>
+</div>
+
+<div class="rounded-3 bg-light p-3">
+    <table style="width:100%" class="table tblStudents">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Membership</th>
+            {% for c in classes %}
+            <th class="classHeader">{{c.d}}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+    </table>
+</div>
+
+<div class="modal" id="studentId">
+    <div class="modal-dialog">
+        Foo
+    </div>
+</div>
+
+<script id="dataStudents" type="application/json">{{dataStudents|safe}}</script>
+<script id="dataClasses" type="application/json">{{dataClasses|safe}}</script>
+<script type="text/javascript" language="javascript">
+    const membershipBadge = (m, t, r) => {
+        const expired = sb => {
+            sb.classList.add('bg-danger');
+            sb.textContent = 'Expired';
+            return sb.outerHTML;
+        }
+
+        let b = document.createElement('span');
+        b.classList.add('badge');
+        switch(m) {
+            case 'licenced':
+                if (r.licence.exp) {
+                    return expired(b);
+                }
+                b.classList.add('bg-success');
+                b.textContent = 'Licenced';
+                return b.outerHTML;
+            case 'trial':
+                if (r.rem_trial_sessions <= 0) {
+                    return expired(b);
+                }
+                b.classList.add('bg-warning');
+                b.classList.add('text-dark');
+                b.textContent = 'Trial';
+                return b.outerHTML;
+        }
+    };
+
+    const attendanceBadge = (m, t, r) => {
+        console.log(r);
+        let b = document.createElement('span'),
+            i = document.createElement('i');
+        b.classList.add('badge');
+        i.classList.add('fs-8');
+        i.classList.add('bi-check');
+        i.classList.add('me-1');
+
+        //b.classList.add('bg-secondary');
+        //b.textContent = 'Attending';
+        b.classList.add('bg-primary');
+        b.appendChild(i);
+        b.appendChild(document.createTextNode('Paid'));
+        return b.outerHTML;
+    }
+
+    const studentClassAttendance = date => (m, t, r) => {
+    cnosol
+        return r.attendances.includes(date) ? attendanceBadge(m,t,r): '';
+    }
+
+    const dataStudents = JSON.parse(document.getElementById('dataStudents').textContent);
+    const dataClasses  = JSON.parse(document.getElementById('dataClasses').textContent);
+
+    const details = row => {
+        let list = document.createElement('ul'),
+            li   = (l, c) => {
+                let r = document.createElement('li'),
+                    el = document.createElement('label');
+                el.appendChild(document.createTextNode(l + ': '));
+                r.appendChild(el);
+                r.appendChild(document.createTextNode(c));
+                return r;
+            };
+
+        list.classList.add('details');
+
+        switch(row['membership']) {
+            case 'licenced':
+                list.appendChild(li('Licence No.', row['licence']['no']));
+                list.appendChild(li('Licence Expires', row['licence']['exp_time']));
+                break;
+            case 'trial':
+                list.appendChild(li('Remaining Trial Sessions', row['rem_trial_sessions']));
+        }
+
+        return list;
+    }
+
+    const table = $('.tblStudents').DataTable({
+        data: dataStudents,
+        columns: [
+            {"data":"name", "className": "studentName"},
+            {"data":"membership", "render": membershipBadge, "className": "studentMembership"},
+        ].concat(dataClasses.map(function (c) {
+            return {"orderable": false, "render": studentClassAttendance(c.d)}
+        })),
+        paging: false,
+        scrollX: true,
+        scrollCollapse: true,
+    });
+
+    $('.tblStudents').on('click', 'td.studentName,td.studentMembership', function (e) {
+        let row  = table.row(this),
+            data = row.data();
+
+        console.log(data);
+
+        if (row.child.isShown()) {
+            row.child.hide();
+            return;
+        }
+
+        row.child(details(data)).show();
+    });
+
+
+</script>
+
+{% endblock %}

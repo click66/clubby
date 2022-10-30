@@ -1,0 +1,28 @@
+services:
+  app:
+    build: .
+    command: "python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=sjcadmin.settings
+      - ENVIRONMENT_NAME=local
+      - DB_HOST=database
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=Rand0m!
+    env_file: .env
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/app
+
+  database:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Rand0m!
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - 5432:5432
+    volumes:
+      - ./pgsetup.sql:/docker-entrypoint-initdb.d/_init.sql
+      - ./pgdata:/var/lib/postgresql/data
