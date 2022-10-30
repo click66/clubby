@@ -7,3 +7,4 @@ $ ./manage.py migrate
 # Make user admin user exists
 $ ./manage.py createsuperuser
 ```
+
