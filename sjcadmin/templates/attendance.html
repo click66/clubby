@@ -65,26 +65,28 @@
         }
     };
 
-    const attendanceBadge = (m, t, r) => {
-        console.log(r);
+    const attendanceBadge = r => paid => {
         let b = document.createElement('span'),
             i = document.createElement('i');
         b.classList.add('badge');
-        i.classList.add('fs-8');
-        i.classList.add('bi-check');
-        i.classList.add('me-1');
 
-        //b.classList.add('bg-secondary');
-        //b.textContent = 'Attending';
-        b.classList.add('bg-primary');
-        b.appendChild(i);
-        b.appendChild(document.createTextNode('Paid'));
+        if (paid) {
+            i.classList.add('fs-8');
+            i.classList.add('bi-check');
+            i.classList.add('me-1');
+            b.classList.add('bg-primary');
+            b.appendChild(i);
+            b.appendChild(document.createTextNode('Paid'));
+            return b.outerHTML;
+        }
+
+        b.classList.add('bg-secondary');
+        b.textContent = 'Attending';
         return b.outerHTML;
     }
 
     const studentClassAttendance = date => (m, t, r) => {
-    cnosol
-        return r.attendances.includes(date) ? attendanceBadge(m,t,r): '';
+        return r.attendances.includes(date) ? attendanceBadge(r)(r.paid.includes(date)): '';
     }
 
     const dataStudents = JSON.parse(document.getElementById('dataStudents').textContent);

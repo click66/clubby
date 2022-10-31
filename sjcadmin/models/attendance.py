@@ -8,6 +8,7 @@ from .student import Student
 class Attendance(models.Model):
     student = models.ForeignKey(Student, on_delete=models.RESTRICT)
     date = models.DateField(null=False)
+    paid = models.BooleanField(default=False, null=False)
 
     @classmethod
     def register_student(
@@ -23,3 +24,14 @@ class Attendance(models.Model):
 
         student.sessions_attended += 1
         return Attendance(student=student, date=date)
+
+    def mark_as_paid(self):
+        self.paid = True
+
+    @property
+    def has_paid(self):
+        return self.paid
+
+    @property
+    def session_date(self):
+        return self.date

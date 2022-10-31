@@ -18,6 +18,7 @@ def attendance(request):
                     'membership': 'trial' if not s.has_licence() else 'licenced',
                     'rem_trial_sessions': s.remaining_trial_sessions,
                     'attendances': [],
+                    'paid': [],
                 }
                 | ({'licence': {'no': s.licence_no, 'exp_time': s.licence_expiry_date.strftime('%d/%m/%Y'),
                                 'exp': s.is_licence_expired()}} if s.has_licence() else {})
@@ -26,7 +27,9 @@ def attendance(request):
     attendances = Attendance.objects.filter(date__gte=classes[-1].date)
 
     for a in attendances:
-        students[str(a.student_id)]['attendances'].append(str(a.date))
+        students[str(a.student_id)]['attendances'].append(str(a.session_date))
+        if a.has_paid:
+            students[str(a.student_id)]['paid'].append(str(a.session_date))
 
     classes = [{'d': c.date.isoformat()} for c in classes]
     return render(request, 'attendance.html', {

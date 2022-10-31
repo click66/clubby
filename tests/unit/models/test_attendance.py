@@ -57,3 +57,18 @@ def test_unlicenced_student_cannot_be_registered_with_no_remaining_trial_session
     with pytest.raises(ValueError):
         Attendance.register_student(student=student, date=datetime.datetime.today().date())
 
+
+def test_unpaid_and_paid():
+    student = Student.make(profile=Profile(
+        name='John Smith',
+        dob='15/10/1991',
+        phone='123',
+        email='test@goo.com',
+        address='None',
+    ))
+
+    attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 1, 1))
+    assert attendance.has_paid is False
+
+    attendance.mark_as_paid()
+    assert attendance.has_paid is True
