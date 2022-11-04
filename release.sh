@@ -9,8 +9,9 @@ echo "Extracting artifact to target directory..."
 mkdir -p $DEPLOY_DIR
 tar -xvzf $ARTIFACT_PATH -C $DEPLOY_DIR
 
-echo "Connecting static assets..."
-touch "$DEPLOY_DIR/cache.txt"
+echo "Build venv"
+cd $DEPLOY_DIR
+POETRY_VIRTUALENV_IN_PROJECT=true poetry install
 
 echo "Making new release live..."
 ln -sfn $DEPLOY_DIR $SERVED_PATH
