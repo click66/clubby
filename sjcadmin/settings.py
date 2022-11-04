@@ -81,7 +81,7 @@ DATABASES = {
         'HOST': 'database',
         'NAME': 'southamptonjiujitsu',
         'USER': 'sjcadmin',
-        'PASSWORD': os.environ['PGPASS'],
+        'PASSWORD': os.environ.get('PGPASS'),
         'PORT': 5432,
     }
 }
