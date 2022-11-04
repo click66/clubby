@@ -9,7 +9,7 @@ NOW=`date +%Y%m%d%H%M%S%N`
 ARTIFACT_NAME="app.tar.gz"
 
 ARTIFACT_PATH="./artifacts/$ARTIFACT_NAME"
-RELEASES_DIR="/var/www/sjc-control"
+RELEASES_DIR="/var/www/sjc-control/releases"
 DEPLOY_DIR="$RELEASES_DIR/$NOW"
 SERVED_PATH="/var/www/sjc-control/current"
 
