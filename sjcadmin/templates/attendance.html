@@ -28,9 +28,40 @@
     </table>
 </div>
 
-<div class="modal" id="studentId">
+<!-- End body -->
+
+<div class="modal" id="mdlAttendance">
     <div class="modal-dialog">
-        Foo
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Log Attendance:</h2>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="/attendance/log">
+                    {% csrf_token %}
+                    <input type="hidden" name="student_uuid" id="mdlAttendance_studentUuid">
+                    <div class="mb-3 row">
+                        <label for="name" class="col-sm-2 col-form-label">Student name</label>
+                        <div class="col-sm-10">
+                            <input type="text"  readonly class="form-control-plaintext" id="mdlAttendance_studentName">
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="date" class="col-sm-2 col-form-label">Session date</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="sess_date" readonly class="form-control-plaintext" id="mdlAttendance_sessionDate">
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="paid" class="col-sm-2 col-form-label">Paid?</label>
+                        <div class="col-sm-10">
+                            <input type="checkbox" class="form-check-input mt-2" name="paid">
+                        </div>
+                    </div>
+                    <div class="col-auto"><input type="submit" class="btn btn-primary mb-3" value="Confirm"></div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -123,7 +154,15 @@
             {"data":"name", "className": "studentName"},
             {"data":"membership", "render": membershipBadge, "className": "studentMembership"},
         ].concat(dataClasses.map(function (c) {
-            return {"orderable": false, "render": studentClassAttendance(c.d)}
+            return {
+                "className": "session",
+                "createdCell": (td, cd, rd, r, co) => {
+                    td.setAttribute('data-sessdate', c.d);
+                },
+                "data": null,
+                "orderable": false,
+                "render": studentClassAttendance(c.d),
+            }
         })),
         paging: false,
         scrollX: true,
@@ -144,6 +183,19 @@
         row.child(details(data)).show();
     });
 
+    const mdlAttendanceInner = document.getElementById('mdlAttendance'),
+          mdlAttendance = new bootstrap.Modal(mdlAttendanceInner);
+
+    $('.tblStudents').on('click', 'td.session', function (e) {
+        let cell = table.cell(this).node(),
+            row = table.row(this).data();
+
+        mdlAttendanceInner.querySelector('#mdlAttendance_sessionDate').value = cell.getAttribute('data-sessdate');
+        mdlAttendanceInner.querySelector('#mdlAttendance_studentUuid').value = row.uuid;
+        mdlAttendanceInner.querySelector('#mdlAttendance_studentName').value = row.name;
+
+        mdlAttendance.show();
+    });
 
 </script>
 

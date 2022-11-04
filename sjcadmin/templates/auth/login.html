@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+Login!
+
+<form method="POST">
+  {% csrf_token %}
+  {{ error }}
+
+  <div class="form-outline mb-4">
+    <input type="text" name="username" id="frmLoginUsername" class="form-control" />
+    <label class="form-label" for="frmLoginUsername">Email address</label>
+  </div>
+
+  <div class="form-outline mb-4">
+    <input type="password" id="frmLoginPassword" name="password" class="form-control" />
+    <label class="form-label" for="frmLoginPassword">Password</label>
+  </div>
+
+  <input type="submit" value="Sign in" class="btn btn-primary">
+
+</form>
+
+{% endblock %}

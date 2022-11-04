@@ -16,6 +16,10 @@ class Attendance(models.Model):
             student: Student,
             date: datetime.date
     ):
+        existing = Attendance.objects.filter(student=student, date=date)
+        student.sessions_attended -= existing.count()
+        existing.delete()
+
         if student.is_licence_expired():
             raise ExpiredStudentLicenceError('Student licence is expired')
 

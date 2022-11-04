@@ -5,10 +5,7 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=sjcadmin.settings
       - ENVIRONMENT_NAME=local
-      - DB_HOST=database
-      - DB_NAME=postgres
-      - DB_USER=postgres
-      - DB_PASSWORD=Rand0m!
+      - PGPASS=Rand0m!
     env_file: .env
     ports:
       - 8000:8000

@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
+import os
 
 from pathlib import Path
 
@@ -78,13 +79,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'HOST': 'database',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'Rand0m!',
+        'NAME': 'southamptonjiujitsu',
+        'USER': 'sjcadmin',
+        'PASSWORD': os.environ['PGPASS'],
         'PORT': 5432,
-        'OPTIONS': {
-            'options': '-c search_path=sjcadmin'
-        }
     }
 }
 
