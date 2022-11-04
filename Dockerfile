@@ -6,21 +6,17 @@ ENV PATH="/root/.local/bin:$PATH"
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
 # Install Poetry dependencies
-COPY poetry.* pyproject.toml ./
-RUN POETRY_VIRTUALENVS_IN_PROJECT=1 poetry install
+COPY poetry.* pyproject.toml /app/
+WORKDIR /app
+ENV POETRY_VIRTUALENVS_IN_PROJECT="true"
+RUN poetry install
 
 FROM base AS runtime
 
 # Copy virtual env from python-deps stage
-COPY --from=base /.venv /.venv
+COPY --from=base /app/.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
 
-# Create and switch to a new user
-RUN useradd --create-home appuser
-#WORKDIR /home/appuser
-#USER appuser
-
 # Install application into container
-#USER appuser
 WORKDIR /app
 COPY . .

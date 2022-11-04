@@ -13,6 +13,10 @@ services:
     build:
       context: .
       target: base
+    environment:
+      - DJANGO_SETTINGS_MODULE=sjcadmin.settings
+      - ENVIRONMENT_NAME=local
+      - PGPASS=Rand0m!
     working_dir: /app
     volumes:
       - .:/app
