@@ -1,8 +1,12 @@
 build:
   stage: build
-  image: docker/compose
+  image: docker
   services:
     - docker:dind
+  before_script:
+    - apk --no-cache add docker-compose
+    - docker info
+    - docker-compose --version
   script:
     - ./build.sh $CI_PROJECT_DIR
   artifacts:
