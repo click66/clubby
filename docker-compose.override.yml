@@ -1,0 +1,26 @@
+services:
+  app:
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/app
+
+  base:
+    build:
+      context: .
+      target: base
+    working_dir: /app
+    volumes:
+      - .:/app
+
+  database:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Rand0m!
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - 5432:5432
+    volumes:
+      - ./pgsetup.sql:/docker-entrypoint-initdb.d/_init.sql
+      - ./pgdata:/var/lib/postgresql/data
