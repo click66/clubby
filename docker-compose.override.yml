@@ -1,5 +1,9 @@
 services:
   app:
+    environment:
+      - DJANGO_SETTINGS_MODULE=sjcadmin.settings
+      - ENVIRONMENT_NAME=local
+      - PGPASS=Rand0m!
     ports:
       - 8000:8000
     volumes:
