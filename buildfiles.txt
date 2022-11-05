@@ -1,5 +1,6 @@
 sjcadmin
 static
+manage.py
 poetry.lock
 poetry.toml
 pyproject.toml
