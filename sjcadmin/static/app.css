@@ -1,3 +1,8 @@
+@font-face {
+  font-family: 'tjjf';
+  src: url(/static/fonts/tjjf.woff) format("woff");
+}
+
 html, body {
     height: 100%;
 }
@@ -6,7 +11,7 @@ body {
     font-size: 0.9em;
 }
 
-.main {
+.main.bg-dark {
     display: flex;
     flex-wrap: nowrap;
     height: 100vh;
@@ -14,6 +19,7 @@ body {
     max-height: 100vh;
     overflow-x: auto;
     overflow-y: hidden;
+    color: #ddd;
 }
 
 h1 {
@@ -22,6 +28,21 @@ h1 {
 
 h2 {
     font-size: 1.5em;
+}
+
+.topBar {
+    padding: 10px;
+    text-align: right;
+}
+
+.topBar a {
+    font-size: 0.9em;
+}
+
+nav ol.breadcrumb a:hover,
+nav ol.breadcrumb a {
+    text-decoration: none;
+    color: inherit;
 }
 
 .tblStudents th, td {
@@ -60,4 +81,59 @@ h2 {
 
 .tblStudents ul.details label {
     width: 200px;
+}
+
+.copyHome {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+#topLogo {
+    font-family: 'tjjf';
+    font-size: 7vw;
+    text-transform: uppercase;
+    text-align: center;
+    border: 5px solid #ddd;
+    display: inline-block;
+    line-height: 1em;
+    padding: 0.2em 0.2em 0.1em;
+    margin-bottom: 50px;
+}
+
+ul#portalLinks {
+    display: block;
+    list-style-type: none;
+    padding: 0;
+}
+
+ul#portalLinks li {
+    display: inline-block;
+    text-align: center;
+    margin: 0 3em;
+}
+
+ul#portalLinks li i {
+    font-size: 4em;
+    line-height: 1.2em;
+}
+
+ul#portalLinks li i,
+ul#portalLinks li span {
+    display: block;
+}
+
+ul#portalLinks li a {
+    display: block;
+    padding: 0 0.8em;
+    color: inherit;
+    text-decoration: none;
+    border-radius: 1em;
+}
+
+ul#portalLinks li a:hover {
+    background-color: #ddd;
+    color: #212529;
 }

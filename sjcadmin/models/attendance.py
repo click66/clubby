@@ -16,9 +16,7 @@ class Attendance(models.Model):
             student: Student,
             date: datetime.date
     ):
-        existing = Attendance.objects.filter(student=student, date=date)
-        student.sessions_attended -= existing.count()
-        existing.delete()
+        Attendance.clear(student, date)
 
         if student.is_licence_expired():
             raise ExpiredStudentLicenceError('Student licence is expired')
@@ -28,6 +26,12 @@ class Attendance(models.Model):
 
         student.sessions_attended += 1
         return Attendance(student=student, date=date)
+
+    @classmethod
+    def clear(cls, student: Student, date: datetime.date):
+        existing = Attendance.objects.filter(student=student, date=date)
+        student.sessions_attended -= existing.count()
+        existing.delete()
 
     def mark_as_paid(self):
         self.paid = True

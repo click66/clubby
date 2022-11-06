@@ -14,10 +14,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.shortcuts import redirect
 from django.urls import path
 
-from .controllers import attendance, auth
+from .controllers import attendance, auth, api, home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,7 +24,10 @@ urlpatterns = [
     path('auth/login', auth.login),
     path('auth/logout', auth.logout),
 
-    path('', lambda r: redirect('attendance'), name='home'),
+    path('', home.home, name='home'),
     path('attendance', attendance.attendance, name='attendance'),
-    path('attendance/log', attendance.log, name='attendance.log'),
+
+    path('api/members', api.get_members),
+    path('api/attendance/log', api.post_log_attendance),
+    path('api/attendance/clear', api.post_clear_attendance),
 ]
