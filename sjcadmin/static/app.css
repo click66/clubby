@@ -31,6 +31,9 @@ h2 {
 }
 
 .topBar {
+    position: absolute;
+    top: 0;
+    right: 0;
     padding: 10px;
     text-align: right;
 }
@@ -104,20 +107,30 @@ nav ol.breadcrumb a {
 }
 
 ul#portalLinks {
-    display: block;
     list-style-type: none;
     padding: 0;
+    display: grid;
+    gap: 1rem;
+    margin: 0 auto;
+    max-width: 100%;
+}
+@media (min-width: 600px) {
+  ul#portalLinks { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 900px) {
+  ul#portalLinks { grid-template-columns: repeat(3, 1fr); }
 }
 
 ul#portalLinks li {
-    display: inline-block;
+    display: block;
     text-align: center;
-    margin: 0 3em;
 }
 
 ul#portalLinks li i {
     font-size: 4em;
     line-height: 1.2em;
+    display: block;
 }
 
 ul#portalLinks li i,
@@ -130,7 +143,7 @@ ul#portalLinks li a {
     padding: 0 0.8em;
     color: inherit;
     text-decoration: none;
-    border-radius: 1em;
+    border-radius: 3px;
 }
 
 ul#portalLinks li a:hover {
