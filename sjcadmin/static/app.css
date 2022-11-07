@@ -42,6 +42,17 @@ h2 {
     font-size: 0.9em;
 }
 
+.containerInner {
+    display: flex;
+    flex-direction:column;
+    max-height: 100%;
+}
+
+#copy {
+    overflow-y: auto;
+    flex: 1;
+}
+
 nav ol.breadcrumb a:hover,
 nav ol.breadcrumb a {
     text-decoration: none;
