@@ -73,11 +73,17 @@ def get_members(request):
 @handle_error
 def post_log_attendance(request):
     student_uuid = request.POST.get('student_uuid')
-    sess_date = request.POST.get('sess_date')
+    sess_date = date.fromisoformat(request.POST.get('sess_date'))
     paid = request.POST.get('paid')
+    existing_registration = False
 
     s = Student.objects.get(pk=student_uuid)
-    a = Attendance.register_student(s, date=date.fromisoformat(sess_date))
+    existing = Attendance.objects.filter(student=s, date=sess_date)
+    if existing.count() > 0:
+        existing_registration = True
+        existing.delete()
+
+    a = Attendance.register_student(s, date=sess_date, existing_registration=existing_registration)
 
     if paid:
         a.mark_as_paid()

@@ -14,14 +14,15 @@ class Attendance(models.Model):
     def register_student(
             cls,
             student: Student,
-            date: datetime.date
+            date: datetime.date,
+            existing_registration: bool = False,
     ):
-        Attendance.clear(student, date)
+        remaining_sessions = student.remaining_trial_sessions + (1 if existing_registration else 0)
 
         if student.is_licence_expired():
             raise ExpiredStudentLicenceError('Student licence is expired')
 
-        if not student.has_licence() and student.remaining_trial_sessions <= 0:
+        if not student.has_licence() and remaining_sessions <= 0:
             raise NoRemainingTrialSessionsError('Unlicenced student has no remaining trial sessions')
 
         student.sessions_attended += 1
