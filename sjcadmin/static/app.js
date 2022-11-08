@@ -1,29 +1,42 @@
-const mdlNewMemberInner = document.getElementById('mdlNewMember'),
-      mdlNewMember = new bootstrap.Modal(mdlNewMemberInner),
-      frmNewMember = $('#frmNewMember');
+const frmNewMember = document.getElementById('frmNewMember'),
+      btnNewMember = document.getElementById('btnNewMember');
 
-const popNewMember = new bootstrap.Popover(document.getElementById('btnNewMember'), {
-    container: 'body',
-    html: true,
-    content: document.getElementById('frmNewMember'),
-    trigger: 'manual',
-});
+if (frmNewMember && btnNewMember) {
+    const popNewMember = new bootstrap.Popover(document.getElementById('btnNewMember'), {
+        container: 'body',
+        html: true,
+        content: frmNewMember,
+        trigger: 'manual',
+    });
 
-document.getElementById('btnNewMember').addEventListener('click', function () {
-    popNewMember.toggle();
-});
+    btnNewMember.addEventListener('click', function () {
+        popNewMember.toggle();
+    });
 
-frmNewMember.on('click', '#mdlNewMember_submit', function (e) {
-    $.post('/api/members/add', frmNewMember.serialize())
-        .done(function(d) {
-            if (d.hasOwnProperty('error')) {
-                alert(d.error);
-            } else {
-                frmNewMember.trigger('reset');
-                table.ajax.reload();
-            }
-            popNewMember.hide();
-        });
+    btnNewMember.addEventListener('shown.bs.popover', function () {
+        document.getElementById('mdlNewMember_studentName').focus();
+    });
 
-    e.preventDefault();
-});
+    frmNewMember.addEventListener('click', function (e) {
+        if (event.target && event.target.id == 'mdlNewMember_submit') {
+            fetch('/api/members/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(new FormData(frmNewMember)).toString(),
+            }).then(function (r) {
+                r.json().then(function (d) {
+                    if (d.hasOwnProperty('error')) {
+                        alert(d.error);
+                        return
+                    }
+
+                    frmNewMember.reset();
+                    table.ajax.reload();
+                });
+                popNewMember.hide();
+            });
+
+            e.preventDefault();
+        }
+    });
+}
