@@ -8,7 +8,6 @@ from ..errors import *
 
 @dataclass(frozen=True)
 class Profile:
-    name: str
     dob: str
     phone: str
     email: str
@@ -41,18 +40,25 @@ class Student(models.Model):
         r.sessions_attended = r.attendance_set.count()
         return r
 
+    def save(self, *args, **kwargs):
+        if self.has_licence():
+            self.licence.save()
+
+        super().save(*args, **kwargs)
+
     @classmethod
     def make(
             cls,
+            name: str,
             profile=None,
             licence=None,
     ):
-        if profile is None and licence is None:
-            raise MissingStudentInformationError('Student must have either a profile or licence number')
+        if name == '':
+            raise ValueError('Student name cannot be blank')
 
         student = cls(
             licence=licence,
-            profile_name=getattr(profile, 'name', None),
+            profile_name=name,
             profile_dob=getattr(profile, 'dob', None),
             profile_phone=getattr(profile, 'phone', None),
             profile_email=getattr(profile, 'email', None),
@@ -101,8 +107,3 @@ class Student(models.Model):
 
     def add_licence(self, licence: Licence):
         self.licence = licence
-        self.profile_name = None
-        self.profile_dob = None
-        self.profile_phone = None
-        self.profile_address = None
-        self.profile_email = None

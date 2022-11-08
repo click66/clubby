@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from .controllers import attendance, auth, api, home
+from .controllers import attendance, auth, api, home, members
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,9 +25,16 @@ urlpatterns = [
     path('auth/logout', auth.logout),
 
     path('', home.home, name='home'),
+
+    path('members', members.members, name='members'),
+    path('members/<uuid:pk>', members.member, name='member'),
+
     path('attendance', attendance.attendance, name='attendance'),
 
     path('api/members', api.get_members),
+    path('api/members/add', api.post_add_member),
+    path('api/members/<uuid:pk>/licences', api.get_member_licences),
+    path('api/members/<uuid:pk>/licences/add', api.post_add_member_licence),
     path('api/attendance/log', api.post_log_attendance),
     path('api/attendance/clear', api.post_clear_attendance),
 ]

@@ -32,7 +32,32 @@
 
 <!-- End body -->
 
-<div class="modal" id="mdlAttendance">
+<div id="tblStudents_buttons">
+    <button class="btn btn-primary" id="btnNewMember">New Member <i class="bi bi-plus"></i></button>
+</div>
+
+<div class="modal fade" id="mdlNewMember">
+    <div class="modal-dialog modal-dialog-centered modal-sm text-dark">
+        <div class="modal-content">
+            <div class="modal-body">
+                <form id="frmNewMember">
+                    {% csrf_token %}
+                    <input type="hidden" name="student_uuid" id="mdlNewMember_studentUuid">
+                    <div class="mb-3 row">
+                        <div class="col-sm-12">
+                            <input placeholder="Name" type="text" class="form-control" name="studentName" id="mdlNewMember_studentName">
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary mb-3" value="confirm" id="mdlNewMember_submit">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="mdlAttendance">
     <div class="modal-dialog text-dark">
         <div class="modal-content">
             <div class="modal-header">
@@ -135,6 +160,17 @@
                 r.appendChild(el);
                 r.appendChild(document.createTextNode(c));
                 return r;
+            },
+            manageLink = uuid => {
+                let i = document.createElement('i'),
+                    a = document.createElement('a');
+
+                i.classList.add('bi');
+                i.classList.add('bi-box-arrow-up-right');
+                a.appendChild(i);
+                a.appendChild(document.createTextNode(' Manage'));
+                a.setAttribute('href', '/members/' + uuid);
+                return a;
             };
 
         list.classList.add('details');
@@ -147,6 +183,8 @@
             case 'trial':
                 list.appendChild(li('Remaining Trial Sessions', row['rem_trial_sessions']));
         }
+
+        list.appendChild(manageLink(row.uuid));
 
         return list;
     }
@@ -174,6 +212,9 @@
         scrollX: true,
         scrollCollapse: true,
     });
+
+    table.table().container().querySelector('.dataTables_filter')
+        .prepend(document.querySelector('#tblStudents_buttons'));
 
     $('.tblStudents').on('click', 'td.studentName,td.studentMembership', function (e) {
         let row  = table.row(this),

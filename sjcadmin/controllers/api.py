@@ -5,7 +5,7 @@ from datetime import date, timedelta
 from ..errors import DomainError
 from ..models.attendance import Attendance
 from ..models.session import Session
-from ..models.student import Student
+from ..models.student import Licence, Student
 
 
 def user_passes_test(test_func):
@@ -35,7 +35,7 @@ def handle_error(function=None):
     def inner(request, *args, **kwargs):
         try:
             return function(request, *args, **kwargs)
-        except DomainError as e:
+        except (DomainError, ValueError) as e:
             return JsonResponse({'error': str(e)})
 
     return inner
@@ -66,6 +66,37 @@ def get_members(request):
             students[str(a.student_id)]['paid'].append(str(a.session_date))
 
     return JsonResponse(list(students.values()), safe=False)
+
+
+@login_required_401
+@require_http_methods(['GET'])
+def get_member_licences(request, pk):
+    s = Student.objects.get(uuid=pk)
+    return JsonResponse(s.licences)
+
+
+
+@login_required_401
+@require_http_methods(['POST'])
+@handle_error
+def post_add_member(request):
+    s = Student.make(name=request.POST.get('studentName'))
+    s.save()
+
+    return JsonResponse({'success': {'uuid': s.uuid}})
+
+
+@login_required_401
+@require_http_methods(['POST'])
+@handle_error
+def post_add_member_licence(request, pk):
+    s = Student.objects.get(uuid=pk)
+    number = request.POST.get('number')
+    expire_date = date.fromisoformat(request.POST.get('expire_date'))
+    s.add_licence(Licence(number=number, expires=expire_date))
+    s.save()
+
+    return JsonResponse({'success': None})
 
 
 @login_required_401

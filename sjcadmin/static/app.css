@@ -7,7 +7,7 @@ html, body {
     height: 100%;
 }
 
-body {
+html {
     font-size: 0.9em;
 }
 
@@ -59,6 +59,23 @@ nav ol.breadcrumb a {
     color: inherit;
 }
 
+#DataTables_Table_0_filter {
+    text-align: right;
+}
+
+#DataTables_Table_0_filter > label {
+    margin-left: 1em;
+}
+
+#tblStudents_buttons {
+    display: inline-block;
+    margin-bottom: 1em;
+}
+
+#tblStudents_buttons .btn {
+    font-size: 0.9em;
+}
+
 .tblStudents th, td {
     border-left-width: 1px;
     font-size: 0.85em;
@@ -94,7 +111,7 @@ nav ol.breadcrumb a {
 }
 
 .tblStudents ul.details label {
-    width: 200px;
+    margin-right: 10px;
 }
 
 .copyHome {

@@ -1,0 +1,113 @@
+{% extends "_base.html" %}
+
+{% block content %}
+
+<div class="p-3 containerInner">
+
+<nav aria-label="breadcrumb" class="text-light">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Members</li>
+  </ol>
+</nav>
+
+<h1>Members</h1>
+
+<div id="tblStudents_buttons">
+    <button class="btn btn-primary" id="btnNewMember">New Member <i class="bi bi-plus"></i></button>
+</div>
+
+<div class="rounded-3 bg-light p-3 text-dark" id="copy">
+    <table style="width:100%" class="table tblStudents">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Membership</th>
+            {% for c in classes %}
+            <th class="classHeader">{{c.d}}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+    </table>
+</div>
+
+</div>
+
+<!-- End body -->
+
+<div class="modal fade" id="mdlNewMember">
+    <div class="modal-dialog modal-dialog-centered modal-sm text-dark">
+        <div class="modal-content">
+            <div class="modal-body">
+                <form id="frmNewMember">
+                    {% csrf_token %}
+                    <input type="hidden" name="student_uuid" id="mdlNewMember_studentUuid">
+                    <div class="mb-3 row">
+                        <div class="col-sm-12">
+                            <input placeholder="Name" type="text" class="form-control" name="studentName" id="mdlNewMember_studentName">
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary mb-3" value="confirm" id="mdlNewMember_submit">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" language="javascript">
+    const membershipBadge = (m, t, r) => {
+        const expired = sb => {
+            sb.classList.add('bg-danger');
+            sb.textContent = 'Expired';
+            return sb.outerHTML;
+        }
+
+        let b = document.createElement('span');
+        b.classList.add('badge');
+        switch(m) {
+            case 'licenced':
+                if (r.licence.exp) {
+                    return expired(b);
+                }
+                b.classList.add('bg-success');
+                b.textContent = 'Licenced';
+                return b.outerHTML;
+            case 'trial':
+                if (r.rem_trial_sessions <= 0) {
+                    return expired(b);
+                }
+                b.classList.add('bg-warning');
+                b.classList.add('text-dark');
+                b.textContent = 'Trial';
+                return b.outerHTML;
+        }
+    };
+
+    const table = $('.tblStudents').DataTable({
+        ajax: {
+            url: "/api/members",
+            dataSrc: "",
+        },
+        columns: [
+            {"data":"name", "className": "studentName"},
+            {"data":"membership", "render": membershipBadge, "className": "studentMembership"},
+        ],
+        paging: false,
+        scrollX: true,
+        scrollCollapse: true,
+    });
+
+    table.table().container().querySelector('.dataTables_filter')
+        .prepend(document.querySelector('#tblStudents_buttons'));
+
+    $('.tblStudents').on('click', 'td.studentName,td.studentMembership', function (e) {
+        let row  = table.row(this),
+            data = row.data();
+
+        console.log(data, row);
+    });
+</script>
+
+{% endblock %}
