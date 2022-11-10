@@ -48,3 +48,30 @@ def test_unpaid_and_paid():
 
     attendance.mark_as_paid()
     assert attendance.has_paid is True
+
+
+def test_complementary():
+    student = Student.make(name='John smith')
+
+    attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 1, 1))
+    assert attendance.complementary is False
+
+    attendance.mark_as_complementary()
+    assert attendance.is_complementary is True
+
+
+def test_cannot_be_paid_and_complementary():
+    student = Student.make(name='John Smith')
+
+    attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 1, 1))
+    assert attendance.complementary is False
+    assert attendance.has_paid is False
+
+    attendance.mark_as_complementary()
+    attendance.mark_as_paid()
+    assert attendance.complementary is False
+    assert attendance.has_paid is True
+
+    attendance.mark_as_complementary()
+    assert attendance.complementary is True
+    assert attendance.has_paid is False

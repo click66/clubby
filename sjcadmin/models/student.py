@@ -31,6 +31,8 @@ class Student(models.Model):
     licence = models.OneToOneField(Licence, on_delete=models.SET_NULL, null=True, blank=True)
     allowed_trial_sessions = models.IntegerField()
 
+    join_date = models.DateField(null=False, default=datetime.today())
+
     sessions_attended = 0
 
     @classmethod

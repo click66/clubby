@@ -9,6 +9,7 @@ class Attendance(models.Model):
     student = models.ForeignKey(Student, on_delete=models.RESTRICT)
     date = models.DateField(null=False)
     paid = models.BooleanField(default=False, null=False)
+    complementary = models.BooleanField(default=False, null=False)
 
     @classmethod
     def register_student(
@@ -36,6 +37,7 @@ class Attendance(models.Model):
 
     def mark_as_paid(self):
         self.paid = True
+        self.complementary = False
 
     @property
     def has_paid(self):
@@ -44,3 +46,11 @@ class Attendance(models.Model):
     @property
     def session_date(self):
         return self.date
+
+    def mark_as_complementary(self):
+        self.complementary = True
+        self.paid = False
+
+    @property
+    def is_complementary(self):
+        return self.complementary

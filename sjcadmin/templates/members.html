@@ -102,11 +102,11 @@
     table.table().container().querySelector('.dataTables_filter')
         .prepend(document.querySelector('#tblStudents_buttons'));
 
-    $('.tblStudents').on('click', 'td.studentName,td.studentMembership', function (e) {
+    $('.tblStudents').on('click', 'td', function (e) {
         let row  = table.row(this),
             data = row.data();
 
-        console.log(data, row);
+        location.href = '/members/' + data.uuid;
     });
 </script>
 

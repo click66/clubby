@@ -21,7 +21,7 @@
                 <div class="mb-3 row">
                     <label class="col-sm-2 col-form-label">Member Since</label>
                     <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext">
+                        <input type="text" readonly class="form-control-plaintext" value="{{ student.join_date }}">
                     </div>
                 </div>
                 <div class="mb-3 row">
@@ -59,68 +59,92 @@
 
             <h2>Licence</h2>
             <div class="p-3">
-            {% if student.has_licence and not student.is_licence_expired %}
-            <div class="alert alert-success" role="alert">
-                <p>Student is fully licenced.</p>
-                <ul>
-                    <li>Licence number: {{ student.licence_no }}</li>
-                    <li>Expires on: {{ student.licence_expiry_date }}</li>
-                </ul>
-            </div>
-            {% else %}
+                {% if student.has_licence and not student.is_licence_expired %}
+                <div class="alert alert-success" role="alert">
+                    <p>Student is fully licenced.</p>
+                    <ul>
+                        <li>Licence number: {{ student.licence_no }}</li>
+                        <li>Expires on: {{ student.licence_expiry_date }}</li>
+                    </ul>
+                </div>
+                {% else %}
 
-            {% if student.is_licence_expired %}
-            <div class="alert alert-danger" role="alert">
-                <p>Student licence expired on {{ student.licence_expiry_date }}</p>
+                {% if student.is_licence_expired %}
+                <div class="alert alert-danger" role="alert">
+                    <p>Student licence expired on {{ student.licence_expiry_date }}</p>
                 {% else %}
                 <div class="alert alert-warning" role="alert">
                     <p>Student is not licenced</p>
-                    {% endif %}
+                {% endif %}
 
-                    <div class="row justify-content-center">
-                        <div class="col-sm-12 col-md-6 col-lg-5">
-                            <form id="frmLicence">
-                                {% csrf_token %}
-                                <div class="mb-3 row">
-                                    <label class="col-sm-4 col-form-label">Licence Number</label>
-                                    <div class="col-sm-8">
-                                        <input class="form-control" type="text" name="number" placeholder="Number">
-                                    </div>
+                <div class="row justify-content-center">
+                    <div class="col-sm-12 col-md-6 col-lg-5">
+                        <form id="frmLicence">
+                            {% csrf_token %}
+                            <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label">Licence Number</label>
+                                <div class="col-sm-8">
+                                    <input class="form-control" type="text" name="number" placeholder="Number">
                                 </div>
-                                <div class="mb-3 row">
-                                    <label class="col-sm-4 col-form-label">Expiry Date</label>
-                                    <div class="col-sm-8">
-                                        <input class="form-control" type="date" name="expire_date"
-                                               value="{{ prospective_licence_expiry }}">
-                                    </div>
+                            </div>
+                            <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label">Expiry Date</label>
+                                <div class="col-sm-8">
+                                    <input class="form-control" type="date" name="expire_date"
+                                           value="{{ prospective_licence_expiry }}">
                                 </div>
-                                <button class="btn btn-primary" id="btnLicenceStudent" data-uuid="{{ student.uuid }}">
-                                    Renew Licence
-                                </button>
-                            </form>
-                        </div>
+                            </div>
+                            <button class="btn btn-primary" id="btnLicenceStudent" data-uuid="{{ student.uuid }}">
+                                Renew Licence
+                            </button>
+                        </form>
                     </div>
                 </div>
-                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="row">
+            <div class="col-12 text-end">
+                <button type="button" class="btn btn-danger" id="btnDelete" data-uuid="{{ student.uuid }}" data-csrf-token="{{ csrf_token }}">Delete Member</button>
             </div>
         </div>
     </div>
+</div>
 
 
 <script type="text/javascript" language="javascript">
-document.getElementById('btnLicenceStudent').addEventListener('click', function (e) {
-    $.post('/api/members/' + this.dataset.uuid + '/licences/add', $('#frmLicence').serialize())
-        .done(function(d) {
-            if (d.hasOwnProperty('error')) {
-                alert(d.error);
-            } else {
-                location.reload();
-            }
-        });
-    e.preventDefault()
-});
+const btnLicenceStudent = document.getElementById('btnLicenceStudent'),
+      btnDeleteMember = document.getElementById('btnDelete');
+if (btnLicenceStudent) {
+    btnLicenceStudent.addEventListener('click', function (e) {
+        $.post('/api/members/' + this.dataset.uuid + '/licences/add', $('#frmLicence').serialize())
+            .done(function(d) {
+                if (d.hasOwnProperty('error')) {
+                    alert(d.error);
+                } else {
+                    location.reload();
+               }
+            });
+        e.preventDefault();
+    });
+}
 
-
+if (btnDeleteMember) {
+    btnDeleteMember.addEventListener('click', function () {
+        if (confirm("Are you sure? This will delete this member's record and all associated attendance records.")) {
+            $.post('/api/members/delete/' + this.dataset.uuid, {
+                'csrfmiddlewaretoken': this.dataset.csrfToken,
+            })
+                .done(function (d) {
+                    if (d.hasOwnProperty('error')) {
+                        alert(d.error);
+                    } else {
+                        location.href = '/members';
+                    }
+               });
+        }
+    });
+}
 </script>
 
-        {% endblock %}
+{% endblock %}

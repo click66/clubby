@@ -53,6 +53,7 @@ def get_members(request):
                                  'rem_trial_sessions': s.remaining_trial_sessions,
                                  'attendances': [],
                                  'paid': [],
+                                 'complementary': [],
                              }
                              | ({'licence': {'no': s.licence_no, 'exp_time': s.licence_expiry_date.strftime('%d/%m/%Y'),
                                              'exp': s.is_licence_expired()}} if s.has_licence() else {})
@@ -62,8 +63,11 @@ def get_members(request):
 
     for a in attendances:
         students[str(a.student_id)]['attendances'].append(str(a.session_date))
-        if a.has_paid:
-            students[str(a.student_id)]['paid'].append(str(a.session_date))
+        match True:
+            case a.has_paid:
+                students[str(a.student_id)]['paid'].append(str(a.session_date))
+            case a.is_complementary:
+                students[str(a.student_id)]['complementary'].append(str(a.session_date))
 
     return JsonResponse(list(students.values()), safe=False)
 
@@ -89,6 +93,19 @@ def post_add_member(request):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
+def post_delete_member(request, pk):
+    s = Student.objects.get(uuid=pk)
+    if s:
+        Attendance.objects.filter(student=s).delete()
+    s.delete()
+
+    return JsonResponse({'success': {'uuid': s.uuid}})
+
+
+
+@login_required_401
+@require_http_methods(['POST'])
+@handle_error
 def post_add_member_licence(request, pk):
     s = Student.objects.get(uuid=pk)
     number = request.POST.get('number')
@@ -105,7 +122,7 @@ def post_add_member_licence(request, pk):
 def post_log_attendance(request):
     student_uuid = request.POST.get('student_uuid')
     sess_date = date.fromisoformat(request.POST.get('sess_date'))
-    paid = request.POST.get('paid')
+    payment = request.POST.get('payment')
     existing_registration = False
 
     s = Student.objects.get(pk=student_uuid)
@@ -116,8 +133,11 @@ def post_log_attendance(request):
 
     a = Attendance.register_student(s, date=sess_date, existing_registration=existing_registration)
 
-    if paid:
-        a.mark_as_paid()
+    match payment:
+        case 'paid':
+            a.mark_as_paid()
+        case 'complementary':
+            a.mark_as_complementary()
 
     a.save()
     return JsonResponse({'success': None})
