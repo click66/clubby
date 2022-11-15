@@ -21,6 +21,9 @@
     <link rel="stylesheet" type="text/css" href="{% static 'app.css' %}"/>
     <script type="text/javascript" src="{% static 'app.js' %}" defer></script>
 
+    {% block assets %}
+    {% endblock assets %}
+
     <title>Southampton Jiu Jitsu</title>
 </head>
 <body>
@@ -34,5 +37,11 @@
         {% endblock content %}
     </div>
 </div>
+
+<div aria-live="polite" aria-atomic="true">
+    <div class="toastrack position-absolute top-0 end-0 p-3" id="toastRack">
+    </div>
+</div>
+
 </body>
 </html>

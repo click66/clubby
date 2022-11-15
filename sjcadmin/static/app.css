@@ -11,6 +11,22 @@ html {
     font-size: 0.9em;
 }
 
+.toastrack {
+    z-index: 2000;
+}
+
+@media (max-width: 480px) {
+  .toastrack {
+    width: 100%;
+    bottom: 0!important;
+    top: auto!important;
+  }
+
+  .toast {
+    width: 100%;
+  }
+}
+
 .main.bg-dark {
     display: flex;
     flex-wrap: nowrap;
