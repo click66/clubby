@@ -1,7 +1,8 @@
 import datetime
 import pytest
 
-from sjcadmin.models.student import Student, Profile, Licence
+from django.contrib.auth.models import User
+from sjcadmin.models.student import Student, Profile, Note, Licence
 
 
 def test_make_student_with_only_name():
@@ -38,7 +39,8 @@ def test_default_remaining_trial_sessions_is_two():
 
 
 def test_licenced_student_has_no_trial_sessions():
-    student = Student.make(name='John Doe', licence=Licence(number=123456, expires=datetime.datetime(2019, 1, 1).date()))
+    student = Student.make(name='John Doe', licence=Licence(number=123456,
+                                                            expires=datetime.datetime(2019, 1, 1).date()))
 
     assert student.remaining_trial_sessions == 0
 
@@ -60,3 +62,37 @@ def test_licence_expired():
 def test_student_name_cannot_be_blank():
     with pytest.raises(ValueError):
         Student.make(name='')
+
+
+def test_add_note():
+    now = datetime.datetime.now()
+    student = Student.make(name='John Doe')
+    user = User()
+    user.username = 'joe.b'
+
+    student.add_note(Note.make("I''m back from the future",
+                               author=user,
+                               datetime=now))
+
+    notes = student.get_notes()
+    assert notes[0].text == "I''m back from the future"
+    assert notes[0].author_name == 'joe.b'
+    assert notes[0].time == now
+
+
+def test_recall_latest_note():
+    user = User()
+    user.username = 'joe.b'
+    
+    # Mock db object
+    student = Student.make(name='John Doe')
+    student._notes = [
+        Note.make('Mid note', author=user, datetime=datetime.datetime(2019, 1, 1)),
+        Note.make('Latest note', author=user, datetime=datetime.datetime(2022, 1, 1)),
+        Note.make('Old note', author=user, datetime=datetime.datetime(2015, 1, 1)),
+    ]
+
+    got_notes = student.get_notes()
+    assert got_notes[0].text == 'Latest note'
+    assert got_notes[1].text == 'Mid note'
+    assert got_notes[2].text == 'Old note'

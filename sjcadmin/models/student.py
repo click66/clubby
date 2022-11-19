@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
+from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 import uuid
 
 from ..errors import *
@@ -19,6 +21,30 @@ class Licence(models.Model):
     expires = models.DateField()
 
 
+class Note(models.Model):
+    _text = models.TextField(null=False, blank=True, db_column='text')
+    _student = models.ForeignKey('Student', on_delete=models.CASCADE, db_column='student_uuid')
+    _datetime = models.DateTimeField(null=False, db_column='datetime')
+    _author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, db_column='author_id')
+
+    @classmethod
+    def make(cls, text, author: User, datetime: datetime):
+        note = cls(_text=text, _author=author, _datetime=datetime)
+        return note
+
+    @property
+    def text(self):
+        return self._text
+
+    @property
+    def author_name(self):
+        return self._author.username
+
+    @property
+    def time(self):
+        return self._datetime
+
+
 class Student(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
@@ -31,18 +57,23 @@ class Student(models.Model):
     licence = models.OneToOneField(Licence, on_delete=models.SET_NULL, null=True, blank=True)
     allowed_trial_sessions = models.IntegerField()
 
-    join_date = models.DateField(null=False, default=datetime.today())
+    join_date = models.DateField(null=False, default=timezone.now)
 
     sessions_attended = 0
+    _notes = []
+    _new_notes = []
 
     @classmethod
     def from_db(cls, db, field_names, values):
         r = super().from_db(db, field_names, values)
+        r._notes = r.note_set.all()
         # Eager read Attendance object into Student object
         r.sessions_attended = r.attendance_set.count()
         return r
 
     def save(self, *args, **kwargs):
+        self.note_set.add(*self._new_notes)
+
         if self.has_licence():
             self.licence.save()
 
@@ -67,6 +98,11 @@ class Student(models.Model):
             profile_address=getattr(profile, 'address', None),
             allowed_trial_sessions=(0 if licence else 2)
         )
+
+        student.sessions_attended = 0
+        student._notes = []
+        student._new_notes = []
+
         return student
 
     @property
@@ -109,3 +145,10 @@ class Student(models.Model):
 
     def add_licence(self, licence: Licence):
         self.licence = licence
+
+    def add_note(self, note: Note):
+        note._student = self
+        self._new_notes.insert(0, note)
+
+    def get_notes(self):
+        return sorted(self._new_notes + self._notes, key=lambda x: x.time, reverse=True)
