@@ -1,11 +1,14 @@
+import json
+
 from functools import wraps
 from django.http import HttpResponse, JsonResponse
+from django.utils import timezone
 from django.views.decorators.http import require_http_methods
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from ..errors import DomainError
 from ..models.attendance import Attendance
 from ..models.session import Session
-from ..models.student import Licence, Student
+from ..models.student import Licence, Note, Student
 
 
 def user_passes_test(test_func):
@@ -51,6 +54,7 @@ def get_members(request):
                                  'name': s.name,
                                  'membership': 'trial' if not s.has_licence() else 'licenced',
                                  'rem_trial_sessions': s.remaining_trial_sessions,
+                                 'has_notes': s.has_notes,
                                  'attendances': [],
                                  'paid': [],
                                  'complementary': [],
@@ -102,7 +106,6 @@ def post_delete_member(request, pk):
     return JsonResponse({'success': {'uuid': s.uuid}})
 
 
-
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
@@ -111,6 +114,20 @@ def post_add_member_licence(request, pk):
     number = request.POST.get('number')
     expire_date = date.fromisoformat(request.POST.get('expire_date'))
     s.add_licence(Licence(number=number, expires=expire_date))
+    s.save()
+
+    return JsonResponse({'success': None})
+
+
+@login_required_401
+@require_http_methods(['POST'])
+@handle_error
+def post_add_member_note(request, pk):
+    data = json.loads(request.body)
+    s = Student.objects.get(uuid=pk)
+    text = data.get('text')
+
+    s.add_note(Note.make(text, author=request.user, datetime=timezone.now()))
     s.save()
 
     return JsonResponse({'success': None})

@@ -1,3 +1,8 @@
+function notify(toast) {
+    document.getElementById('toastRack').appendChild(toast);
+    bootstrap.Toast.getOrCreateInstance(toast).show();
+}
+
 const toast = type => {
     let t = document.createElement('div'),
         tinner = document.createElement('div'),
@@ -32,15 +37,12 @@ const toast = type => {
     }
 }
 
-function notify(toast) {
-    document.getElementById('toastRack').appendChild(toast);
-    bootstrap.Toast.getOrCreateInstance(toast).show();
-}
+const dataFromForm = form => new URLSearchParams(new FormData(form)).toString();
 
-const postForm = form => url => fetch(url, {
+const post = (headers, data) => url => fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams(new FormData(form)).toString(),
+    headers: headers,
+    body: data,
 }).then(function (r) {
     return r.json().then(function (d) {
         if (d.hasOwnProperty('error')) {
@@ -49,6 +51,10 @@ const postForm = form => url => fetch(url, {
         return d;
     })
 });
+
+const postForm = form => post({ 'Content-Type': 'application/x-www-form-urlencoded' }, dataFromForm(form));
+const postJson = (csrfToken, data) => post({ 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' }, JSON.stringify(data))
+const postNone = csrfToken => postJson(csrfToken, null);
 
 const error = toast('error');
 const handleError = text => notify(error(text));

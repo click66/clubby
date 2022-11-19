@@ -1,5 +1,10 @@
 {% extends "_base.html" %}
 
+{% block assets %}
+{% load static %}
+<script type="text/javascript" src="{% static 'member.js' %}" defer></script>
+{% endblock %}
+
 {% block content %}
 
 <div class="p-3 containerInner">
@@ -50,15 +55,36 @@
                 </div>
 
             </div>
-            <div class="col-lg-3 col-sm-12">
+            <div class="col-lg-3 col-sm-12 mb-3">
+                <div class="row">
+                    <div class="col-lg-12 col-md-6 col-sm-12">
                 <h2>Signed Up For</h2>
                 <ul>
                     <li><a href="/attendance">Standard Jiu Jitsu (Mon/Thur)</a></li>
                 </ul>
+                    </div>
+                    <div class="col-lg-12 col-md-6 col-sm-12">
+                <h2>Notes</h2>
+                {% if not student.has_notes %}
+                <div class="text-center">No notes</div>
+                {% endif %}
+                <ul class="comments">
+                    {% for note in notes %}
+                    <li class="mb-3 p-2">
+                        <span class="commentAuthor">{{ note.author_name }} ({{ note.time|date:'M. d, Y' }}):</span>
+                        <span class="commentText">{{ note.text }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <div>
+                    <button type="button" class="btn btn-primary" id="btnAddNote">Add Note</button>
+                </div>
+                    </div>
+                </div>
             </div>
 
-            <h2>Licence</h2>
-            <div class="p-3">
+            <div class="col-12">
+                <h2>Licence</h2>
                 {% if student.has_licence and not student.is_licence_expired %}
                 <div class="alert alert-success" role="alert">
                     <p>Student is fully licenced.</p>
@@ -94,8 +120,11 @@
 <div class="modal fade" id="mdlUpdateLicence">
     <div class="modal-dialog modal-dialog-centered modal-sm text-dark">
         <div class="modal-content">
-            <div class="modal-body">
-                <form id="frmLicence" data-uuid="{{ student.uuid }}">
+            <form id="frmLicence" data-uuid="{{ student.uuid }}">
+                <div class="modal-header">
+                    <h2>Update Licence</h2>
+                </div>
+                <div class="modal-body">
                     {% csrf_token %}
                     <div class="mb-3 row">
                         <label class="col-sm-4 col-form-label">Licence Number</label>
@@ -111,55 +140,31 @@
                                    value="{{ prospective_licence_expiry }}">
                         </div>
                     </div>
-                    <button class="btn btn-primary" id="btnLicenceStudent">Save Licence</button>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" id="btnLicenceStudent">Save Licence</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<script type="text/javascript" language="javascript">
-const btnLicenceStudent = document.getElementById('btnLicenceStudent'),
-      btnDeleteMember = document.getElementById('btnDelete'),
-      btnUpdateLicence = document.querySelector('.btnUpdateLicence'),
-      mdlUpdateLicence = new bootstrap.Modal(document.getElementById('mdlUpdateLicence'));
-
-if (btnUpdateLicence) {
-    btnUpdateLicence.addEventListener('click', function () {
-        mdlUpdateLicence.show();
-    });
-}
-
-if (btnLicenceStudent) {
-    frmLicence.addEventListener('submit', function (e) {
-        $.post('/api/members/' + this.dataset.uuid + '/licences/add', $('#frmLicence').serialize())
-            .done(function(d) {
-                if (d.hasOwnProperty('error')) {
-                    alert(d.error);
-                } else {
-                    location.reload();
-               }
-            });
-        e.preventDefault();
-    });
-}
-
-if (btnDeleteMember) {
-    btnDeleteMember.addEventListener('click', function () {
-        if (confirm("Are you sure? This will delete this member's record and all associated attendance records.")) {
-            $.post('/api/members/delete/' + this.dataset.uuid, {
-                'csrfmiddlewaretoken': this.dataset.csrfToken,
-            })
-                .done(function (d) {
-                    if (d.hasOwnProperty('error')) {
-                        alert(d.error);
-                    } else {
-                        location.href = '/members';
-                    }
-               });
-        }
-    });
-}
-</script>
+<div class="modal fade" id="mdlNote">
+    <div class="modal-dialog modal-dialog-centered modal-sm text-dark">
+        <div class="modal-content">
+            <form id="frmNote" data-uuid="{{ student.uuid }}" data-csrf-token="{{ csrf_token }}">
+                <div class="modal-header">
+                    <h2>Add Note</h2>
+                </div>
+                <div class="modal-body">
+                    <textarea rows="5" class="form-control" name="text"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" id="btnSaveNote">Save Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

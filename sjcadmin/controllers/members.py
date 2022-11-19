@@ -19,5 +19,6 @@ def member(request, pk):
 
     return render(request, 'member.html', {
         'student': s,
+        'notes': s.get_last_notes(5),
         'prospective_licence_expiry': today.replace(year=today.year + 1).strftime('%Y-%m-%d'),
     })

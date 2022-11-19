@@ -92,42 +92,62 @@ nav ol.breadcrumb a {
     font-size: 0.9em;
 }
 
-.tblStudents th, td {
+#tblStudents th, td {
     border-left-width: 1px;
     font-size: 0.85em;
 }
 
-.tblStudents .studentMembership {
+#tblStudents .studentMembership {
     border-right-width: 2px;
 }
 
-.tblStudents .studentName, .tblStudents .studentMembership {
+#tblStudents .studentName, #tblStudents .studentMembership {
     border-left-width: 0;
 }
 
-.tblStudents td.studentName, .tblStudents td.studentMembership {
+#tblStudents td.studentName, #tblStudents td.studentMembership {
     white-space: nowrap;
     cursor: pointer;
 }
 
-.tblStudents > tbody > tr:hover > td.studentName,
-.tblStudents > tbody > tr:hover > td.studentMembership,
-.tblStudents > tbody > tr:hover > td:hover {
+#tblStudents tbody > tr:hover > td.studentName,
+#tblStudents tbody > tr:hover > td.studentMembership,
+#tblStudents tbody > tr:hover > td:hover {
     cursor:pointer;
     background-color: #ddd;
 }
 
-.tblStudents .classHeader {
+#tblStudents .classHeader {
     white-space: nowrap;
 }
 
-.tblStudents ul.details {
+#tblStudents ul.details {
     list-style-type: none;
     margin: 0;
 }
 
-.tblStudents ul.details label {
+#tblStudents ul.details label {
     margin-right: 10px;
+}
+
+ul.comments {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul.comments li span {
+    display: block;
+}
+
+.commentAuthor {
+    font-style: italic;
+    font-weight: bold;
+    font-size: 0.8em;
+}
+
+.commentText {
+    font-size: 0.9em;
 }
 
 .copyHome {

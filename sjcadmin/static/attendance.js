@@ -92,13 +92,32 @@ const details = row => {
     return list;
 }
 
-const table = $('.tblStudents').DataTable({
+const table = $('#tblStudents .table').DataTable({
     ajax: {
         url: "/api/members",
         dataSrc: "",
     },
     columns: [
-        {"data":"name", "className": "studentName"},
+        {"data":"name", "className": "studentName", "render": function (d, m, r) {
+            let c  = document.createElement('span'),
+                sn = document.createElement('span'),
+                ac = document.createElement('a'),
+                ic = document.createElement('i');
+
+            c.classList.add('d-flex', 'justify-content-between');
+            sn.appendChild(document.createTextNode(d));
+            c.appendChild(sn);
+
+            if (r.has_notes) {
+                ic.classList.add('bi', 'bi-chat-left-text');
+                ac.classList.add('ps-2');
+                ac.setAttribute('href', '/members/' + r.uuid);
+                ac.appendChild(ic);
+                c.appendChild(ac);
+            }
+
+            return c.outerHTML;
+        }},
         {"data":"membership", "render": membershipBadge, "className": "studentMembership"},
     ].concat(dataClasses.map(function (c) {
         return {
@@ -119,16 +138,24 @@ const table = $('.tblStudents').DataTable({
 table.table().container().querySelector('.dataTables_filter')
     .prepend(document.querySelector('#tblStudents_buttons'));
 
-$('.tblStudents').on('click', 'td.studentName,td.studentMembership', function (e) {
-    let row  = table.row(this),
-        data = row.data();
 
-    if (row.child.isShown()) {
-        row.child.hide();
-        return;
+table.table().container().addEventListener('click', function (e) {
+    if (e.target && e.target.matches('.studentName, .studentName *, .studentMembership, .studentMembership *')) {
+        if (e.target.matches('a, a *')) {
+            e.stopPropagation();
+            return;
+        }
+
+        let row  = table.row(e.target.closest('td')),
+            data = row.data();
+
+        if (row.child.isShown()) {
+            row.child.hide();
+            return;
+        }
+
+        row.child(details(data)).show();
     }
-
-    row.child(details(data)).show();
 });
 
 const mdlAttendanceInner = document.getElementById('mdlAttendance'),
@@ -136,18 +163,21 @@ const mdlAttendanceInner = document.getElementById('mdlAttendance'),
       frmAttendance = document.getElementById('frmAttendance'),
       btnMdlAttendanceCancel = document.getElementById('mdlAttendance_cancel');
 
-$('.tblStudents').on('click', 'td.session', function (e) {
-    let cell = table.cell(this).node(),
-        row = table.row(this).data(),
-        date = cell.getAttribute('data-sessdate');
+table.table().container().addEventListener('click', function (e) {
+    if (e.target.matches('td.session, td.session *')) {
+        let td = e.target.closest('td'),
+            cell = table.cell(td).node(),
+            row = table.row(td).data(),
+            date = cell.getAttribute('data-sessdate');
 
-    mdlAttendanceInner.querySelector('#mdlAttendance_sessionDate').value = date;
-    mdlAttendanceInner.querySelector('#mdlAttendance_studentUuid').value = row.uuid;
-    mdlAttendanceInner.querySelector('#mdlAttendance_studentName').value = row.name;
-    mdlAttendanceInner.querySelector('#mdlAttendance_paid').checked = row.paid.includes(date);
-    mdlAttendanceInner.querySelector('#mdlAttendance_complementary').checked = row.complementary.includes(date);
+        mdlAttendanceInner.querySelector('#mdlAttendance_sessionDate').value = date;
+        mdlAttendanceInner.querySelector('#mdlAttendance_studentUuid').value = row.uuid;
+        mdlAttendanceInner.querySelector('#mdlAttendance_studentName').value = row.name;
+        mdlAttendanceInner.querySelector('#mdlAttendance_paid').checked = row.paid.includes(date);
+        mdlAttendanceInner.querySelector('#mdlAttendance_complementary').checked = row.complementary.includes(date);
 
-    mdlAttendance.show();
+        mdlAttendance.show();
+    }
 });
 
 btnMdlAttendanceCancel.addEventListener('click', function () {

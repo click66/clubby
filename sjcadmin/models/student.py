@@ -44,6 +44,10 @@ class Note(models.Model):
     def time(self):
         return self._datetime
 
+    @property
+    def student_name(self):
+        return self._student.name
+
 
 class Student(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -59,19 +63,21 @@ class Student(models.Model):
 
     join_date = models.DateField(null=False, default=timezone.now)
 
-    sessions_attended = 0
     _notes = []
     _new_notes = []
 
     @classmethod
     def from_db(cls, db, field_names, values):
         r = super().from_db(db, field_names, values)
-        r._notes = r.note_set.all()
+        r._notes = list(r.note_set.all())
+        r._new_notes = []
         # Eager read Attendance object into Student object
         r.sessions_attended = r.attendance_set.count()
         return r
 
     def save(self, *args, **kwargs):
+        for note in self._new_notes:
+            note.save()
         self.note_set.add(*self._new_notes)
 
         if self.has_licence():
@@ -150,5 +156,12 @@ class Student(models.Model):
         note._student = self
         self._new_notes.insert(0, note)
 
-    def get_notes(self):
-        return sorted(self._new_notes + self._notes, key=lambda x: x.time, reverse=True)
+    def get_last_notes(self, n):
+        return sorted(self._new_notes + self._notes, key=lambda x: x.time, reverse=True)[0:n]
+
+    def has_more_than_n_notes(self, n):
+        return (len(self._notes) + len(self._new_notes)) > n
+
+    @property
+    def has_notes(self):
+        return self.has_more_than_n_notes(0)

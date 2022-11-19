@@ -74,7 +74,7 @@ def test_add_note():
                                author=user,
                                datetime=now))
 
-    notes = student.get_notes()
+    notes = student.get_last_notes(3)
     assert notes[0].text == "I''m back from the future"
     assert notes[0].author_name == 'joe.b'
     assert notes[0].time == now
@@ -92,7 +92,40 @@ def test_recall_latest_note():
         Note.make('Old note', author=user, datetime=datetime.datetime(2015, 1, 1)),
     ]
 
-    got_notes = student.get_notes()
+    got_notes = student.get_last_notes(3)
     assert got_notes[0].text == 'Latest note'
     assert got_notes[1].text == 'Mid note'
     assert got_notes[2].text == 'Old note'
+
+
+def test_notes_multiple_students():
+    user = User()
+    user.username = 'joe.c'
+
+    john = Student.make(name='John Doe')
+    joe = Student.make(name='Joe Bloggs')
+    john.add_note(Note.make('Foobar', author=user, datetime=datetime.datetime(2019, 1, 1)))
+
+    assert john.has_notes is True
+    assert joe.has_notes is False
+
+
+def test_get_last_5_notes():
+    user = User()
+    user.username = 'joe.d'
+
+    s = Student.make(name='John Doe')
+    s.add_note(Note.make('Mid note', author=user, datetime=datetime.datetime(2019, 1, 1)))
+    s.add_note(Note.make('Latest note', author=user, datetime=datetime.datetime(2022, 1, 1)))
+    s.add_note(Note.make('Latest note', author=user, datetime=datetime.datetime(2022, 2, 1)))
+    s.add_note(Note.make('Latest note', author=user, datetime=datetime.datetime(2022, 3, 1)))
+    s.add_note(Note.make('Old note', author=user, datetime=datetime.datetime(2015, 1, 1)))
+    s.add_note(Note.make('Old note', author=user, datetime=datetime.datetime(2015, 2, 1)))
+    s.add_note(Note.make('Old note', author=user, datetime=datetime.datetime(2015, 3, 1)))
+
+    notes = s.get_last_notes(5)
+
+    assert s.has_more_than_n_notes(5) is True
+    assert s.has_more_than_n_notes(10) is False
+
+    assert len(notes) == 5
