@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta
 from ..errors import DomainError
 from ..models.attendance import Attendance
 from ..models.session import Session
-from ..models.student import Licence, Note, Student
+from ..models.student import Licence, Note, Student, Payment
 
 
 def user_passes_test(test_func):
@@ -154,9 +154,10 @@ def post_log_attendance(request):
         case 'complementary':
             a.mark_as_complementary()
         case 'paid':
-            a.mark_as_paid()
+            s.take_payment(Payment.make(datetime=timezone.now()))
+            a.pay()
         case 'advance':
-            a.prepaid()
+            a.pay()
 
     a.save()
     s.save()

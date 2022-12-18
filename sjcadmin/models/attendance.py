@@ -35,10 +35,6 @@ class Attendance(models.Model):
         student.sessions_attended -= existing.count()
         existing.delete()
 
-    def mark_as_paid(self):
-        self.paid = True
-        self.complementary = False
-
     @property
     def has_paid(self):
         return self.paid
@@ -47,15 +43,15 @@ class Attendance(models.Model):
     def session_date(self):
         return self.date
 
+    @property
+    def is_complementary(self):
+        return self.complementary
+    
     def mark_as_complementary(self):
         self.complementary = True
         self.paid = False
 
-    @property
-    def is_complementary(self):
-        return self.complementary
-
-    def prepaid(self):
+    def pay(self):
         prepayment = self.student.has_prepaid()
         if not prepayment:  # Student has not prepaid
             raise NoPaymentFound('Usable payment was not found for pre-paid session')

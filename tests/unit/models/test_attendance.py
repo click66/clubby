@@ -41,16 +41,6 @@ def test_unlicenced_student_cannot_be_registered_with_no_remaining_trial_session
         Attendance.register_student(student=student, date=datetime.datetime.today().date())
 
 
-def test_unpaid_and_paid():
-    student = Student.make(name='John Smith')
-
-    attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 1, 1))
-    assert attendance.has_paid is False
-
-    attendance.mark_as_paid()
-    assert attendance.has_paid is True
-
-
 def test_complementary():
     student = Student.make(name='John smith')
 
@@ -61,23 +51,6 @@ def test_complementary():
     assert attendance.is_complementary is True
 
 
-def test_cannot_be_paid_and_complementary():
-    student = Student.make(name='John Smith')
-
-    attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 1, 1))
-    assert attendance.complementary is False
-    assert attendance.has_paid is False
-
-    attendance.mark_as_complementary()
-    attendance.mark_as_paid()
-    assert attendance.complementary is False
-    assert attendance.has_paid is True
-
-    attendance.mark_as_complementary()
-    assert attendance.complementary is True
-    assert attendance.has_paid is False
-
-
 def test_attendance_prepaid():
     student = Student.make(name='John Smith')
     student.take_payment(Payment.make(datetime=datetime.datetime(2019, 1, 1)))
@@ -86,7 +59,7 @@ def test_attendance_prepaid():
     assert attendance.complementary is False
     assert attendance.has_paid is False
 
-    attendance.prepaid()
+    attendance.pay()
     assert attendance.has_paid is True
     assert attendance.complementary is False
 
@@ -96,7 +69,7 @@ def test_attempt_prepaid_without_payment():
     attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 1, 1))
 
     with pytest.raises(NoPaymentFound):
-        attendance.prepaid()
+        attendance.pay()
 
 
 def test_take_payment_use_it_and_attempt_prepaid():
@@ -104,11 +77,28 @@ def test_take_payment_use_it_and_attempt_prepaid():
     attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 1, 1))
 
     student.take_payment(Payment.make(datetime=datetime.datetime(2019, 1, 1)))
-    attendance.prepaid()
+    attendance.pay()
     assert attendance.has_paid is True
     assert attendance.complementary is False
 
     second_attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 2, 2))
 
     with pytest.raises(NoPaymentFound):
-        second_attendance.prepaid()
+        second_attendance.pay()
+
+def test_cannot_be_paid_and_complementary():
+    student = Student.make(name='John Smith')
+
+    attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 1, 1))
+    assert attendance.complementary is False
+    assert attendance.has_paid is False
+
+    attendance.mark_as_complementary()
+    student.take_payment(Payment.make(datetime=datetime.datetime(2019, 1, 1)))
+    attendance.pay()
+    assert attendance.complementary is False
+    assert attendance.has_paid is True
+
+    attendance.mark_as_complementary()
+    assert attendance.complementary is True
+    assert attendance.has_paid is False
