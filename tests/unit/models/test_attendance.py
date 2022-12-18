@@ -1,7 +1,8 @@
 import datetime
 import pytest
 
-from sjcadmin.models.student import Student, Profile, Licence
+from sjcadmin.errors import *
+from sjcadmin.models.student import Student, Profile, Licence, Payment
 from sjcadmin.models.attendance import Attendance
 
 
@@ -75,3 +76,39 @@ def test_cannot_be_paid_and_complementary():
     attendance.mark_as_complementary()
     assert attendance.complementary is True
     assert attendance.has_paid is False
+
+
+def test_attendance_prepaid():
+    student = Student.make(name='John Smith')
+    student.take_payment(Payment.make(datetime=datetime.datetime(2019, 1, 1)))
+
+    attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 1, 1))
+    assert attendance.complementary is False
+    assert attendance.has_paid is False
+
+    attendance.prepaid()
+    assert attendance.has_paid is True
+    assert attendance.complementary is False
+
+
+def test_attempt_prepaid_without_payment():
+    student = Student.make(name='John Smith')
+    attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 1, 1))
+
+    with pytest.raises(NoPaymentFound):
+        attendance.prepaid()
+
+
+def test_take_payment_use_it_and_attempt_prepaid():
+    student = Student.make(name='John Smith')
+    attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 1, 1))
+
+    student.take_payment(Payment.make(datetime=datetime.datetime(2019, 1, 1)))
+    attendance.prepaid()
+    assert attendance.has_paid is True
+    assert attendance.complementary is False
+
+    second_attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 2, 2))
+
+    with pytest.raises(NoPaymentFound):
+        second_attendance.prepaid()

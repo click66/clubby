@@ -151,12 +151,15 @@ def post_log_attendance(request):
     a = Attendance.register_student(s, date=sess_date, existing_registration=existing_registration)
 
     match payment:
-        case 'paid':
-            a.mark_as_paid()
         case 'complementary':
             a.mark_as_complementary()
+        case 'paid':
+            a.mark_as_paid()
+        case 'advance':
+            a.prepaid()
 
     a.save()
+    s.save()
     return JsonResponse({'success': None})
 
 

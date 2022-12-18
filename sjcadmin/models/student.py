@@ -49,6 +49,24 @@ class Note(models.Model):
         return self._student.name
 
 
+class Payment(models.Model):
+    _student = models.ForeignKey('Student', null=True, on_delete=models.SET_NULL, db_column='student_uuid')
+    _datetime = models.DateTimeField(null=False, db_column='datetime')
+    _used = models.BooleanField(default=False)
+
+    @classmethod
+    def make(cls, datetime: datetime):
+        payment = cls(_datetime=datetime)
+        return payment
+
+    def mark_used(self):
+        self._used = True
+
+    @property
+    def used(self):
+        return self._used
+
+
 class Student(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
@@ -66,11 +84,16 @@ class Student(models.Model):
     _notes = []
     _new_notes = []
 
+    _unused_payments = []
+    _new_payments = []
+
     @classmethod
     def from_db(cls, db, field_names, values):
         r = super().from_db(db, field_names, values)
         r._notes = list(r.note_set.all())
         r._new_notes = []
+        r._unused_payments = list(r.payment_set.filter(_used=False).order_by('-_datetime'))
+        r._new_payments = []
         # Eager read Attendance object into Student object
         r.sessions_attended = r.attendance_set.count()
         return r
@@ -79,6 +102,12 @@ class Student(models.Model):
         for note in self._new_notes:
             note.save()
         self.note_set.add(*self._new_notes)
+
+        for payment in self._new_payments:
+            payment.save()
+        self.payment_set.add(*self._new_payments)
+        for payment in self._unused_payments:
+            payment.save()
 
         if self.has_licence():
             self.licence.save()
@@ -165,3 +194,11 @@ class Student(models.Model):
     @property
     def has_notes(self):
         return self.has_more_than_n_notes(0)
+
+    def has_prepaid(self):
+        prepayments = self._unused_payments + list(filter(lambda p: not p.used, self._new_payments))
+        return prepayments[0] if prepayments else None
+
+    def take_payment(self, payment: Payment):
+        payment._student = self
+        self._new_payments.insert(0, payment)

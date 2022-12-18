@@ -86,16 +86,20 @@
                             <input type="text" name="sess_date" readonly class="form-control-plaintext" id="mdlAttendance_sessionDate">
                         </div>
                     </div>
-                    <div class="mb-3 text-center">
-                        <div class="form-check form-check-inline">
+                    <div class="mb-3">
+                        <div class="form-check">
                             <input class="form-check-input" type="radio" name="payment" id="mdlAttendance_attending" value="attending">
                             <label class="form-check-label" for="mdlAttendance_attending">Not Paid</label>
                         </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="payment" id="mdlAttendance_paid" value="paid">
-                            <label class="form-check-label" for="mdlAttendance_paid">Paid</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment" id="mdlAttendance_advance" value="advance">
+                            <label class="form-check-label" for="mdlAttendance_advance">Paid in Advance</label>
                         </div>
-                        <div class="form-check form-check-inline">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment" id="mdlAttendance_paid" value="paid">
+                            <label class="form-check-label" for="mdlAttendance_paid">Paying Now</label>
+                        </div>
+                        <div class="form-check">
                             <input class="form-check-input" type="radio" name="payment" id="mdlAttendance_complementary" value="complementary">
                             <label class="form-check-label" for="mdlAttendance_complementary">Complementary</label>
                         </div>

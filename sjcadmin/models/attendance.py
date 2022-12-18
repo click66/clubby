@@ -54,3 +54,12 @@ class Attendance(models.Model):
     @property
     def is_complementary(self):
         return self.complementary
+
+    def prepaid(self):
+        prepayment = self.student.has_prepaid()
+        if not prepayment:  # Student has not prepaid
+            raise NoPaymentFound('Usable payment was not found for pre-paid session')
+        
+        self.complementary = False
+        self.paid = True
+        prepayment.mark_used()

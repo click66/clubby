@@ -12,3 +12,7 @@ class ExpiredStudentLicenceError(DomainError):
 
 class NoRemainingTrialSessionsError(DomainError):
     pass
+
+
+class NoPaymentFound(DomainError):
+    pass
