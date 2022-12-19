@@ -214,3 +214,27 @@ ul#portalLinks li a:hover {
     background-color: #ddd;
     color: #212529;
 }
+
+.nav.nav-tabs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+}
+ 
+.nav-link {
+    color: #bbb;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+    border-color: transparent;
+    border-bottom-width: 3px;
+    border-bottom-color: #aaa;
+    background-color: transparent!important;
+}
+
+.nav-tabs .nav-link:hover {
+    border-left-color: transparent;
+    border-right-color: transparent;
+    color: #495057;
+}

@@ -136,6 +136,20 @@ def post_add_member_note(request, pk):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
+def post_add_member_payment(request, pk):
+    s = Student.objects.get(uuid=pk)
+    # data = json.loads(request.body)
+    # product_id = data.get('product')
+
+    s.take_payment(Payment.make(datetime=timezone.now()))
+    s.save()
+
+    return JsonResponse({'success': None})
+
+
+@login_required_401
+@require_http_methods(['POST'])
+@handle_error
 def post_log_attendance(request):
     student_uuid = request.POST.get('student_uuid')
     sess_date = date.fromisoformat(request.POST.get('sess_date'))

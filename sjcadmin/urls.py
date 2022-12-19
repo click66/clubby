@@ -37,6 +37,7 @@ urlpatterns = [
     path('api/members/<uuid:pk>/licences', api.get_member_licences),
     path('api/members/<uuid:pk>/licences/add', api.post_add_member_licence),
     path('api/members/<uuid:pk>/notes/add', api.post_add_member_note),
+    path('api/members/<uuid:pk>/payments/add', api.post_add_member_payment),
     path('api/attendance/log', api.post_log_attendance),
     path('api/attendance/clear', api.post_clear_attendance),
 ]

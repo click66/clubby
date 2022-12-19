@@ -4,7 +4,10 @@ const btnDeleteMember = document.getElementById('btnDelete'),
       frmLicence = document.getElementById('frmLicence'),
       btnAddNote = document.getElementById('btnAddNote'),
       mdlNote = new bootstrap.Modal(document.getElementById('mdlNote')),
-      frmNote = document.getElementById('frmNote');
+      frmNote = document.getElementById('frmNote'),
+      btnAddPayment = document.getElementById('btnAddPayment'),
+      mdlPayment = new bootstrap.Modal(document.getElementById('mdlPayment')),
+      frmPayment = document.getElementById('frmPayment');
 
 btnUpdateLicence.addEventListener('click', function () {
     mdlUpdateLicence.show();
@@ -36,4 +39,31 @@ frmNote.addEventListener('submit', function (e) {
     })('/api/members/' + this.dataset.uuid + '/notes/add').then(function (r) {
         location.reload();
     }).catch(handleError);
+});
+
+btnAddPayment.addEventListener('click', function () {
+    mdlPayment.show();
+});
+
+frmPayment.addEventListener('submit', function (e) {
+    e.preventDefault();
+    postJson(this.dataset.csrfToken, {
+        'product': new FormData(this).get('product'),
+    })('/api/members/' + this.dataset.uuid + '/payments/add').then(function (r) {
+        location.reload();
+    }).catch(handleError);
+});
+
+[...document.querySelectorAll('#tabsMember button')].forEach(function (te) {
+    let tab = bootstrap.Tab.getOrCreateInstance(te),
+        url = new URL(window.location);
+
+    if ('#' + tab._element.dataset.tabkey == url.hash) {
+        tab.show();
+    }
+
+    tab._element.addEventListener('shown.bs.tab', function (e) {
+        url.hash = e.target.dataset.tabkey;
+        history.pushState({}, document.title, url);
+    })
 });

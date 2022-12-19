@@ -66,6 +66,10 @@ class Payment(models.Model):
     def used(self):
         return self._used
 
+    @property
+    def time(self):
+        return self._datetime
+
 
 class Student(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -195,8 +199,11 @@ class Student(models.Model):
     def has_notes(self):
         return self.has_more_than_n_notes(0)
 
+    def get_unused_payments(self):
+        return self._unused_payments + list(filter(lambda p: not p.used, self._new_payments))
+
     def has_prepaid(self):
-        prepayments = self._unused_payments + list(filter(lambda p: not p.used, self._new_payments))
+        prepayments = self.get_unused_payments()
         return prepayments[0] if prepayments else None
 
     def take_payment(self, payment: Payment):
