@@ -170,10 +170,12 @@ table.table().container().addEventListener('click', function (e) {
             row = table.row(td).data(),
             date = cell.getAttribute('data-sessdate');
 
+        paid = row.paid.includes(date)
         mdlAttendanceInner.querySelector('#mdlAttendance_sessionDate').value = date;
         mdlAttendanceInner.querySelector('#mdlAttendance_studentUuid').value = row.uuid;
         mdlAttendanceInner.querySelector('#mdlAttendance_studentName').value = row.name;
-        mdlAttendanceInner.querySelector('#mdlAttendance_paid').checked = row.paid.includes(date);
+        mdlAttendanceInner.querySelectorAll('input[type=radio]').forEach(e => e.disabled = paid)
+        mdlAttendanceInner.querySelector('#mdlAttendance_paid').checked = paid;
         mdlAttendanceInner.querySelector('#mdlAttendance_complementary').checked = row.complementary.includes(date);
 
         mdlAttendance.show();

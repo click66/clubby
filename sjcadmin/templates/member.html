@@ -17,99 +17,144 @@
         </ol>
     </nav>
 
-    <h1>{{ student.name }}</h1>
+    <div class="mb-3 row">
+        <div>
+            <h1 class="d-inline-block pe-2">{{ student.name }}</h1>
+
+            {% if student.has_licence and not student.is_licence_expired%}
+            <span class="badge bg-success align-middle">Licenced</span>
+            {% elif not student.has_licence and student.remaining_trial_sessions > 0 %}
+            <span class="badge bg-warning align-middle">Trial</span>
+            {% else %}
+            <span class="badge bg-danger align-middle">Expired</span>
+            {% endif %}
+        </div>
+        <p class="mb-0">Member since: {{ student.join_date }}</p>
+    </div>
 
     <div class="rounded-3 bg-light p-3 text-dark" id="copy">
-        <div class="row">
-            <div class="col-lg-9 col-sm-12">
-
-                <div class="mb-3 row">
-                    <label class="col-sm-2 col-form-label">Member Since</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" value="{{ student.join_date }}">
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label class="col-sm-2 col-form-label">Date of Birth</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" value="{{ student.dob }}">
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label class="col-sm-2 col-form-label">Phone Number</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" value="{{ student.phone }}">
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label class="col-sm-2 col-form-label">Email address</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" value="{{ student.email }}">
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label class="col-sm-2 col-form-label">Address</label>
-                    <div class="col-sm-10">
-                        <textarea rows="6" style="width:100%" readonly>{{ student.address }}</textarea>
-                    </div>
-                </div>
-
-            </div>
-            <div class="col-lg-3 col-sm-12 mb-3">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tabProfile" data-bs-toggle="tab" data-bs-target="#tabCopyProfile"
+                    type="button" role="tab" aria-controls="tabCopyProfile" aria-selected="false">Profile</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tabLicence" data-bs-toggle="tab" data-bs-target="#tabCopyLicence"
+                    type="button" role="tab" aria-controls="tabCopyLicence" aria-selected="false">Licence</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tabNotes" data-bs-toggle="tab" data-bs-target="#tabCopyNotes" type="button"
+                    role="tab" aria-controls="tabCopyNotes" aria-selected="false">Notes</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tabPayments" data-bs-toggle="tab" data-bs-target="#tabCopyPayments"
+                    type="button" role="tab" aria-controls="tabCopyPayments" aria-selected="false">Payments</button>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active p-3" id="tabCopyProfile" role="tabpanel" aria-labelledby="tabProfile">
                 <div class="row">
-                    <div class="col-lg-12 col-md-6 col-sm-12">
-                <h2>Signed Up For</h2>
-                <ul>
-                    <li><a href="/attendance">Standard Jiu Jitsu (Mon/Thur)</a></li>
-                </ul>
+                    <div class="col-lg-9 col-sm-12">
+                        <div class="mb-3 row">
+                            <label class="col-sm-2 col-form-label">Date of Birth</label>
+                            <div class="col-sm-10">
+                                <input type="text" readonly class="form-control-plaintext" value="{{ student.dob }}">
+                            </div>
+                        </div>
+                        <div class="mb-3 row">
+                            <label class="col-sm-2 col-form-label">Phone Number</label>
+                            <div class="col-sm-10">
+                                <input type="text" readonly class="form-control-plaintext" value="{{ student.phone }}">
+                            </div>
+                        </div>
+                        <div class="mb-3 row">
+                            <label class="col-sm-2 col-form-label">Email address</label>
+                            <div class="col-sm-10">
+                                <input type="text" readonly class="form-control-plaintext" value="{{ student.email }}">
+                            </div>
+                        </div>
+                        <div class="mb-3 row">
+                            <label class="col-sm-2 col-form-label">Address</label>
+                            <div class="col-sm-10">
+                                <textarea rows="6" style="width:100%" readonly>{{ student.address }}</textarea>
+                            </div>
+                        </div>
+
                     </div>
-                    <div class="col-lg-12 col-md-6 col-sm-12">
-                <h2>Notes</h2>
-                {% if not student.has_notes %}
-                <div class="text-center">No notes</div>
-                {% endif %}
-                <ul class="comments">
-                    {% for note in notes %}
-                    <li class="mb-3 p-2">
-                        <span class="commentAuthor">{{ note.author_name }} ({{ note.time|date:'M. d, Y' }}):</span>
-                        <span class="commentText">{{ note.text }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-                <div>
-                    <button type="button" class="btn btn-primary" id="btnAddNote">Add Note</button>
+                    <div class="col-lg-3 col-sm-12 mb-3">
+                        <h2>Signed Up For</h2>
+                        <ul>
+                            <li><a href="/attendance">Standard Jiu Jitsu (Mon/Thur)</a></li>
+                        </ul>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-6 col-sm-12">
+                            </div>
+                            <div class="col-lg-12 col-md-6 col-sm-12">
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
+            </div>
+
+            <div class="tab-pane fade p-3" id="tabCopyLicence" role="tabpanel" aria-labelledby="tabLicence">
+                <div class="col-12">
+                    {% if student.has_licence and not student.is_licence_expired %}
+                    <div class="alert alert-success" role="alert">
+                        <p>Student is fully licenced.</p>
+                        <ul class="mb-0">
+                            <li>Licence number: {{ student.licence_no }}</li>
+                            <li>Expires on: {{ student.licence_expiry_date }}</li>
+                        </ul>
+                        <div class="pt-2"><button class="btnUpdateLicence btn btn-primary" type="button">Update
+                                Licence</button></div>
+                    </div>
+                    {% elif student.is_licence_expired %}
+                    <div class="alert alert-danger" role="alert">
+                        Student licence expired on {{ student.licence_expiry_date }}.
+                        <div class="pt-2"><button class="btnUpdateLicence btn btn-primary" type="button">Renew
+                                Licence</button></div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning" role="alert">
+                        Student is not licenced.
+                        <div class="pt-2"><button class="btnUpdateLicence btn btn-primary" type="button">Create
+                                Licence</button></div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-pane fade p-3" id="tabCopyNotes" role="tabpanel" aria-labelledby="tabNotes">
+                <div class="row">
+                    <div class="col-12">
+                        {% if not student.has_notes %}
+                        <div class="text-center">No notes</div>
+                        {% endif %}
+                        <ul class="comments">
+                            {% for note in notes %}
+                            <li class="mb-3 p-2">
+                                <span class="commentAuthor">{{ note.author_name }} ({{ note.time|date:'M. d, Y'}}):</span>
+                                <span class="commentText">{{ note.text }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        <div>
+                            <button type="button" class="btn btn-primary" id="btnAddNote">Add Note</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-12">
-                <h2>Licence</h2>
-                {% if student.has_licence and not student.is_licence_expired %}
-                <div class="alert alert-success" role="alert">
-                    <p>Student is fully licenced.</p>
-                    <ul class="mb-0">
-                        <li>Licence number: {{ student.licence_no }}</li>
-                        <li>Expires on: {{ student.licence_expiry_date }}</li>
-                    </ul>
-                    <div class="pt-2"><button class="btnUpdateLicence btn btn-primary" type="button">Update Licence</button></div>
-                </div>
-                {% elif student.is_licence_expired %}
-                <div class="alert alert-danger" role="alert">
-                    Student licence expired on {{ student.licence_expiry_date }}.
-                    <div class="pt-2"><button class="btnUpdateLicence btn btn-primary" type="button">Renew Licence</button></div>
-                </div>
-                {% else %}
-                <div class="alert alert-warning" role="alert">
-                    Student is not licenced.
-                    <div class="pt-2"><button class="btnUpdateLicence btn btn-primary" type="button">Create Licence</button></div>
-                </div>
-                {% endif %}
+            <div class="tab-pane fade p-3" id="tabCopyPayments" role="tabpanel" aria-labelledby="tabPayments">
+
             </div>
         </div>
+
         <div class="row">
             <div class="col-12 text-end">
-                <button type="button" class="btn btn-danger" id="btnDelete" data-uuid="{{ student.uuid }}" data-csrf-token="{{ csrf_token }}">Delete Member</button>
+                <button type="button" class="btn btn-danger" id="btnDelete" data-uuid="{{ student.uuid }}"
+                    data-csrf-token="{{ csrf_token }}">Delete Member</button>
             </div>
         </div>
     </div>
@@ -130,14 +175,14 @@
                         <label class="col-sm-4 col-form-label">Licence Number</label>
                         <div class="col-sm-8">
                             <input class="form-control" type="text" name="number" placeholder="Number" required
-                            value="{{ student.licence_no|default_if_none:'' }}">
+                                value="{{ student.licence_no|default_if_none:'' }}">
                         </div>
                     </div>
                     <div class="mb-3 row">
                         <label class="col-sm-4 col-form-label">Expiry Date</label>
                         <div class="col-sm-8">
                             <input class="form-control" type="date" name="expire_date"
-                                   value="{{ prospective_licence_expiry }}">
+                                value="{{ prospective_licence_expiry }}">
                         </div>
                     </div>
                 </div>
