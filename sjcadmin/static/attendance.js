@@ -72,7 +72,7 @@ const details = row => {
             i.classList.add('bi-box-arrow-up-right');
             a.appendChild(i);
             a.appendChild(document.createTextNode(' Manage'));
-            a.setAttribute('href', '/members/' + uuid);
+            a.setAttribute('href', '/members/' + uuid + '#profile');
             return a;
         };
 
