@@ -102,7 +102,9 @@ const table = $('#tblStudents .table').DataTable({
             let c  = document.createElement('span'),
                 sn = document.createElement('span'),
                 ac = document.createElement('a'),
-                ic = document.createElement('i');
+                ic = document.createElement('i'),
+                jc = document.createElement('i'),
+                bc = document.createElement('a');
 
             c.classList.add('d-flex', 'justify-content-between');
             sn.appendChild(document.createTextNode(d));
@@ -111,9 +113,17 @@ const table = $('#tblStudents .table').DataTable({
             if (r.has_notes) {
                 ic.classList.add('bi', 'bi-chat-left-text');
                 ac.classList.add('ps-2');
-                ac.setAttribute('href', '/members/' + r.uuid);
+                ac.setAttribute('href', '/members/' + r.uuid + '#notes');
                 ac.appendChild(ic);
                 c.appendChild(ac);
+            }
+
+            if (r.has_prepaid) {
+                jc.classList.add('bi', 'bi-cash');
+                bc.classList.add('ps-2');
+                bc.setAttribute('href', '/members/' + r.uuid + '#payments');
+                bc.appendChild(jc);
+                c.appendChild(bc);
             }
 
             return c.outerHTML;
@@ -174,7 +184,12 @@ table.table().container().addEventListener('click', function (e) {
         mdlAttendanceInner.querySelector('#mdlAttendance_sessionDate').value = date;
         mdlAttendanceInner.querySelector('#mdlAttendance_studentUuid').value = row.uuid;
         mdlAttendanceInner.querySelector('#mdlAttendance_studentName').value = row.name;
-        mdlAttendanceInner.querySelectorAll('input[type=radio]').forEach(e => e.disabled = paid)
+
+        mdlAttendanceInner.querySelector('#mdlAttendance_advance').disabled = !row.has_prepaid || paid;
+        mdlAttendanceInner.querySelector('#mdlAttendance_attending').disabled = paid;
+        mdlAttendanceInner.querySelector('#mdlAttendance_complementary').disabled = paid;
+        mdlAttendanceInner.querySelector('#mdlAttendance_paid').disabled = paid;
+
         mdlAttendanceInner.querySelector('#mdlAttendance_paid').checked = paid;
         mdlAttendanceInner.querySelector('#mdlAttendance_complementary').checked = row.complementary.includes(date);
 

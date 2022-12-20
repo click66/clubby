@@ -7,8 +7,9 @@ from django.views.decorators.http import require_http_methods
 from datetime import date, datetime, timedelta
 from ..errors import DomainError
 from ..models.attendance import Attendance
-from ..models.session import Session
+from ..models.session import Session, Type
 from ..models.student import Licence, Note, Student, Payment
+from ..services import session_type_from_slug
 
 
 def user_passes_test(test_func):
@@ -48,13 +49,15 @@ def handle_error(function=None):
 @require_http_methods(['GET'])
 def get_members(request):
     today = date.today()
-    classes = Session.gen(today - timedelta(days=365), today, lambda d: d.weekday() in [0, 3])
+    class_type = session_type_from_slug('tjjf_jj_gi')
+    classes = Session.gen(today - timedelta(days=365), today, class_type)
     students = {str(s.uuid): {
                                  'uuid': str(s.uuid),
                                  'name': s.name,
                                  'membership': 'trial' if not s.has_licence() else 'licenced',
                                  'rem_trial_sessions': s.remaining_trial_sessions,
                                  'has_notes': s.has_notes,
+                                 'has_prepaid': s.has_prepaid() is not None,
                                  'attendances': [],
                                  'paid': [],
                                  'complementary': [],

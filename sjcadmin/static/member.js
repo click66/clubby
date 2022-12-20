@@ -56,14 +56,32 @@ frmPayment.addEventListener('submit', function (e) {
 
 [...document.querySelectorAll('#tabsMember button')].forEach(function (te) {
     let tab = bootstrap.Tab.getOrCreateInstance(te),
-        url = new URL(window.location);
+        url = new URL(window.location),
+        hash = url.hash.substring(1);
+    
+    if (hash) {
+        history.replaceState({'tab': hash}, document.title, url);
+    }
 
-    if ('#' + tab._element.dataset.tabkey == url.hash) {
+    if (tab._element.dataset.tabkey == hash) {
         tab.show();
     }
 
-    tab._element.addEventListener('shown.bs.tab', function (e) {
+    tab._element.addEventListener('click', function (e) {
         url.hash = e.target.dataset.tabkey;
-        history.pushState({}, document.title, url);
+        history.pushState({'tab': e.target.dataset.tabkey}, document.title, url);
     })
 });
+
+window.onpopstate = function (e) {
+    let tab = 'profile';
+    if (e.state && e.state.hasOwnProperty('tab')) {
+        tab = e.state.tab;
+    }
+    if (tab) {
+        let te = document.querySelector('#tabsMember button[data-tabkey=' + tab + ']');
+        if (te) {
+            bootstrap.Tab.getOrCreateInstance(te).show();
+        }
+    }
+}

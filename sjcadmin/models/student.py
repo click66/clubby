@@ -88,6 +88,7 @@ class Student(models.Model):
     _notes = []
     _new_notes = []
 
+    _used_payments = []
     _unused_payments = []
     _new_payments = []
 
@@ -97,6 +98,7 @@ class Student(models.Model):
         r._notes = list(r.note_set.all())
         r._new_notes = []
         r._unused_payments = list(r.payment_set.filter(_used=False).order_by('-_datetime'))
+        r._used_payments = list(r.payment_set.filter(_used=True).order_by('-_datetime'))
         r._new_payments = []
         # Eager read Attendance object into Student object
         r.sessions_attended = r.attendance_set.count()
@@ -209,3 +211,6 @@ class Student(models.Model):
     def take_payment(self, payment: Payment):
         payment._student = self
         self._new_payments.insert(0, payment)
+
+    def get_last_payments(self, n):
+        return sorted(self._used_payments, key=lambda x: x.time, reverse=True)[0:n]

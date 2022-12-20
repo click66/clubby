@@ -36,19 +36,22 @@
         <ul class="nav nav-tabs" id="tabsMember" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="tabProfile" data-bs-toggle="tab" data-bs-target="#tabCopyProfile"
-                    type="button" role="tab" aria-controls="tabCopyProfile" aria-selected="false" data-tabkey="profile">Profile</button>
+                    type="button" role="tab" aria-controls="tabCopyProfile" aria-selected="false"
+                    data-tabkey="profile">Profile</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="tabLicence" data-bs-toggle="tab" data-bs-target="#tabCopyLicence"
-                    type="button" role="tab" aria-controls="tabCopyLicence" aria-selected="false" data-tabkey="licence">Licence</button>
+                    type="button" role="tab" aria-controls="tabCopyLicence" aria-selected="false"
+                    data-tabkey="licence">Licence</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tabNotes" data-bs-toggle="tab" data-bs-target="#tabCopyNotes"
-                    type="button" role="tab" aria-controls="tabCopyNotes" aria-selected="false" data-tabkey="notes">Notes</button>
+                <button class="nav-link" id="tabNotes" data-bs-toggle="tab" data-bs-target="#tabCopyNotes" type="button"
+                    role="tab" aria-controls="tabCopyNotes" aria-selected="false" data-tabkey="notes">Notes</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="tabPayments" data-bs-toggle="tab" data-bs-target="#tabCopyPayments"
-                    type="button" role="tab" aria-controls="tabCopyPayments" aria-selected="false" data-tabkey="payments">Payments</button>
+                    type="button" role="tab" aria-controls="tabCopyPayments" aria-selected="false"
+                    data-tabkey="payments">Payments</button>
             </li>
         </ul>
         <div class="tab-content">
@@ -84,7 +87,9 @@
                     <div class="col-lg-3 col-sm-12 mb-3">
                         <h2>Signed Up For</h2>
                         <ul>
-                            <li><a href="/attendance">Standard Jiu Jitsu (Mon/Thur)</a></li>
+                            {% for uuid, class in classes.items %}
+                            <li><a href="/attendance/{{ uuid }}">{{ class }}</a>
+                            {% endfor %}
                         </ul>
                         <div class="row">
                             <div class="col-lg-12 col-md-6 col-sm-12">
@@ -102,37 +107,39 @@
             </div>
 
             <div class="tab-pane fade p-3" id="tabCopyLicence" role="tabpanel" aria-labelledby="tabLicence">
-                <div class="col-12">
-                    {% if student.has_licence and not student.is_licence_expired %}
-                    <div class="alert alert-success" role="alert">
-                        <p>Student is fully licenced.</p>
-                        <ul class="mb-0">
-                            <li>Licence number: {{ student.licence_no }}</li>
-                            <li>Expires on: {{ student.licence_expiry_date }}</li>
-                        </ul>
-                        <div class="pt-2"><button class="btnUpdateLicence btn btn-primary" type="button">Update
-                                Licence</button></div>
+                <div class="row justify-content-center">
+                    <div class="col-sm-12 col-md-10 col-lg-8">
+                        {% if student.has_licence and not student.is_licence_expired %}
+                        <div class="alert alert-success" role="alert">
+                            <p>Student is fully licenced.</p>
+                            <ul class="mb-0">
+                                <li>Licence number: {{ student.licence_no }}</li>
+                                <li>Expires on: {{ student.licence_expiry_date }}</li>
+                            </ul>
+                            <div class="pt-2"><button class="btnUpdateLicence btn btn-primary" type="button">Update
+                                    Licence</button></div>
+                        </div>
+                        {% elif student.is_licence_expired %}
+                        <div class="alert alert-danger" role="alert">
+                            Student licence expired on {{ student.licence_expiry_date }}.
+                            <div class="pt-2"><button class="btnUpdateLicence btn btn-primary" type="button">Renew
+                                    Licence</button></div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning" role="alert">
+                            Student is not licenced.
+                            <div class="pt-2"><button class="btnUpdateLicence btn btn-primary" type="button">Create
+                                    Licence</button></div>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% elif student.is_licence_expired %}
-                    <div class="alert alert-danger" role="alert">
-                        Student licence expired on {{ student.licence_expiry_date }}.
-                        <div class="pt-2"><button class="btnUpdateLicence btn btn-primary" type="button">Renew
-                                Licence</button></div>
-                    </div>
-                    {% else %}
-                    <div class="alert alert-warning" role="alert">
-                        Student is not licenced.
-                        <div class="pt-2"><button class="btnUpdateLicence btn btn-primary" type="button">Create
-                                Licence</button></div>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
 
             <div class="tab-pane fade p-3" id="tabCopyNotes" role="tabpanel" aria-labelledby="tabNotes">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="text-end">
+                <div class="row justify-content-center">
+                    <div class="col-sm-12 col-md-10 col-lg-8">
+                        <div class="mb-3 text-end">
                             <button type="button" class="btn btn-primary" id="btnAddNote">Add Note</button>
                         </div>
                         {% if not student.has_notes %}
@@ -151,27 +158,63 @@
             </div>
 
             <div class="tab-pane fade p-3" id="tabCopyPayments" role="tabpanel" aria-labelledby="tabPayments">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="text-end">
+                <div class="row justify-content-center">
+                    <div class="col-sm-12 col-md-10 col-lg-8">
+                        <div class="mb-3 text-end">
                             <button type="button" class="btn btn-primary" id="btnAddPayment">Add Payment</button>
                         </div>
+                        <h2>Unused Payments</h2>
                         {% if not student.has_prepaid %}
-                        <p class="text-center">No unused payments</div>
-                        {% endif %}
-                        <ul class="comments">
+                        <p class="text-center">No unused payments
+                        {% else %}
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Payment Taken</th>
+                                    <th>For class</th>
+                                    <th>Next redeemable session</th>
+                                </tr>
+                            </thead>
                             {% for payment in payments %}
-                            <li class="mb-3 p-2">
-                                <span class="commentAuthor">{{ payment.time|date:'M. d, Y'}}:</span>
-                                <span class="commentText">Payment for Standard Jiu Jitsu (Mon/Thur)</span>
-                            </li>
+                            <tbody>
+                                <tr>
+                                    <td>{{ payment.time|date:'M. d, Y H:i:s' }}</td>
+                                    <td>{{ classes|get_item:'0f811ff5-de24-40d2-92ed-689f514a6bb9' }}</td>
+                                    <td>{{ next_class_dates|get_item:'0f811ff5-de24-40d2-92ed-689f514a6bb9' }}</td>
+                                </tr>
+                            </tbody>
                             {% endfor %}
-                        </ul>
+                        </table>
+                        {% endif %}
+
+                        <h2>Historical Payments</h2>
+                        {% if not payments_historical %}
+                        <p class="text-center">No historical payments
+                        {% else %}
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Payment Taken</th>
+                                    <th>For class</th>
+                                </tr>
+                            </thead>
+                            {% for payment in payments_historical %}
+                            <tbody>
+                                <tr>
+                                    <td>{{ payment.time|date:'M. d, Y H:i:s' }}</td>
+                                    <td>{{ classes|get_item:'0f811ff5-de24-40d2-92ed-689f514a6bb9' }}</td>
+                                </tr>
+                            </tbody>
+                            {% endfor %}
+                        </table>
+                        <p class="text-end">Showing up to last 30 payments.</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <!-- End body -->
@@ -235,7 +278,9 @@
                 </div>
                 <div class="modal-body">
                     <select disabled class="form-select" name="product">
-                        <option name="1">Standard Jiu Jitsu (Mon/Thur)</option>
+                        {% for uuid, class in classes.items %}
+                        <option name="{{ uuid }}">{{ class }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="modal-footer">
