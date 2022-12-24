@@ -157,6 +157,7 @@ def post_log_attendance(request):
     student_uuid = request.POST.get('student_uuid')
     sess_date = date.fromisoformat(request.POST.get('sess_date'))
     payment = request.POST.get('payment')
+    payment_option = request.POST.get('payment_option')
     existing_registration = False
 
     s = Student.objects.get(pk=student_uuid)
@@ -171,9 +172,8 @@ def post_log_attendance(request):
         case 'complementary':
             a.mark_as_complementary()
         case 'paid':
-            s.take_payment(Payment.make(datetime=timezone.now()))
-            a.pay()
-        case 'advance':
+            if payment_option == 'now':
+                s.take_payment(Payment.make(datetime=timezone.now()))
             a.pay()
 
     a.save()

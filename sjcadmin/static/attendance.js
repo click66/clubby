@@ -175,26 +175,48 @@ const mdlAttendanceInner = document.getElementById('mdlAttendance'),
 
 table.table().container().addEventListener('click', function (e) {
     if (e.target.matches('td.session, td.session *')) {
-        let td = e.target.closest('td'),
-            cell = table.cell(td).node(),
-            row = table.row(td).data(),
-            date = cell.getAttribute('data-sessdate');
+        let td             = e.target.closest('td'),
+            cell           = table.cell(td).node(),
+            row            = table.row(td).data(),
+            date           = cell.getAttribute('data-sessdate'),
+            attending      = row.attendances.includes(date),
+            complementary  = row.complementary.includes(date),
+            paid           = row.paid.includes(date),
+            prepaid        = row.has_prepaid,
+            eByPrefix      = p => mdlAttendanceInner.querySelector(`#mdlAttendance_${p}`),
+            eSessionDate   = eByPrefix('sessionDate'),
+            eStudentUuid   = eByPrefix('studentUuid'),
+            eStudentName   = eByPrefix('studentName'),
+            eAttending     = eByPrefix('attending'),
+            eComplementary = eByPrefix('complementary'),
+            ePaid          = eByPrefix('paid'),
+            ePayOptions    = eByPrefix('payOptions'),
+            ePayOption     = eByPrefix('payOption');
 
-        paid = row.paid.includes(date)
-        mdlAttendanceInner.querySelector('#mdlAttendance_sessionDate').value = date;
-        mdlAttendanceInner.querySelector('#mdlAttendance_studentUuid').value = row.uuid;
-        mdlAttendanceInner.querySelector('#mdlAttendance_studentName').value = row.name;
+        eSessionDate.value = date;
+        eStudentUuid.value = row.uuid;
+        eStudentName.value = row.name;
 
-        mdlAttendanceInner.querySelector('#mdlAttendance_advance').disabled = !row.has_prepaid || paid;
-        mdlAttendanceInner.querySelector('#mdlAttendance_attending').disabled = paid;
-        mdlAttendanceInner.querySelector('#mdlAttendance_complementary').disabled = paid;
-        mdlAttendanceInner.querySelector('#mdlAttendance_paid').disabled = paid;
+        eAttending.checked = attending;
+        eComplementary.checked = complementary;
+        ePaid.checked = paid;
 
-        mdlAttendanceInner.querySelector('#mdlAttendance_paid').checked = paid;
-        mdlAttendanceInner.querySelector('#mdlAttendance_complementary').checked = row.complementary.includes(date);
+        eAttending.disabled = paid;
+        eComplementary.disabled = paid;
+        ePaid.disabled = paid;
+
+        ePayOptions.classList.toggle('d-none', true);
+        ePayOption.value = prepaid ? 'advance': 'now';
 
         mdlAttendance.show();
     }
+});
+
+[...mdlAttendanceInner.querySelectorAll('input[name=payment]')].forEach(function (r) {
+    r.addEventListener('change', function (e) {
+        console.log(e.target.value);
+        mdlAttendanceInner.querySelector('#mdlAttendance_payOptions').classList.toggle('d-none', e.target.value != 'paid');
+    });
 });
 
 btnMdlAttendanceCancel.addEventListener('click', function () {

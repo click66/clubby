@@ -96,12 +96,15 @@
                             <label class="form-check-label" for="mdlAttendance_complementary">Complementary</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="payment" id="mdlAttendance_advance" value="advance">
-                            <label class="form-check-label" for="mdlAttendance_advance">Paid in Advance</label>
-                        </div>
-                        <div class="form-check">
                             <input class="form-check-input" type="radio" name="payment" id="mdlAttendance_paid" value="paid">
-                            <label class="form-check-label" for="mdlAttendance_paid">Paying Now</label>
+                            <label class="form-check-label" for="mdlAttendance_paid">Paid</label>
+                        </div>
+                        <div id="mdlAttendance_payOptions" class="mt-3 form-floating">
+                            <select id="mdlAttendance_payOption" name="payment_option" class="form-select">
+                                <option value="advance">Advance Payment</option>
+                                <option value="now">New Payment</option>
+                            </select>
+                            <label for="mdlAttendance_payOption">Pay using...</label>
                         </div>
                     </div>
             </div>

@@ -54,7 +54,7 @@ class Attendance(models.Model):
     def pay(self):
         prepayment = self.student.has_prepaid()
         if not prepayment:  # Student has not prepaid
-            raise NoPaymentFound('Usable payment was not found for pre-paid session')
+            raise NoPaymentFound('Usable payment was not found on account')
         
         self.complementary = False
         self.paid = True
