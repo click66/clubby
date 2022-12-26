@@ -9,7 +9,7 @@ SERVED_PATH=$5
 echo "Extracting artifacts to target directory..."
 mkdir -p $DEPLOY_DIR
 tar -xvzf $FE_ARTIFACT_PATH -C $DEPLOY_DIR
-tar -xvzf $FE_ARTIFACT_PATH -C $DEPLOY_DIR
+tar -xvzf $BE_ARTIFACT_PATH -C $DEPLOY_DIR
 
 echo "Build venv"
 cd $DEPLOY_DIR
