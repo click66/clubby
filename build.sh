@@ -9,5 +9,5 @@ docker-compose -f docker-compose.yml run app bash -c "tar -zcvf app.tar.gz --fil
 docker cp $(docker-compose ps -a -q app):/app/app.tar.gz "$TARGET_DIR/app.tar.gz"
 
 # Front end
-docker-compose -f docker-compose.yml run npm bash -c "run build && tar -zcvf static.tar.gz static"
+docker-compose -f docker-compose.yml run --entrypoint=bash npm -c "npm run build && tar -zcvf static.tar.gz static"
 docker cp $(docker-compose ps -a -q npm):/app/static.tar.gz "$TARGET_DIR/static.tar.gz"
