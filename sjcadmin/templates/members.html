@@ -1,5 +1,10 @@
 {% extends "_base.html" %}
 
+{% block assets %}
+{% load static %}
+<script type="text/javascript" src="{% static 'members.js' %}" defer></script>
+{% endblock %}
+
 {% block content %}
 
 <div class="p-3 containerInner">
@@ -17,9 +22,9 @@
     <button class="btn btn-primary" id="btnNewMember">New Member <i class="bi bi-plus"></i></button>
 </div>
 
-<div class="rounded-3 bg-light p-3 text-dark" id="copy">
+<div class="rounded-3 bg-white p-3 text-dark" id="copy">
     <div id="tblStudents">
-    <table style="width:100%" class="table">
+    <table style="width:100%" class="table table-hover">
         <thead>
         <tr>
             <th>Name</th>
@@ -54,59 +59,5 @@
         </div>
     </div>
 </div>
-
-<script type="text/javascript" language="javascript">
-    const membershipBadge = (m, t, r) => {
-        const expired = sb => {
-            sb.classList.add('bg-danger');
-            sb.textContent = 'Expired';
-            return sb.outerHTML;
-        }
-
-        let b = document.createElement('span');
-        b.classList.add('badge');
-        switch(m) {
-            case 'licenced':
-                if (r.licence.exp) {
-                    return expired(b);
-                }
-                b.classList.add('bg-success');
-                b.textContent = 'Licenced';
-                return b.outerHTML;
-            case 'trial':
-                if (r.rem_trial_sessions <= 0) {
-                    return expired(b);
-                }
-                b.classList.add('bg-warning');
-                b.classList.add('text-dark');
-                b.textContent = 'Trial';
-                return b.outerHTML;
-        }
-    };
-
-    const table = $('#tblStudents .table').DataTable({
-        ajax: {
-            url: "/api/members",
-            dataSrc: "",
-        },
-        columns: [
-            {"data":"name", "className": "studentName"},
-            {"data":"membership", "render": membershipBadge, "className": "studentMembership"},
-        ],
-        paging: false,
-        scrollX: true,
-        scrollCollapse: true,
-    });
-
-    table.table().container().querySelector('.dataTables_filter')
-        .prepend(document.querySelector('#tblStudents_buttons'));
-
-    $('#tblStudents').on('click', 'td', function (e) {
-        let row  = table.row(this),
-            data = row.data();
-
-        location.href = '/members/' + data.uuid + '#profile';
-    });
-</script>
 
 {% endblock %}

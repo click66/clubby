@@ -13,6 +13,7 @@ build:
     when: always
     paths:
       - $CI_PROJECT_DIR/app.tar.gz
+      - $CI_PROJECT_DIR/static.tar.gz
     expire_in: 1 day
 
 deploy:

@@ -1,9 +1,19 @@
+$bootstrap-icons-font: "bootstrap-icons" !default;
+$bootstrap-icons-font-dir: "./fonts" !default;
+$bootstrap-icons-font-file: "#{$bootstrap-icons-font-dir}/#{$bootstrap-icons-font}" !default;
+
 @font-face {
-  font-family: 'tjjf';
-  src: url(/static/fonts/tjjf.woff) format("woff");
+    font-family: 'tjjf';
+    src: url("./tjjf.woff") format("woff");
 }
 
-html, body {
+@import "./variables";
+@import "~bootstrap/scss/bootstrap";
+@import "~bootstrap-icons/font/bootstrap-icons.scss";
+@import "~datatables.net-bs5/css/dataTables.bootstrap5.css";
+
+html,
+body {
     height: 100%;
 }
 
@@ -16,15 +26,15 @@ html {
 }
 
 @media (max-width: 480px) {
-  .toastrack {
-    width: 100%;
-    bottom: 0!important;
-    top: auto!important;
-  }
+    .toastrack {
+        width: 100%;
+        bottom: 0 !important;
+        top: auto !important;
+    }
 
-  .toast {
-    width: 100%;
-  }
+    .toast {
+        width: 100%;
+    }
 }
 
 .main.bg-dark {
@@ -35,7 +45,7 @@ html {
     max-height: 100vh;
     overflow-x: auto;
     overflow-y: hidden;
-    color: #ddd;
+    color: $light;
 }
 
 h1 {
@@ -60,7 +70,7 @@ h2 {
 
 .containerInner {
     display: flex;
-    flex-direction:column;
+    flex-direction: column;
     max-height: 100%;
 }
 
@@ -79,7 +89,7 @@ nav ol.breadcrumb a {
     text-align: right;
 }
 
-#DataTables_Table_0_filter > label {
+#DataTables_Table_0_filter>label {
     margin-left: 1em;
 }
 
@@ -92,7 +102,8 @@ nav ol.breadcrumb a {
     font-size: 0.9em;
 }
 
-#tblStudents th, td {
+#tblStudents th,
+td {
     border-left-width: 1px;
     font-size: 0.85em;
 }
@@ -101,20 +112,15 @@ nav ol.breadcrumb a {
     border-right-width: 2px;
 }
 
-#tblStudents .studentName, #tblStudents .studentMembership {
+#tblStudents .studentName,
+#tblStudents .studentMembership {
     border-left-width: 0;
 }
 
-#tblStudents td.studentName, #tblStudents td.studentMembership {
+#tblStudents td.studentName,
+#tblStudents td.studentMembership {
     white-space: nowrap;
     cursor: pointer;
-}
-
-#tblStudents tbody > tr:hover > td.studentName,
-#tblStudents tbody > tr:hover > td.studentMembership,
-#tblStudents tbody > tr:hover > td:hover {
-    cursor:pointer;
-    background-color: #ddd;
 }
 
 #tblStudents .classHeader {
@@ -178,12 +184,17 @@ ul#portalLinks {
     margin: 0 auto;
     max-width: 100%;
 }
+
 @media (min-width: 600px) {
-  ul#portalLinks { grid-template-columns: repeat(2, 1fr); }
+    ul#portalLinks {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (min-width: 900px) {
-  ul#portalLinks { grid-template-columns: repeat(3, 1fr); }
+    ul#portalLinks {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 ul#portalLinks li {
@@ -220,21 +231,21 @@ ul#portalLinks li a:hover {
     overflow-y: hidden;
     flex-wrap: nowrap;
 }
- 
+
 .nav-link {
-    color: #bbb;
+    color: $gray-600;
 }
 
 .nav-tabs .nav-link.active,
 .nav-tabs .nav-item.show .nav-link {
     border-color: transparent;
     border-bottom-width: 3px;
-    border-bottom-color: #aaa;
-    background-color: transparent!important;
+    border-bottom-color: $nav-tabs-link-active-color;
+    background-color: transparent !important;
 }
 
 .nav-tabs .nav-link:hover {
     border-left-color: transparent;
     border-right-color: transparent;
-    color: #495057;
+    color: $nav-tabs-link-active-color;
 }

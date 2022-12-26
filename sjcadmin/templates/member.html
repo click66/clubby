@@ -32,7 +32,7 @@
         <p class="mb-0">Member since: {{ student.join_date }}</p>
     </div>
 
-    <div class="rounded-3 bg-light text-dark" id="copy">
+    <div class="rounded-3 bg-white text-dark" id="copy">
         <ul class="nav nav-tabs" id="tabsMember" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="tabProfile" data-bs-toggle="tab" data-bs-target="#tabCopyProfile"
@@ -100,7 +100,7 @@
                     </div>
 
                     <div class="p-3 text-end">
-                        <button type="button" class="btn btn-danger" id="btnDelete" data-uuid="{{ student.uuid }}"
+                        <button type="button" class="btn btn-danger text-white" id="btnDelete" data-uuid="{{ student.uuid }}"
                             data-csrf-token="{{ csrf_token }}">Delete Member</button>
                     </div>
                 </div>

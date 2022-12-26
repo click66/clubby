@@ -8,6 +8,11 @@ services:
       - 8000:8000
     volumes:
       - .:/app
+  
+  npm:
+    command: ["run", "dev"]
+    volumes:
+      - .:/app
 
   base:
     build:

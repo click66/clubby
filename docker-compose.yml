@@ -5,5 +5,16 @@ services:
     volumes:
       - app:/var/www/html
 
+  npm:
+    build:
+      context: .
+      dockerfile: Dockerfile.npm
+    entrypoint: npm
+    command: build
+    volumes:
+      - type: volume
+        source: app
+        target: /app
+
 volumes:
   app:

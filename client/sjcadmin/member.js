@@ -1,12 +1,16 @@
+import { Modal, Tab } from "bootstrap";
+import { postForm, postJson, postNone } from "./js/_networking";
+
+
 const btnDeleteMember = document.getElementById('btnDelete'),
       btnUpdateLicence = document.querySelector('.btnUpdateLicence'),
-      mdlUpdateLicence = new bootstrap.Modal(document.getElementById('mdlUpdateLicence')),
+      mdlUpdateLicence = new Modal(document.getElementById('mdlUpdateLicence')),
       frmLicence = document.getElementById('frmLicence'),
       btnAddNote = document.getElementById('btnAddNote'),
-      mdlNote = new bootstrap.Modal(document.getElementById('mdlNote')),
+      mdlNote = new Modal(document.getElementById('mdlNote')),
       frmNote = document.getElementById('frmNote'),
       btnAddPayment = document.getElementById('btnAddPayment'),
-      mdlPayment = new bootstrap.Modal(document.getElementById('mdlPayment')),
+      mdlPayment = new Modal(document.getElementById('mdlPayment')),
       frmPayment = document.getElementById('frmPayment');
 
 btnUpdateLicence.addEventListener('click', function () {
@@ -15,14 +19,14 @@ btnUpdateLicence.addEventListener('click', function () {
 
 frmLicence.addEventListener('submit', function (e) {
     e.preventDefault();
-    postForm(this)('/api/members/' + this.dataset.uuid + '/licences/add').then(function (r) {
+    postForm(this)(`/api/members/${this.dataset.uuid}/licences/add`).then(function (r) {
         location.reload();
     }).catch(handleError);
 });
 
 btnDeleteMember.addEventListener('click', function () {
     if (confirm("Are you sure? This will delete this member's record and all associated attendance records.")) {
-        postNone(this.dataset.csrfToken)('/api/members/delete/' + this.dataset.uuid).then(function (r) {
+        postNone(this.dataset.csrfToken)(`/api/members/delete/${this.dataset.uuid}`).then(function (r) {
             location.href = '/members';
         }).catch(handleError);
     }
@@ -36,7 +40,7 @@ frmNote.addEventListener('submit', function (e) {
     e.preventDefault();
     postJson(this.dataset.csrfToken, {
         'text': new FormData(this).get('text'),
-    })('/api/members/' + this.dataset.uuid + '/notes/add').then(function (r) {
+    })(`/api/members/${this.dataset.uuid}/notes/add`).then(function () {
         location.reload();
     }).catch(handleError);
 });
@@ -49,13 +53,13 @@ frmPayment.addEventListener('submit', function (e) {
     e.preventDefault();
     postJson(this.dataset.csrfToken, {
         'product': new FormData(this).get('product'),
-    })('/api/members/' + this.dataset.uuid + '/payments/add').then(function (r) {
+    })(`/api/members/${this.dataset.uuid}/payments/add`).then(function () {
         location.reload();
     }).catch(handleError);
 });
 
 [...document.querySelectorAll('#tabsMember button')].forEach(function (te) {
-    let tab = bootstrap.Tab.getOrCreateInstance(te),
+    let tab = Tab.getOrCreateInstance(te),
         url = new URL(window.location),
         hash = url.hash.substring(1);
     
@@ -81,7 +85,7 @@ window.onpopstate = function (e) {
     if (tab) {
         let te = document.querySelector('#tabsMember button[data-tabkey=' + tab + ']');
         if (te) {
-            bootstrap.Tab.getOrCreateInstance(te).show();
+            Tab.getOrCreateInstance(te).show();
         }
     }
 }
