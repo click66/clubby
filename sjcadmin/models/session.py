@@ -1,56 +1,45 @@
 from datetime import date, timedelta
-from typing import Callable
-from uuid import UUID, uuid4
-
-
-class Type:
-    def __init__(self, uuid: UUID, label: str, discriminator: Callable):
-        self._uuid = uuid
-        self._label = label
-        self._discriminator = discriminator
-    
-    def __str__(self):
-        return self._label
-
-    @classmethod
-    def make(cls, label: str, discriminator: Callable, uuid: UUID=None):
-        return Type(
-            uuid=uuid or uuid4(),
-            label=label,
-            discriminator=discriminator,
-        )
-    
-    @property
-    def uuid(self):
-        return self._uuid
-
-    @property
-    def label(self):
-        return self._label
-
-    @property
-    def is_session_date(self):
-        return self._discriminator
 
 
 class Session:
-    def __init__(self, sess_date):
+    def __init__(self, sess_date, course):
         self._sess_date = sess_date
+        self._course = course
+
+    @property
+    def course_uuid(self):
+        return self._course.uuid
 
     @classmethod
-    def make(cls, sess_date: date):
-        return Session(sess_date)
+    def make(cls, sess_date: date, course):
+        return Session(sess_date, course)
 
     @classmethod
-    def gen(cls, start: date, end: date, type: Type):
-        days = (end - timedelta(days=i) for i in range((end-start).days - 1))
-        return [cls.make(sess_date=d) for d in days if type.is_session_date(d)]
-    
+    def gen(cls, start: date, end: date, courses: list = [], exclusive=False):
+        def daterange(start_date, end_date):
+            end_date += timedelta(days=1)
+            for n in range(int((end_date - start_date).days)):
+                yield start_date + timedelta(n)
+
+        out = []
+
+        if exclusive:
+            for d in daterange(start, end):
+                if any(map(lambda c: c.is_session_date(d), courses)):
+                    out.append(cls.make(sess_date=d, course=courses[1]))
+            return out
+
+        for d in daterange(start, end):
+            for course in courses:
+                if course.is_session_date(d):
+                    out.append(cls.make(sess_date=d, course=course))
+        return out
+
     @classmethod
-    def gen_next(cls, start: date, type: Type):
-        while not type.is_session_date(start):
+    def gen_next(cls, start: date, course):
+        while not course.is_session_date(start):
             start += timedelta(days=1)
-        return cls.make(sess_date=start)
+        return cls.make(sess_date=start, course=course)
 
     @property
     def date(self):

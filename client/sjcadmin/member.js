@@ -1,5 +1,6 @@
 import { Modal, Tab } from "bootstrap";
 import { postForm, postJson, postNone } from "./js/_networking";
+import { notifyError } from './js/_notifications'
 
 
 const btnDeleteMember = document.getElementById('btnDelete'),
@@ -21,14 +22,14 @@ frmLicence.addEventListener('submit', function (e) {
     e.preventDefault();
     postForm(this)(`/api/members/${this.dataset.uuid}/licences/add`).then(function (r) {
         location.reload();
-    }).catch(handleError);
+    }).catch(notifyError);
 });
 
 btnDeleteMember.addEventListener('click', function () {
     if (confirm("Are you sure? This will delete this member's record and all associated attendance records.")) {
         postNone(this.dataset.csrfToken)(`/api/members/delete/${this.dataset.uuid}`).then(function (r) {
             location.href = '/members';
-        }).catch(handleError);
+        }).catch(notifyError);
     }
 });
 
@@ -42,7 +43,7 @@ frmNote.addEventListener('submit', function (e) {
         'text': new FormData(this).get('text'),
     })(`/api/members/${this.dataset.uuid}/notes/add`).then(function () {
         location.reload();
-    }).catch(handleError);
+    }).catch(notifyError);
 });
 
 btnAddPayment.addEventListener('click', function () {
@@ -51,11 +52,12 @@ btnAddPayment.addEventListener('click', function () {
 
 frmPayment.addEventListener('submit', function (e) {
     e.preventDefault();
+    console.log(new FormData(this));
     postJson(this.dataset.csrfToken, {
         'product': new FormData(this).get('product'),
     })(`/api/members/${this.dataset.uuid}/payments/add`).then(function () {
         location.reload();
-    }).catch(handleError);
+    }).catch(notifyError);
 });
 
 [...document.querySelectorAll('#tabsMember button')].forEach(function (te) {

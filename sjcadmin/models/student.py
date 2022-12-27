@@ -3,9 +3,10 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-import uuid
+from uuid import UUID, uuid4
 
 from ..errors import *
+from .course import Course
 
 
 @dataclass(frozen=True)
@@ -23,9 +24,11 @@ class Licence(models.Model):
 
 class Note(models.Model):
     _text = models.TextField(null=False, blank=True, db_column='text')
-    _student = models.ForeignKey('Student', on_delete=models.CASCADE, db_column='student_uuid')
+    _student = models.ForeignKey(
+        'Student', on_delete=models.CASCADE, db_column='student_uuid')
     _datetime = models.DateTimeField(null=False, db_column='datetime')
-    _author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, db_column='author_id')
+    _author = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, db_column='author_id')
 
     @classmethod
     def make(cls, text, author: User, datetime: datetime):
@@ -50,17 +53,23 @@ class Note(models.Model):
 
 
 class Payment(models.Model):
-    _student = models.ForeignKey('Student', null=True, on_delete=models.SET_NULL, db_column='student_uuid')
+    _student = models.ForeignKey(
+        'Student', null=True, on_delete=models.SET_NULL, db_column='student_uuid')
     _datetime = models.DateTimeField(null=False, db_column='datetime')
-    _used = models.BooleanField(default=False)
+    _used = models.BooleanField(default=False, db_column='used')
+    _course = models.ForeignKey(
+        'Course', null=True, on_delete=models.SET_NULL, db_column='course_uuid')
 
     @classmethod
-    def make(cls, datetime: datetime):
-        payment = cls(_datetime=datetime)
+    def make(cls, datetime: datetime, course: Course):
+        payment = cls(_datetime=datetime, _course=course)
         return payment
 
     def mark_used(self):
         self._used = True
+    
+    def get_next_date(self, date):
+        return self._course.get_next_from(date)
 
     @property
     def used(self):
@@ -70,9 +79,13 @@ class Payment(models.Model):
     def time(self):
         return self._datetime
 
+    @property
+    def course(self):
+        return self._course
+
 
 class Student(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
 
     profile_name = models.CharField(null=True, max_length=120)
     profile_dob = models.DateField(null=True)
@@ -80,10 +93,15 @@ class Student(models.Model):
     profile_email = models.EmailField(null=True)
     profile_address = models.TextField(blank=True, null=True)
 
-    licence = models.OneToOneField(Licence, on_delete=models.SET_NULL, null=True, blank=True)
+    licence = models.OneToOneField(
+        Licence, on_delete=models.SET_NULL, null=True, blank=True)
     allowed_trial_sessions = models.IntegerField()
 
     join_date = models.DateField(null=False, default=timezone.now)
+    _courses = models.ManyToManyField(Course)
+
+    _existing_courses =[]
+    _new_courses = []
 
     _notes = []
     _new_notes = []
@@ -95,11 +113,19 @@ class Student(models.Model):
     @classmethod
     def from_db(cls, db, field_names, values):
         r = super().from_db(db, field_names, values)
+
         r._notes = list(r.note_set.all())
         r._new_notes = []
-        r._unused_payments = list(r.payment_set.filter(_used=False).order_by('-_datetime'))
-        r._used_payments = list(r.payment_set.filter(_used=True).order_by('-_datetime'))
+
+        r._unused_payments = list(r.payment_set.filter(
+            _used=False).order_by('-_datetime'))
+        r._used_payments = list(r.payment_set.filter(
+            _used=True).order_by('-_datetime'))
         r._new_payments = []
+
+        r._existing_courses = list(r._courses.all())
+        r._new_courses = []
+
         # Eager read Attendance object into Student object
         r.sessions_attended = r.attendance_set.count()
         return r
@@ -117,6 +143,8 @@ class Student(models.Model):
 
         if self.has_licence():
             self.licence.save()
+
+        self._courses.add(*self._new_courses)
 
         super().save(*args, **kwargs)
 
@@ -143,6 +171,7 @@ class Student(models.Model):
         student.sessions_attended = 0
         student._notes = []
         student._new_notes = []
+        student._new_courses = []
 
         return student
 
@@ -165,6 +194,10 @@ class Student(models.Model):
     @property
     def address(self) -> str:
         return self.profile_address
+
+    @property
+    def courses(self) -> list[Course]:
+        return self._existing_courses + self._new_courses
 
     @property
     def licence_no(self) -> int:
@@ -201,11 +234,11 @@ class Student(models.Model):
     def has_notes(self):
         return self.has_more_than_n_notes(0)
 
-    def get_unused_payments(self):
-        return self._unused_payments + list(filter(lambda p: not p.used, self._new_payments))
+    def get_unused_payments(self, course=None):
+        return list(filter(lambda p: not p.used and (course is None or p.course == course), self._unused_payments + self._new_payments))
 
-    def has_prepaid(self):
-        prepayments = self.get_unused_payments()
+    def has_prepaid(self, course):
+        prepayments = self.get_unused_payments(course)
         return prepayments[0] if prepayments else None
 
     def take_payment(self, payment: Payment):
@@ -214,3 +247,7 @@ class Student(models.Model):
 
     def get_last_payments(self, n):
         return sorted(self._used_payments, key=lambda x: x.time, reverse=True)[0:n]
+
+    def sign_up(self, course):
+        # self._courses.add(course)
+        self._new_courses.append(course)

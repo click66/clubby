@@ -1,3 +1,4 @@
-from .attendance import *
-from .student import *
-from .session import *
+from .attendance import Attendance
+from .course import Course
+from .student import Student
+from .session import Session

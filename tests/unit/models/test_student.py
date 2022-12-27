@@ -2,7 +2,8 @@ import datetime
 import pytest
 
 from django.contrib.auth.models import User
-from sjcadmin.models.student import Student, Profile, Note, Licence
+from sjcadmin.models.course import Course
+from sjcadmin.models.student import Student, Profile, Note, Licence, Payment
 
 
 def test_make_student_with_only_name():
@@ -129,3 +130,33 @@ def test_get_last_5_notes():
     assert s.has_more_than_n_notes(10) is False
 
     assert len(notes) == 5
+
+
+def test_has_user_paid_same_course():
+    s = Student.make(name='John Doe')
+
+    course = Course.make('Junior Course', [0, 3])
+
+    s.take_payment(Payment.make(datetime.datetime(2022, 2, 1), course))
+
+    assert s.has_prepaid(course) is not None
+
+
+def test_has_use_paid_different_course():
+    s = Student.make(name='John Doe')
+
+    course1 = Course.make('Junior Course', [0, 3])
+    course2 = Course.make('Adult Course', [0, 3])
+
+    s.take_payment(Payment.make(datetime.datetime(2022, 2, 1), course1))
+
+    assert s.has_prepaid(course2) is None
+
+
+def test_student_signup_for_course():
+    s = Student.make(name='John Doe')
+    course = Course.make('TJJF Course', [0, 1])
+
+    s.sign_up(course)
+
+    assert s.courses[0].label == 'TJJF Course'

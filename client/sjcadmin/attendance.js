@@ -7,6 +7,11 @@ import { Notifications, notifyError } from './js/_notifications';
 import { Icons, Badges, withChild, withClasses } from './js/_helpers';
 
 
+function intersect(a, b) {
+    const setA = new Set(a);
+    return b.filter(value => setA.has(value));
+ }
+
 const icons = new Icons(document);
 const badges = new Badges(document);
 const notifications = new Notifications(document);
@@ -99,15 +104,21 @@ const table = new DataTable('#tblStudents .table', {
             }
         },
         { "data": "membership", "render": mBadgeRenderer, "className": "studentMembership" },
-    ].concat(dataClasses.map(function (c) {
+    ].concat(Object.keys(dataClasses).map(function (k) {
         return {
             "className": "session",
             "createdCell": (td, cd, rd, r, co) => {
-                td.setAttribute('data-sessdate', c.d);
+                let availableCourses = intersect(dataClasses[k], rd.signed_up_for);
+                td.setAttribute('data-sessdate', k);
+                td.setAttribute('data-product', availableCourses);
+
+                if (!(availableCourses.length)) {
+                    td.classList.add('disabled');
+                }
             },
             "data": null,
             "orderable": false,
-            "render": studentClassAttendance(c.d),
+            "render": studentClassAttendance(k),
         }
     })),
     paging: false,
@@ -144,16 +155,18 @@ const mdlAttendanceInner = document.getElementById('mdlAttendance'),
     btnMdlAttendanceCancel = document.getElementById('mdlAttendance_cancel');
 
 table.table().container().addEventListener('click', function (e) {
-    if (e.target.matches('td.session, td.session *')) {
+    if (e.target.matches('td.session:not(.disabled), td.session:not(.disabled) *')) {
         let td = e.target.closest('td'),
             cell = table.cell(td).node(),
             row = table.row(td).data(),
             date = cell.getAttribute('data-sessdate'),
+            productUuid = cell.getAttribute('data-product'),
             attending = row.attendances.includes(date),
             complementary = row.complementary.includes(date),
             paid = row.paid.includes(date),
             prepaid = row.has_prepaid,
             eByPrefix = p => mdlAttendanceInner.querySelector(`#mdlAttendance_${p}`),
+            eProductUuid = eByPrefix('productUuid'),
             eSessionDate = eByPrefix('sessionDate'),
             eStudentUuid = eByPrefix('studentUuid'),
             eStudentName = eByPrefix('studentName'),
@@ -164,6 +177,7 @@ table.table().container().addEventListener('click', function (e) {
             ePayOption = eByPrefix('payOption');
 
         eSessionDate.value = date;
+        eProductUuid.value = productUuid;
         eStudentUuid.value = row.uuid;
         eStudentName.value = row.name;
 

@@ -88,7 +88,7 @@
                         <h2>Signed Up For</h2>
                         <ul>
                             {% for uuid, class in classes.items %}
-                            <li><a href="/attendance/{{ uuid }}">{{ class }}</a>
+                            <li><a href="/attendance">{{ class }}</a>
                             {% endfor %}
                         </ul>
                         <div class="row">
@@ -164,9 +164,7 @@
                             <button type="button" class="btn btn-primary" id="btnAddPayment">Add Payment</button>
                         </div>
                         <h2>Unused Payments</h2>
-                        {% if not student.has_prepaid %}
-                        <p class="text-center">No unused payments
-                        {% else %}
+                        {% if payments|length %}
                         <table class="table">
                             <thead>
                                 <tr>
@@ -179,12 +177,14 @@
                             <tbody>
                                 <tr>
                                     <td>{{ payment.time|date:'M. d, Y H:i:s' }}</td>
-                                    <td>{{ classes|get_item:'0f811ff5-de24-40d2-92ed-689f514a6bb9' }}</td>
-                                    <td>{{ next_class_dates|get_item:'0f811ff5-de24-40d2-92ed-689f514a6bb9' }}</td>
+                                    <td>{{ payment.course }}</td>
+                                    <td>{{ payment.next_session_date|date:'M. d, Y' }}</td>
                                 </tr>
                             </tbody>
                             {% endfor %}
                         </table>
+                        {% else %}
+                        <p class="text-center">No unused payments
                         {% endif %}
 
                         <h2>Historical Payments</h2>
@@ -277,9 +277,9 @@
                     <h2>Add Payment</h2>
                 </div>
                 <div class="modal-body">
-                    <select disabled class="form-select" name="product">
+                    <select class="form-select" name="product">
                         {% for uuid, class in classes.items %}
-                        <option name="{{ uuid }}">{{ class }}</option>
+                        <option value="{{ uuid }}">{{ class }}</option>
                         {% endfor %}
                     </select>
                 </div>

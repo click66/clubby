@@ -1,31 +1,30 @@
 import json
 
+from collections import defaultdict
 from datetime import date, timedelta
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-from ..models.session import Session, Type
-from ..services import get_session_type, session_type_from_slug
+from functools import reduce
+from ..models.session import Session
+from ..models.course import Course
 
 
 @login_required(login_url='/auth/login')
-def attendance_home(request):
-    return redirect('attendance', st_uuid=session_type_from_slug('tjjf_jj_gi').uuid)
-
-
-@login_required(login_url='/auth/login')
-def attendance(request, st_uuid):
+def attendance(request):
     # Class register, showing historical class records and allowing registry of students into the current class
-    class_type = get_session_type(st_uuid)
-
-    if class_type is None:
-        return redirect('home')
-
     today = date.today()
-    classes = Session.gen(today - timedelta(days=365), today, class_type)
+    courses = Course.objects.all()
+    classes = Session.gen(today - timedelta(days=365),
+                          today, courses, exclusive=False)
+    classes.reverse()
 
-    classes = [{'d': c.date.isoformat()} for c in classes]
+    unique_classes = defaultdict(list)
+
+    for c in classes:
+        unique_classes[c.date.isoformat()].append(str(c.course_uuid))
+
     return render(request, 'attendance.html', {
-        'dataClasses': json.dumps(classes),
-        'class': class_type,
-        'classes': classes,
+        'dataClasses': json.dumps(unique_classes),
+        'classes': dict(unique_classes),
+        'courses': courses,
     })

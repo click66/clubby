@@ -93,6 +93,23 @@ nav ol.breadcrumb a {
     margin-left: 1em;
 }
 
+#tblStudents {
+    &.tblAttendance {
+        td.session {
+            cursor: pointer;
+
+            &:hover {
+                background-color: $gray-500;
+            }
+
+            &.disabled {
+                background-color: $gray-300!important;
+                cursor: auto!important;
+            }
+        }
+    }
+}
+
 #tblStudents_buttons {
     display: inline-block;
     margin-bottom: 1em;

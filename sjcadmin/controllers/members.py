@@ -2,8 +2,8 @@ from datetime import date
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.template.defaulttags import register
-from ..models import Student, Session
-from ..services import session_type_from_slug
+from ..models import Course, Student, Session
+
 
 @register.filter
 def get_item(dictionary, key):
@@ -23,14 +23,17 @@ def member(request, pk):
 
     today = date.today()
 
-    classes = [session_type_from_slug('tjjf_jj_gi')]
+    classes = s.courses
 
     return render(request, 'member.html', {
         'student': s,
         'classes': dict(map(lambda sess_type: (str(sess_type.uuid), sess_type), classes)),
         'notes': s.get_last_notes(5),
-        'payments': s.get_unused_payments(),
+        'payments': list(map(lambda p: {
+            "time": p.time,
+            "course": p.course,
+            "next_session_date": Session.gen_next(today, p.course).date,
+        }, s.get_unused_payments())),
         'payments_historical': s.get_last_payments(30),
-        'next_class_dates': dict(map(lambda sess_type: (str(sess_type.uuid), Session.gen_next(today, sess_type).date), classes)),
         'prospective_licence_expiry': today.replace(year=today.year + 1).strftime('%Y-%m-%d'),
     })

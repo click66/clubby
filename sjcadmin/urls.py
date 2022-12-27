@@ -29,8 +29,7 @@ urlpatterns = [
     path('members', members.members, name='members'),
     path('members/<uuid:pk>', members.member, name='member'),
 
-    path('attendance', attendance.attendance_home, name='attendance_home'),
-    path('attendance/<uuid:st_uuid>', attendance.attendance, name='attendance'),
+    path('attendance', attendance.attendance, name='attendance'),
 
     path('api/members', api.get_members),
     path('api/members/add', api.post_add_member),

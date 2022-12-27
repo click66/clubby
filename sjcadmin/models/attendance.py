@@ -2,6 +2,7 @@ import datetime
 from django.db import models
 
 from ..errors import *
+from .course import Course
 from .student import Student
 
 
@@ -10,11 +11,14 @@ class Attendance(models.Model):
     date = models.DateField(null=False)
     paid = models.BooleanField(default=False, null=False)
     complementary = models.BooleanField(default=False, null=False)
+    _course = models.ForeignKey(
+        'Course', null=True, on_delete=models.SET_NULL, db_column='course_uuid')
 
     @classmethod
     def register_student(
             cls,
             student: Student,
+            course: Course,
             date: datetime.date,
             existing_registration: bool = False,
     ):
@@ -27,7 +31,7 @@ class Attendance(models.Model):
             raise NoRemainingTrialSessionsError('Unlicenced student has no remaining trial sessions')
 
         student.sessions_attended += 1
-        return Attendance(student=student, date=date)
+        return Attendance(student=student, date=date, _course=course)
 
     @classmethod
     def clear(cls, student: Student, date: datetime.date):
@@ -52,7 +56,7 @@ class Attendance(models.Model):
         self.paid = False
 
     def pay(self):
-        prepayment = self.student.has_prepaid()
+        prepayment = self.student.has_prepaid(self._course)
         if not prepayment:  # Student has not prepaid
             raise NoPaymentFound('Usable payment was not found on account')
         

@@ -7,9 +7,9 @@ from django.views.decorators.http import require_http_methods
 from datetime import date, datetime, timedelta
 from ..errors import DomainError
 from ..models.attendance import Attendance
-from ..models.session import Session, Type
+from ..models.course import Course
+from ..models.session import Session
 from ..models.student import Licence, Note, Student, Payment
-from ..services import session_type_from_slug
 
 
 def user_passes_test(test_func):
@@ -49,24 +49,26 @@ def handle_error(function=None):
 @require_http_methods(['GET'])
 def get_members(request):
     today = date.today()
-    class_type = session_type_from_slug('tjjf_jj_gi')
-    classes = Session.gen(today - timedelta(days=365), today, class_type)
-    students = {str(s.uuid): {
-                                 'uuid': str(s.uuid),
-                                 'name': s.name,
-                                 'membership': 'trial' if not s.has_licence() else 'licenced',
-                                 'rem_trial_sessions': s.remaining_trial_sessions,
-                                 'has_notes': s.has_notes,
-                                 'has_prepaid': s.has_prepaid() is not None,
-                                 'attendances': [],
-                                 'paid': [],
-                                 'complementary': [],
-                             }
-                             | ({'licence': {'no': s.licence_no, 'exp_time': s.licence_expiry_date.strftime('%d/%m/%Y'),
-                                             'exp': s.is_licence_expired()}} if s.has_licence() else {})
-                for s in Student.objects.all()}
+    range_end = today - timedelta(days=365)
 
-    attendances = Attendance.objects.filter(date__gte=classes[-1].date)
+    courses = Course.objects.all()
+    students = {str(s.uuid): {
+        'uuid': str(s.uuid),
+        'name': s.name,
+        'membership': 'trial' if not s.has_licence() else 'licenced',
+        'rem_trial_sessions': s.remaining_trial_sessions,
+        'signed_up_for': list(map(lambda c: c.uuid, s.courses)),
+        'has_notes': s.has_notes,
+        'has_prepaid': any(map(lambda c: s.has_prepaid(c), courses)),
+        'attendances': [],
+        'paid': [],
+        'complementary': [],
+    }
+        | ({'licence': {'no': s.licence_no, 'exp_time': s.licence_expiry_date.strftime('%d/%m/%Y'),
+                        'exp': s.is_licence_expired()}} if s.has_licence() else {})
+        for s in Student.objects.all()}
+
+    attendances = Attendance.objects.filter(date__gte=range_end)
 
     for a in attendances:
         students[str(a.student_id)]['attendances'].append(str(a.session_date))
@@ -74,7 +76,8 @@ def get_members(request):
             case a.has_paid:
                 students[str(a.student_id)]['paid'].append(str(a.session_date))
             case a.is_complementary:
-                students[str(a.student_id)]['complementary'].append(str(a.session_date))
+                students[str(a.student_id)]['complementary'].append(
+                    str(a.session_date))
 
     return JsonResponse(list(students.values()), safe=False)
 
@@ -86,13 +89,18 @@ def get_member_licences(request, pk):
     return JsonResponse(s.licences)
 
 
-
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
 def post_add_member(request):
     s = Student.make(name=request.POST.get('studentName'))
     s.save()
+
+    product_uuid = request.POST.get('product')
+    if product_uuid:
+        c = Course.objects.get(_uuid=product_uuid)
+        s.sign_up(c)
+        s.save()
 
     return JsonResponse({'success': {'uuid': s.uuid}})
 
@@ -141,10 +149,11 @@ def post_add_member_note(request, pk):
 @handle_error
 def post_add_member_payment(request, pk):
     s = Student.objects.get(uuid=pk)
-    # data = json.loads(request.body)
-    # product_id = data.get('product')
+    data = json.loads(request.body)
+    product_id = data.get('product')
+    c = Course.objects.get(_uuid=product_id)
 
-    s.take_payment(Payment.make(datetime=timezone.now()))
+    s.take_payment(Payment.make(timezone.now(), c))
     s.save()
 
     return JsonResponse({'success': None})
@@ -156,24 +165,30 @@ def post_add_member_payment(request, pk):
 def post_log_attendance(request):
     student_uuid = request.POST.get('student_uuid')
     sess_date = date.fromisoformat(request.POST.get('sess_date'))
+    product_uuid = request.POST.get('product').split(',')[0]
     payment = request.POST.get('payment')
     payment_option = request.POST.get('payment_option')
     existing_registration = False
 
+    if not product_uuid:
+        raise ValueError('No valid product/course found for this submission')
+
     s = Student.objects.get(pk=student_uuid)
+    c = Course.objects.get(_uuid=product_uuid)
     existing = Attendance.objects.filter(student=s, date=sess_date)
     if existing.count() > 0:
         existing_registration = True
         existing.delete()
 
-    a = Attendance.register_student(s, date=sess_date, existing_registration=existing_registration)
+    a = Attendance.register_student(
+        s, date=sess_date, existing_registration=existing_registration, course=c)
 
     match payment:
         case 'complementary':
             a.mark_as_complementary()
         case 'paid':
             if payment_option == 'now':
-                s.take_payment(Payment.make(datetime=timezone.now()))
+                s.take_payment(Payment.make(timezone.now(), c))
             a.pay()
 
     a.save()
@@ -187,5 +202,6 @@ def post_clear_attendance(request):
     student_uuid = request.POST.get('student_uuid')
     sess_date = request.POST.get('sess_date')
 
-    Attendance.clear(Student.objects.get(pk=student_uuid), date=date.fromisoformat(sess_date))
+    Attendance.clear(Student.objects.get(pk=student_uuid),
+                     date=date.fromisoformat(sess_date))
     return JsonResponse({'success': None})
