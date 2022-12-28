@@ -19,6 +19,9 @@ class Course(models.Model):
         return self._label
 
     def __eq__(self, other):
+        # Note: If we ever want to declare two courses
+        # as being equivalent (i.e. a payment for one
+        # course is redeemable for another, update THIS method)
         return self.uuid == other.uuid
 
     @classmethod

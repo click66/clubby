@@ -160,3 +160,18 @@ def test_student_signup_for_course():
     s.sign_up(course)
 
     assert s.courses[0].label == 'TJJF Course'
+
+
+def test_handle_payment_without_course():
+    # Given a student has a payment on their account that is not associated with a particular course
+    # e.g. they may have paid for a course that is no longer running
+    s = Student.make(name='John Doe')
+    s.take_payment(Payment.make(datetime.datetime(2022, 2, 1), None))
+
+    # When I query for unused payments for a different course
+    course = Course.make('Another course', [0])
+    result = s.get_unused_payments(course)
+
+    # Then the payment is returned
+    # (To avoid the student missing out, we count this payment as being redeemable for any course)
+    assert len(result) is 1

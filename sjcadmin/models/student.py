@@ -67,7 +67,7 @@ class Payment(models.Model):
 
     def mark_used(self):
         self._used = True
-    
+
     def get_next_date(self, date):
         return self._course.get_next_from(date)
 
@@ -100,7 +100,7 @@ class Student(models.Model):
     join_date = models.DateField(null=False, default=timezone.now)
     _courses = models.ManyToManyField(Course)
 
-    _existing_courses =[]
+    _existing_courses = []
     _new_courses = []
 
     _notes = []
@@ -234,8 +234,12 @@ class Student(models.Model):
     def has_notes(self):
         return self.has_more_than_n_notes(0)
 
-    def get_unused_payments(self, course=None):
-        return list(filter(lambda p: not p.used and (course is None or p.course == course), self._unused_payments + self._new_payments))
+    def get_unused_payments(self, course=None) -> list:
+        return list(filter(lambda p: not p.used and (
+            course is None or
+            p.course is None or
+            p.course == course
+        ), self._unused_payments + self._new_payments))
 
     def has_prepaid(self, course):
         prepayments = self.get_unused_payments(course)
