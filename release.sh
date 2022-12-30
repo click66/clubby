@@ -24,4 +24,4 @@ rm $BE_ARTIFACT_PATH
 
 echo "Removing old releases..."
 cd $RELEASES_DIR
-ls -1 | sort | head -n -2 | xargs rm -rf
+ls -1 | sort | head -n -5 | xargs rm -rf
