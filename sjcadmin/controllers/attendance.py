@@ -24,7 +24,8 @@ def attendance(request):
         unique_classes[c.date.isoformat()].append(str(c.course_uuid))
 
     return render(request, 'attendance.html', {
-        'dataClasses': json.dumps(unique_classes),
         'classes': dict(unique_classes),
+        'dataClasses': json.dumps(unique_classes),
         'courses': courses,
+        'dataCourses': json.dumps(dict(map(lambda c: (str(c.uuid), c.label), courses))),
     })

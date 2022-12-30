@@ -10,7 +10,7 @@ import { Icons, Badges, withChild, withClasses } from './js/_helpers';
 function intersect(a, b) {
     const setA = new Set(a);
     return b.filter(value => setA.has(value));
- }
+}
 
 const icons = new Icons(document);
 const badges = new Badges(document);
@@ -37,6 +37,7 @@ const studentClassAttendance = date => (m, t, r) => {
 }
 
 const dataClasses = JSON.parse(document.getElementById('dataClasses').textContent);
+const dataCourses = JSON.parse(document.getElementById('dataCourses').textContent);
 
 const details = row => {
     let list = withClasses(document.createElement('ul'), ['details']),
@@ -70,6 +71,91 @@ const details = row => {
     list.appendChild(manageLink(row.uuid));
 
     return list;
+}
+
+const boundAttendanceHandler = function (mdlHtml) {
+    const mdlAttendance = new Modal(mdlHtml),
+        frmAttendance = mdlHtml.querySelector('#frmAttendance'),
+        btnMdlAttendanceCancel = mdlHtml.querySelector('#mdlAttendance_cancel'),
+        eByPrefix = p => mdlHtml.querySelector(`#mdlAttendance_${p}`),
+        eProductUuid = eByPrefix('productUuid'),
+        eProductLabel = eByPrefix('productLabel'),
+        eSessionDate = eByPrefix('sessionDate'),
+        eStudentUuid = eByPrefix('studentUuid'),
+        eStudentName = eByPrefix('studentName'),
+        eAttending = eByPrefix('attending'),
+        eComplementary = eByPrefix('complementary'),
+        ePaid = eByPrefix('paid'),
+        ePayOptions = eByPrefix('payOptions'),
+        ePayOption = eByPrefix('payOption');
+
+    btnMdlAttendanceCancel.addEventListener('click', function () {
+        mdlAttendance.hide();
+    });
+
+    frmAttendance.addEventListener('submit', function (e) {
+        if (e.submitter) {
+            let submitter = e.submitter.id;
+            e.preventDefault();
+
+            switch (submitter) {
+                case 'mdlAttendance_submit':
+                    postForm(frmAttendance)('/api/attendance/log').then(function (r) {
+                        notifications.success('Attendance recorded');
+                        table.ajax.reload();
+                        mdlAttendance.hide();
+                    }).catch(notifyError(notifications));
+                    break;
+                case 'mdlAttendance_clear':
+                    postForm(frmAttendance)('/api/attendance/clear').then(function (r) {
+                        notifications.success('Attendance cleared');
+                        table.ajax.reload();
+                        mdlAttendance.hide();
+                    }).catch(notifyError(notifications));
+                    break;
+            }
+        }
+    });
+
+    [...mdlHtml.querySelectorAll('input[name=payment]')].forEach(function (r) {
+        r.addEventListener('change', function (e) {
+            mdlHtml.querySelector('#mdlAttendance_payOptions').classList.toggle('d-none', e.target.value != 'paid');
+        });
+    });
+
+    return function (e) {
+        if (e.target.matches('td.session:not(.disabled), td.session:not(.disabled) *')) {
+            let td = e.target.closest('td'),
+                cell = table.cell(td).node(),
+                date = cell.getAttribute('data-sessdate'),
+                productUuid = cell.getAttribute('data-product'),
+                productName = dataCourses[productUuid],
+                row = table.row(td).data(),
+                attending = row.attendances.includes(date),
+                complementary = row.attendances.includes(date),
+                paid = row.paid.includes(date),
+                prepaid = row.has_prepaid;
+
+            eSessionDate.value = date;
+            eProductUuid.value = productUuid;
+            eStudentUuid.value = row.uuid;
+            eStudentName.value = row.name;
+            eProductLabel.textContent = productName;
+
+            eAttending.checked = attending;
+            eComplementary.checked = complementary;
+            ePaid.checked = paid;
+
+            eAttending.disabled = paid;
+            eComplementary.disabled = paid;
+            ePaid.disabled = paid;
+
+            ePayOptions.classList.toggle('d-none', true);
+            ePayOption.value = prepaid ? 'advance' : 'now';
+
+            mdlAttendance.show();
+        }
+    }
 }
 
 const table = new DataTable('#tblStudents .table', {
@@ -149,85 +235,8 @@ table.table().container().addEventListener('click', function (e) {
     }
 });
 
-const mdlAttendanceInner = document.getElementById('mdlAttendance'),
-    mdlAttendance = new Modal(mdlAttendanceInner),
-    frmAttendance = document.getElementById('frmAttendance'),
-    btnMdlAttendanceCancel = document.getElementById('mdlAttendance_cancel');
-
-table.table().container().addEventListener('click', function (e) {
-    if (e.target.matches('td.session:not(.disabled), td.session:not(.disabled) *')) {
-        let td = e.target.closest('td'),
-            cell = table.cell(td).node(),
-            row = table.row(td).data(),
-            date = cell.getAttribute('data-sessdate'),
-            productUuid = cell.getAttribute('data-product'),
-            attending = row.attendances.includes(date),
-            complementary = row.complementary.includes(date),
-            paid = row.paid.includes(date),
-            prepaid = row.has_prepaid,
-            eByPrefix = p => mdlAttendanceInner.querySelector(`#mdlAttendance_${p}`),
-            eProductUuid = eByPrefix('productUuid'),
-            eSessionDate = eByPrefix('sessionDate'),
-            eStudentUuid = eByPrefix('studentUuid'),
-            eStudentName = eByPrefix('studentName'),
-            eAttending = eByPrefix('attending'),
-            eComplementary = eByPrefix('complementary'),
-            ePaid = eByPrefix('paid'),
-            ePayOptions = eByPrefix('payOptions'),
-            ePayOption = eByPrefix('payOption');
-
-        eSessionDate.value = date;
-        eProductUuid.value = productUuid;
-        eStudentUuid.value = row.uuid;
-        eStudentName.value = row.name;
-
-        eAttending.checked = attending;
-        eComplementary.checked = complementary;
-        ePaid.checked = paid;
-
-        eAttending.disabled = paid;
-        eComplementary.disabled = paid;
-        ePaid.disabled = paid;
-
-        ePayOptions.classList.toggle('d-none', true);
-        ePayOption.value = prepaid ? 'advance' : 'now';
-
-        mdlAttendance.show();
-    }
-});
-
-[...mdlAttendanceInner.querySelectorAll('input[name=payment]')].forEach(function (r) {
-    r.addEventListener('change', function (e) {
-        mdlAttendanceInner.querySelector('#mdlAttendance_payOptions').classList.toggle('d-none', e.target.value != 'paid');
-    });
-});
-
-btnMdlAttendanceCancel.addEventListener('click', function () {
-    mdlAttendance.hide();
-});
-
-frmAttendance.addEventListener('submit', function (e) {
-    if (e.submitter) {
-        let submitter = e.submitter.id;
-        e.preventDefault();
-
-        switch (submitter) {
-            case 'mdlAttendance_submit':
-                postForm(frmAttendance)('/api/attendance/log').then(function (r) {
-                    notifications.success('Attendance recorded');
-                    table.ajax.reload();
-                    mdlAttendance.hide();
-                }).catch(notifyError(notifications));
-                break;
-            case 'mdlAttendance_clear':
-                postForm(frmAttendance)('/api/attendance/clear').then(function (r) {
-                    notifications.success('Attendance cleared');
-                    table.ajax.reload();
-                    mdlAttendance.hide();
-                }).catch(notifyError(notifications));
-                break;
-        }
-    }
-});
+table.table().container().addEventListener('click', boundAttendanceHandler(
+    document.getElementById('mdlAttendance'),
+));
 
 mqa(document, table);

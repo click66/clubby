@@ -79,7 +79,7 @@
         <div class="modal-content">
             <form method="POST" id="frmAttendance">
                 <div class="modal-header">
-                    <h2>Log Attendance:</h2>
+                    <h2 class="modal-title">Log Attendance:&nbsp;<span id="mdlAttendance_productLabel" class="text-secondary"></span></h2>
                 </div>
                 <div class="modal-body">
                     {% csrf_token %}
@@ -135,4 +135,5 @@
 </div>
 
 <script id="dataClasses" type="application/json">{{dataClasses|safe}}</script>
+<script id="dataCourses" type="application/json">{{dataCourses|safe}}</script>
 {% endblock %}
