@@ -13,7 +13,8 @@ tar -xvzf $BE_ARTIFACT_PATH -C $DEPLOY_DIR
 
 echo "Build venv"
 cd $DEPLOY_DIR
-POETRY_VIRTUALENV_IN_PROJECT=true ~/.local/bin/poetry install
+#POETRY_VIRTUALENV_IN_PROJECT=true ~/.local/bin/poetry install
+~/.local/bin/poetry install
 
 echo "Making new release live..."
 ln -sfn $DEPLOY_DIR $SERVED_PATH

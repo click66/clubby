@@ -1,2 +1,2 @@
 [virtualenvs]
-path = "/venvs"
+in-project = true
