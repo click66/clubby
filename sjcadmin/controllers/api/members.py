@@ -14,36 +14,16 @@ from ...models.student import Licence, Note, Student, Payment
 @login_required_401
 @require_http_methods(['GET'])
 def get_members(request):
-    today = date.today()
-    range_end = today - timedelta(days=365)
-
-    courses = Course.objects.all()
     students = {str(s.uuid): {
         'uuid': str(s.uuid),
         'name': s.name,
         'membership': 'trial' if not s.has_licence() else 'licenced',
         'rem_trial_sessions': s.remaining_trial_sessions,
         'signed_up_for': list(map(lambda c: c.uuid, s.courses)),
-        'has_notes': s.has_notes,
-        'has_prepaid': any(map(lambda c: s.has_prepaid(c), courses)),
-        'attendances': [],
-        'paid': [],
-        'complementary': [],
     }
         | ({'licence': {'no': s.licence_no, 'exp_time': s.licence_expiry_date.strftime('%d/%m/%Y'),
                         'exp': s.is_licence_expired()}} if s.has_licence() else {})
         for s in Student.objects.all()}
-
-    attendances = Attendance.objects.filter(date__gte=range_end)
-
-    for a in attendances:
-        students[str(a.student_id)]['attendances'].append(str(a.session_date))
-        match True:
-            case a.has_paid:
-                students[str(a.student_id)]['paid'].append(str(a.session_date))
-            case a.is_complementary:
-                students[str(a.student_id)]['complementary'].append(
-                    str(a.session_date))
 
     return JsonResponse(list(students.values()), safe=False)
 
