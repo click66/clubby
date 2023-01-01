@@ -73,7 +73,7 @@ const details = row => {
     return list;
 }
 
-const boundAttendanceHandler = function (mdlHtml) {
+const boundAttendanceHandler = function (mdlHtml, table) {
     const mdlAttendance = new Modal(mdlHtml),
         frmAttendance = mdlHtml.querySelector('#frmAttendance'),
         btnMdlAttendanceCancel = mdlHtml.querySelector('#mdlAttendance_cancel'),
@@ -87,7 +87,15 @@ const boundAttendanceHandler = function (mdlHtml) {
         eComplementary = eByPrefix('complementary'),
         ePaid = eByPrefix('paid'),
         ePayOptions = eByPrefix('payOptions'),
-        ePayOption = eByPrefix('payOption');
+        ePayOption = eByPrefix('payOption'),
+        rowRefresh = function (studentUuid, data) {
+            let row = table.row(`[data-student-uuid=${studentUuid}]`)
+            if (row) {
+                row.data(data);
+                return;
+            }
+            table.ajax.reload();
+        }
 
     btnMdlAttendanceCancel.addEventListener('click', function () {
         mdlAttendance.hide();
@@ -102,14 +110,14 @@ const boundAttendanceHandler = function (mdlHtml) {
                 case 'mdlAttendance_submit':
                     postForm(frmAttendance)('/api/attendance/log').then(function (r) {
                         notifications.success('Attendance recorded');
-                        table.ajax.reload();
+                        rowRefresh(r.success.uuid, r.success);
                         mdlAttendance.hide();
                     }).catch(notifyError(notifications));
                     break;
                 case 'mdlAttendance_clear':
                     postForm(frmAttendance)('/api/attendance/clear').then(function (r) {
                         notifications.success('Attendance cleared');
-                        table.ajax.reload();
+                        rowRefresh(r.success.uuid, r.success);
                         mdlAttendance.hide();
                     }).catch(notifyError(notifications));
                     break;
@@ -130,16 +138,17 @@ const boundAttendanceHandler = function (mdlHtml) {
                 date = cell.getAttribute('data-sessdate'),
                 productUuid = cell.getAttribute('data-product'),
                 productName = dataCourses[productUuid],
-                row = table.row(td).data(),
-                attending = row.attendances.includes(date),
-                complementary = row.attendances.includes(date),
-                paid = row.paid.includes(date),
-                prepaid = row.has_prepaid;
+                row = table.row(td),
+                rd = row.data(),
+                attending = rd.attendances.includes(date),
+                complementary = rd.attendances.includes(date),
+                paid = rd.paid.includes(date),
+                prepaid = rd.has_prepaid;
 
             eSessionDate.value = date;
             eProductUuid.value = productUuid;
-            eStudentUuid.value = row.uuid;
-            eStudentName.value = row.name;
+            eStudentUuid.value = rd.uuid;
+            eStudentName.value = rd.name;
             eProductLabel.textContent = productName;
 
             eAttending.checked = attending;
@@ -160,7 +169,7 @@ const boundAttendanceHandler = function (mdlHtml) {
 
 const table = new DataTable('#tblStudents .table', {
     ajax: {
-        url: "/api/members",
+        url: "/api/attendance",
         dataSrc: "",
     },
     columns: [
@@ -207,6 +216,9 @@ const table = new DataTable('#tblStudents .table', {
             "render": studentClassAttendance(k),
         }
     })),
+    createdRow: function (row, data) {
+        row.setAttribute('data-student-uuid', data.uuid);
+    },
     paging: false,
     scrollX: true,
     scrollCollapse: true,
@@ -237,6 +249,7 @@ table.table().container().addEventListener('click', function (e) {
 
 table.table().container().addEventListener('click', boundAttendanceHandler(
     document.getElementById('mdlAttendance'),
+    table,
 ));
 
 mqa(document, table);

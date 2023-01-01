@@ -1,48 +1,14 @@
 import json
 
-from functools import wraps
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
-from datetime import date, datetime, timedelta
-from ..errors import DomainError
-from ..models.attendance import Attendance
-from ..models.course import Course
-from ..models.session import Session
-from ..models.student import Licence, Note, Student, Payment
+from datetime import date, timedelta
 
-
-def user_passes_test(test_func):
-    def decorator(view_func):
-        @wraps(view_func)
-        def _wrapped_view(request, *args, **kwargs):
-            if test_func(request.user):
-                return view_func(request, *args, **kwargs)
-            return HttpResponse('Unauthorized', status=401)
-
-        return _wrapped_view
-
-    return decorator
-
-
-def login_required_401(function=None):
-    actual_decorator = user_passes_test(
-        lambda u: u.is_authenticated,
-    )
-    if function:
-        return actual_decorator(function)
-    return actual_decorator
-
-
-def handle_error(function=None):
-    @wraps(function)
-    def inner(request, *args, **kwargs):
-        try:
-            return function(request, *args, **kwargs)
-        except (DomainError, ValueError) as e:
-            return JsonResponse({'error': str(e)})
-
-    return inner
+from ._middleware import handle_error, login_required_401
+from ...models.attendance import Attendance
+from ...models.course import Course
+from ...models.student import Licence, Note, Student, Payment
 
 
 @login_required_401
@@ -156,52 +122,4 @@ def post_add_member_payment(request, pk):
     s.take_payment(Payment.make(timezone.now(), c))
     s.save()
 
-    return JsonResponse({'success': None})
-
-
-@login_required_401
-@require_http_methods(['POST'])
-@handle_error
-def post_log_attendance(request):
-    student_uuid = request.POST.get('student_uuid')
-    sess_date = date.fromisoformat(request.POST.get('sess_date'))
-    product_uuid = request.POST.get('product').split(',')[0]
-    payment = request.POST.get('payment')
-    payment_option = request.POST.get('payment_option')
-    existing_registration = False
-
-    if not product_uuid:
-        raise ValueError('No valid product/course found for this submission')
-
-    s = Student.objects.get(pk=student_uuid)
-    c = Course.objects.get(_uuid=product_uuid)
-    existing = Attendance.objects.filter(student=s, date=sess_date)
-    if existing.count() > 0:
-        existing_registration = True
-        existing.delete()
-
-    a = Attendance.register_student(
-        s, date=sess_date, existing_registration=existing_registration, course=c)
-
-    match payment:
-        case 'complementary':
-            a.mark_as_complementary()
-        case 'paid':
-            if payment_option == 'now':
-                s.take_payment(Payment.make(timezone.now(), c))
-            a.pay()
-
-    a.save()
-    s.save()
-    return JsonResponse({'success': None})
-
-
-@login_required_401
-@require_http_methods(['POST'])
-def post_clear_attendance(request):
-    student_uuid = request.POST.get('student_uuid')
-    sess_date = request.POST.get('sess_date')
-
-    Attendance.clear(Student.objects.get(pk=student_uuid),
-                     date=date.fromisoformat(sess_date))
     return JsonResponse({'success': None})

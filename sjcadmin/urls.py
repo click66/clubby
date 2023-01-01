@@ -16,7 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from .controllers import attendance, auth, api, home, members
+from .controllers.api import attendance as api_attendance, members as api_members
+
+from .controllers import attendance, auth, home, members
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,13 +33,15 @@ urlpatterns = [
 
     path('attendance', attendance.attendance, name='attendance'),
 
-    path('api/members', api.get_members),
-    path('api/members/add', api.post_add_member),
-    path('api/members/delete/<uuid:pk>', api.post_delete_member),
-    path('api/members/<uuid:pk>/licences', api.get_member_licences),
-    path('api/members/<uuid:pk>/licences/add', api.post_add_member_licence),
-    path('api/members/<uuid:pk>/notes/add', api.post_add_member_note),
-    path('api/members/<uuid:pk>/payments/add', api.post_add_member_payment),
-    path('api/attendance/log', api.post_log_attendance),
-    path('api/attendance/clear', api.post_clear_attendance),
+    path('api/members', api_members.get_members),
+    path('api/members/add', api_members.post_add_member),
+    path('api/members/delete/<uuid:pk>', api_members.post_delete_member),
+    path('api/members/<uuid:pk>/licences', api_members.get_member_licences),
+    path('api/members/<uuid:pk>/licences/add', api_members.post_add_member_licence),
+    path('api/members/<uuid:pk>/notes/add', api_members.post_add_member_note),
+    path('api/members/<uuid:pk>/payments/add', api_members.post_add_member_payment),
+
+    path('api/attendance', api_attendance.get_attendance),
+    path('api/attendance/log', api_attendance.post_log_attendance),
+    path('api/attendance/clear', api_attendance.post_clear_attendance),
 ]
