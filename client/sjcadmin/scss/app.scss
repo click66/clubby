@@ -62,10 +62,10 @@ h2 {
     right: 0;
     padding: 10px;
     text-align: right;
-}
 
-.topBar a {
-    font-size: 0.9em;
+    a {
+        font-size: 0.9em;
+    }
 }
 
 .containerInner {
@@ -87,10 +87,10 @@ nav ol.breadcrumb a {
 
 #DataTables_Table_0_filter {
     text-align: right;
-}
 
-#DataTables_Table_0_filter>label {
-    margin-left: 1em;
+    >label {
+        margin-left: 1em;
+    }
 }
 
 #tblStudents {
@@ -103,9 +103,39 @@ nav ol.breadcrumb a {
             }
 
             &.disabled {
-                background-color: $gray-300!important;
-                cursor: auto!important;
+                background-color: $gray-300 !important;
+                cursor: auto !important;
             }
+        }
+    }
+
+    th,
+    td {
+        border-left-width: 1px;
+        font-size: 0.85em;
+    }
+
+    .studentMembership {
+        border-right-width: 2px;
+    }
+
+    .studentName,
+    .studentMembership {
+        border-left-width: 0;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .classHeader {
+        white-space: nowrap;
+    }
+
+    ul.details {
+        list-style-type: none;
+        margin: 0;
+
+        label {
+            margin-right: 10px;
         }
     }
 }
@@ -113,64 +143,30 @@ nav ol.breadcrumb a {
 #tblStudents_buttons {
     display: inline-block;
     margin-bottom: 1em;
-}
 
-#tblStudents_buttons .btn {
-    font-size: 0.9em;
-}
-
-#tblStudents th,
-td {
-    border-left-width: 1px;
-    font-size: 0.85em;
-}
-
-#tblStudents .studentMembership {
-    border-right-width: 2px;
-}
-
-#tblStudents .studentName,
-#tblStudents .studentMembership {
-    border-left-width: 0;
-}
-
-#tblStudents td.studentName,
-#tblStudents td.studentMembership {
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-#tblStudents .classHeader {
-    white-space: nowrap;
-}
-
-#tblStudents ul.details {
-    list-style-type: none;
-    margin: 0;
-}
-
-#tblStudents ul.details label {
-    margin-right: 10px;
+    .btn {
+        font-size: 0.9em;
+    }
 }
 
 ul.comments {
     list-style-type: none;
     margin: 0;
     padding: 0;
-}
 
-ul.comments li span {
-    display: block;
-}
+    li span {
+        display: block;
+    }
 
-.commentAuthor {
-    font-style: italic;
-    font-weight: bold;
-    font-size: 0.8em;
-}
+    .commentAuthor {
+        font-style: italic;
+        font-weight: bold;
+        font-size: 0.8em;
+    }
 
-.commentText {
-    font-size: 0.9em;
+    .commentText {
+        font-size: 0.9em;
+    }
 }
 
 .copyHome {
@@ -200,6 +196,34 @@ ul#portalLinks {
     gap: 1rem;
     margin: 0 auto;
     max-width: 100%;
+
+    li {
+        display: block;
+        text-align: center;
+
+        i {
+            font-size: 4em;
+            line-height: 1.2em;
+            display: block;
+
+            span {
+                display: block;
+            }
+        }
+
+        a {
+            display: block;
+            padding: 0 0.8em;
+            color: inherit;
+            text-decoration: none;
+            border-radius: 3px;
+
+            &:hover {
+                background-color: $light;
+                color: $dark;
+            }
+        }
+    }
 }
 
 @media (min-width: 600px) {
@@ -214,55 +238,26 @@ ul#portalLinks {
     }
 }
 
-ul#portalLinks li {
-    display: block;
-    text-align: center;
-}
-
-ul#portalLinks li i {
-    font-size: 4em;
-    line-height: 1.2em;
-    display: block;
-}
-
-ul#portalLinks li i,
-ul#portalLinks li span {
-    display: block;
-}
-
-ul#portalLinks li a {
-    display: block;
-    padding: 0 0.8em;
-    color: inherit;
-    text-decoration: none;
-    border-radius: 3px;
-}
-
-ul#portalLinks li a:hover {
-    background-color: #ddd;
-    color: #212529;
-}
-
 .nav.nav-tabs {
     overflow-x: auto;
     overflow-y: hidden;
     flex-wrap: nowrap;
-}
 
-.nav-link {
-    color: $gray-600;
-}
+    .nav-link {
+        color: $gray-600;
+    }
 
-.nav-tabs .nav-link.active,
-.nav-tabs .nav-item.show .nav-link {
-    border-color: transparent;
-    border-bottom-width: 3px;
-    border-bottom-color: $nav-tabs-link-active-color;
-    background-color: transparent !important;
-}
+    .nav-link.active,
+    .nav-item.show .nav-link {
+        border-color: transparent;
+        border-bottom-width: 3px;
+        border-bottom-color: $nav-tabs-link-active-color;
+        background-color: transparent !important;
+    }
 
-.nav-tabs .nav-link:hover {
-    border-left-color: transparent;
-    border-right-color: transparent;
-    color: $nav-tabs-link-active-color;
+    .nav-link:hover {
+        border-left-color: transparent;
+        border-right-color: transparent;
+        color: $nav-tabs-link-active-color;
+    }
 }

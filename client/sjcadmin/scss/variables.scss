@@ -1,8 +1,10 @@
+$dark: #262626;
+$light: #f0f0f0;
 $white: #ffffff;
 
 $theme-colors: (
-    "light":      #f0f0f0,
-    "dark":       #262626,
+    "light":      $light,
+    "dark":       $dark,
     "primary":    #333,
     "secondary":  #999,
     "info":       #236dd7,
