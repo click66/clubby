@@ -14,10 +14,10 @@ tar -xvzf $BE_ARTIFACT_PATH -C $DEPLOY_DIR
 echo "Build venv"
 cd $DEPLOY_DIR
 ~/.local/bin/poetry install
-sudo systemctl restart guncorn
 
 echo "Making new release live..."
 ln -sfn $DEPLOY_DIR $SERVED_PATH
+sudo /bin/systemctl restart gunicorn
 
 echo "Removing artifacts..."
 rm $FE_ARTIFACT_PATH
