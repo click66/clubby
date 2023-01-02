@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import date, timedelta
 from django.http import JsonResponse
 from django.utils import timezone
@@ -19,20 +20,26 @@ def serialize_attendance(attendances: list[Attendance], students: list[Student])
             'signed_up_for': [c.uuid for c in s.courses],
             'has_notes': s.has_notes,
             'has_prepaid': any(s.has_prepaid(c) for c in s.courses),
-            'attendances': [],
-            'paid': [],
-            'complementary': [],
             **({'licence': {'no': s.licence_no, 'exp_time': s.licence_expiry_date.strftime('%d/%m/%Y'), 'exp': s.is_licence_expired()}} if s.has_licence() else {})
         } for s in students
     }
 
+    attendance_dict = defaultdict(
+        lambda: {'attendances': [], 'paid': [], 'complementary': []})
+
     for a in attendances:
-        students[str(a.student_id)]['attendances'].append(str(a.session_date))
+        attendance_dict[str(a.student_id)]['attendances'].append(
+            str(a.session_date))
+
         if a.has_paid:
-            students[str(a.student_id)]['paid'].append(str(a.session_date))
-        elif a.is_complementary:
-            students[str(a.student_id)]['complementary'].append(
+            attendance_dict[str(a.student_id)]['paid'].append(
                 str(a.session_date))
+        elif a.is_complementary:
+            attendance_dict[str(a.student_id)]['complementary'].append(
+                str(a.session_date))
+
+    for s in students:
+        students[s].update(attendance_dict[s])
 
     return students
 
