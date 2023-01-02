@@ -141,7 +141,7 @@ const boundAttendanceHandler = function (mdlHtml, table) {
                 row = table.row(td),
                 rd = row.data(),
                 attending = rd.attendances.includes(date),
-                complementary = rd.attendances.includes(date),
+                complementary = rd.complementary.includes(date),
                 paid = rd.paid.includes(date),
                 prepaid = rd.has_prepaid;
 
