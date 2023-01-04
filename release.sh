@@ -13,11 +13,12 @@ tar -xvzf $BE_ARTIFACT_PATH -C $DEPLOY_DIR
 
 echo "Build venv"
 cd $DEPLOY_DIR
-~/.local/bin/poetry install
+~/.local/bin/poetry install                                     # Build venv, install dependencies
 
 echo "Making new release live..."
-ln -sfn $DEPLOY_DIR $SERVED_PATH
-sudo /bin/systemctl restart gunicorn
+ln -sfn $DEPLOY_DIR $SERVED_PATH                                # Switch over to code to served path
+env $(cat ~/sjc-control.env) poetry run ./manage.py migrate     # Migrate database
+sudo /bin/systemctl restart gunicorn                            # Restart gunicorn, init new venv
 
 echo "Removing artifacts..."
 rm $FE_ARTIFACT_PATH
