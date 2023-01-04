@@ -20,6 +20,7 @@ def serialize_attendance(attendances: list[Attendance], students: list[Student])
             'signed_up_for': [c.uuid for c in s.courses],
             'has_notes': s.has_notes,
             'has_prepaid': any(s.has_prepaid(c) for c in s.courses),
+            'prepayments': {str(c.uuid): prepaid is not None for c in s.courses for prepaid in [s.has_prepaid(c)]},
             **({'licence': {'no': s.licence_no, 'exp_time': s.licence_expiry_date.strftime('%d/%m/%Y'), 'exp': s.is_licence_expired()}} if s.has_licence() else {})
         } for s in students
     }

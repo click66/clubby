@@ -68,9 +68,6 @@ class Payment(models.Model):
     def mark_used(self):
         self._used = True
 
-    def get_next_date(self, date):
-        return self._course.get_next_from(date)
-
     @property
     def used(self):
         return self._used
