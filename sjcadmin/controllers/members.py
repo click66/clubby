@@ -15,6 +15,7 @@ def members(request):
     return render(request, 'members.html')
 
 
+@login_required(login_url='/auth/login')
 def member(request, pk):
     try:
         s = Student.objects.get(uuid=pk)

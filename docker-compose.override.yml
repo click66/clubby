@@ -2,6 +2,7 @@ services:
   app:
     environment:
       - DJANGO_SETTINGS_MODULE=sjcadmin.settings
+      - DJANGO_SECRET_KEY="*(%z)+p^f+*&!zdv$j_ipce+)ru+f+g91udo2i&=1l1r6deyet"
       - ENVIRONMENT_NAME=local
       - PGPASS=Rand0m!
     ports:
@@ -20,6 +21,7 @@ services:
       target: base
     environment:
       - DJANGO_SETTINGS_MODULE=sjcadmin.settings
+      - DJANGO_SECRET_KEY="*(%z)+p^f+*&!zdv$j_ipce+)ru+f+g91udo2i&=1l1r6deyet"
       - ENVIRONMENT_NAME=local
       - PGPASS=Rand0m!
     working_dir: /app
