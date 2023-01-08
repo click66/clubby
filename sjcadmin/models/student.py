@@ -84,6 +84,8 @@ class Payment(models.Model):
 
 class Student(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    _creator = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, db_column='creator_id')
 
     profile_name = models.CharField(null=True, max_length=120)
     profile_dob = models.DateField(null=True)
@@ -152,6 +154,7 @@ class Student(models.Model):
             name: str=None,
             profile=None,
             licence=None,
+            creator: User=None,
     ):
         if not name and (not profile or (profile and not profile.name)):
             raise ValueError('Student name cannot be blank')
@@ -163,7 +166,8 @@ class Student(models.Model):
             profile_phone=getattr(profile, 'phone', None),
             profile_email=getattr(profile, 'email', None),
             profile_address=getattr(profile, 'address', None),
-            allowed_trial_sessions=(0 if licence else 2)
+            allowed_trial_sessions=(0 if licence else 2),
+            _creator=creator,
         )
 
         student.sessions_attended = 0
@@ -183,6 +187,10 @@ class Student(models.Model):
     @property
     def name(self) -> str:
         return self.profile_name
+
+    @property
+    def added_by(self) -> str | None:
+        return self._creator.username if self._creator else None
 
     @property
     def dob(self) -> str:

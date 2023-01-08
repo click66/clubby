@@ -39,7 +39,7 @@ def get_member_licences(request, pk):
 @require_http_methods(['POST'])
 @handle_error
 def post_add_member(request):
-    s = Student.make(name=request.POST.get('studentName'))
+    s = Student.make(name=request.POST.get('studentName'), creator=request.user)
     s.save()
 
     product_uuid = request.POST.get('product')

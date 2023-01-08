@@ -29,7 +29,7 @@
             <span class="badge bg-danger align-middle">Expired</span>
             {% endif %}
         </div>
-        <p class="mb-0">Member since: {{ student.join_date }}</p>
+        <p class="mb-0">Member since: {{ student.join_date }} {% if student.added_by %}<span class="text-secondary">(Added by: {{ student.added_by }}){% endif %}</span></p>
     </div>
 
     <div class="rounded-3 bg-white text-dark" id="copy">
