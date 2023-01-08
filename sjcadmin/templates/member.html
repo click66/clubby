@@ -56,54 +56,62 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane fade p-3" id="tabCopyProfile" role="tabpanel" aria-labelledby="tabProfile">
-                <div class="row">
-                    <div class="col-lg-9 col-sm-12">
-                        <div class="mb-3 row">
-                            <label class="col-sm-2 col-form-label">Date of Birth</label>
-                            <div class="col-sm-10">
-                                <input type="text" readonly class="form-control-plaintext" value="{{ student.dob }}">
+                <form id="frmUpdateMemberProfile" data-csrf-token="{{ csrf_token }}" data-uuid="{{ student.uuid }}">
+                    <div class="row">
+                        <div class="col-lg-9 col-sm-12">
+                            <div class="mb-3 row">
+                                <label class="col-sm-2 col-form-label">Name</label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="name" class="form-control" value="{{ student.name }}">
+                                </div>
+                            </div>
+                            <div class="mb-3 row">
+                                <label class="col-sm-2 col-form-label">Date of Birth</label>
+                                <div class="col-sm-10">
+                                    <input type="date" name="dob" class="form-control"
+                                        value="{{ student.dob|date:'Y-m-d' }}">
+                                </div>
+                            </div>
+                            <div class="mb-3 row">
+                                <label class="col-sm-2 col-form-label">Phone Number</label>
+                                <div class="col-sm-4">
+                                    <input type="text" name="phone" class="form-control" value="{{ student.phone }}">
+                                </div>
+                                <label class="col-sm-2 col-form-label">Email address</label>
+                                <div class="col-sm-4">
+                                    <input type="text" name="email" class="form-control" value="{{ student.email }}">
+                                </div>
+                            </div>
+                            <div class="mb-3 row">
+                                <label class="col-sm-2 col-form-label">Address</label>
+                                <div class="col-sm-10">
+                                    <textarea name="address" rows="6"
+                                        style="width:100%; resize: none; padding: 10px;">{{ student.address }}</textarea>
+                                </div>
                             </div>
                         </div>
-                        <div class="mb-3 row">
-                            <label class="col-sm-2 col-form-label">Phone Number</label>
-                            <div class="col-sm-10">
-                                <input type="text" readonly class="form-control-plaintext" value="{{ student.phone }}">
-                            </div>
-                        </div>
-                        <div class="mb-3 row">
-                            <label class="col-sm-2 col-form-label">Email address</label>
-                            <div class="col-sm-10">
-                                <input type="text" readonly class="form-control-plaintext" value="{{ student.email }}">
-                            </div>
-                        </div>
-                        <div class="mb-3 row">
-                            <label class="col-sm-2 col-form-label">Address</label>
-                            <div class="col-sm-10">
-                                <textarea rows="6" style="width:100%" readonly>{{ student.address }}</textarea>
+                        <div class="col-lg-3 col-sm-12 mb-3">
+                            <h2>Signed Up For</h2>
+                            <ul>
+                                {% for uuid, class in classes.items %}
+                                <li><a href="/attendance">{{ class }}</a>
+                                    {% endfor %}
+                            </ul>
+                            <div class="row">
+                                <div class="col-lg-12 col-md-6 col-sm-12">
+                                </div>
+                                <div class="col-lg-12 col-md-6 col-sm-12">
+                                </div>
                             </div>
                         </div>
 
-                    </div>
-                    <div class="col-lg-3 col-sm-12 mb-3">
-                        <h2>Signed Up For</h2>
-                        <ul>
-                            {% for uuid, class in classes.items %}
-                            <li><a href="/attendance">{{ class }}</a>
-                            {% endfor %}
-                        </ul>
-                        <div class="row">
-                            <div class="col-lg-12 col-md-6 col-sm-12">
-                            </div>
-                            <div class="col-lg-12 col-md-6 col-sm-12">
-                            </div>
+                        <div class="p-3 text-end">
+                            <button type="submit" class="btn btn-primary text-white" id="btnUpdate">Save Member</button>
+                            <button type="button" class="btn btn-danger text-white" id="btnDelete"
+                                data-uuid="{{ student.uuid }}" data-csrf-token="{{ csrf_token }}">Delete Member</button>
                         </div>
                     </div>
-
-                    <div class="p-3 text-end">
-                        <button type="button" class="btn btn-danger text-white" id="btnDelete" data-uuid="{{ student.uuid }}"
-                            data-csrf-token="{{ csrf_token }}">Delete Member</button>
-                    </div>
-                </div>
+                </form>
             </div>
 
             <div class="tab-pane fade p-3" id="tabCopyLicence" role="tabpanel" aria-labelledby="tabLicence">
@@ -148,7 +156,8 @@
                         <ul class="comments">
                             {% for note in notes %}
                             <li class="mb-3 p-2">
-                                <span class="commentAuthor">{{ note.author_name }} ({{ note.time|date:'M. d, Y'}}):</span>
+                                <span class="commentAuthor">{{ note.author_name }} ({{ note.time|date:'M. d,
+                                    Y'}}):</span>
                                 <span class="commentText">{{ note.text }}</span>
                             </li>
                             {% endfor %}
@@ -185,12 +194,12 @@
                         </table>
                         {% else %}
                         <p class="text-center">No unused payments
-                        {% endif %}
+                            {% endif %}
 
                         <h2>Historical Payments</h2>
                         {% if not payments_historical %}
                         <p class="text-center">No historical payments
-                        {% else %}
+                            {% else %}
                         <table class="table">
                             <thead>
                                 <tr>

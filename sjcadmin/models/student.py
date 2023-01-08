@@ -11,6 +11,7 @@ from .course import Course
 
 @dataclass(frozen=True)
 class Profile:
+    name: str
     dob: str
     phone: str
     email: str
@@ -148,16 +149,16 @@ class Student(models.Model):
     @classmethod
     def make(
             cls,
-            name: str,
+            name: str=None,
             profile=None,
             licence=None,
     ):
-        if name == '':
+        if not name and (not profile or (profile and not profile.name)):
             raise ValueError('Student name cannot be blank')
 
         student = cls(
             licence=licence,
-            profile_name=name,
+            profile_name=profile.name if profile else name,
             profile_dob=getattr(profile, 'dob', None),
             profile_phone=getattr(profile, 'phone', None),
             profile_email=getattr(profile, 'email', None),
@@ -171,6 +172,13 @@ class Student(models.Model):
         student._new_courses = []
 
         return student
+
+    def set_profile(self, profile: Profile):
+        self.profile_name = profile.name
+        self.profile_dob = profile.dob
+        self.profile_phone = profile.phone
+        self.profile_email = profile.email
+        self.profile_address = profile.address
 
     @property
     def name(self) -> str:

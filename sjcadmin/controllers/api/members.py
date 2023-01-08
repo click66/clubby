@@ -8,7 +8,7 @@ from datetime import date, timedelta
 from ._middleware import handle_error, login_required_401
 from ...models.attendance import Attendance
 from ...models.course import Course
-from ...models.student import Licence, Note, Student, Payment
+from ...models.student import Licence, Note, Student, Payment, Profile
 
 
 @login_required_401
@@ -48,6 +48,18 @@ def post_add_member(request):
         s.sign_up(c)
         s.save()
 
+    return JsonResponse({'success': {'uuid': s.uuid}})
+
+
+@login_required_401
+@require_http_methods(['POST'])
+@handle_error
+def post_update_member_profile(request, pk):
+    s = Student.objects.get(uuid=pk)
+
+    s.set_profile(Profile(**json.loads(request.body)))
+    s.save()
+    
     return JsonResponse({'success': {'uuid': s.uuid}})
 
 

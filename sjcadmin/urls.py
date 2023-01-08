@@ -35,6 +35,7 @@ urlpatterns = [
 
     path('api/members', api_members.get_members),
     path('api/members/add', api_members.post_add_member),
+    path('api/members/<uuid:pk>/profile', api_members.post_update_member_profile),
     path('api/members/delete/<uuid:pk>', api_members.post_delete_member),
     path('api/members/<uuid:pk>/licences', api_members.get_member_licences),
     path('api/members/<uuid:pk>/licences/add', api_members.post_add_member_licence),
