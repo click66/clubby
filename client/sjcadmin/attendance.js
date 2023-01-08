@@ -7,11 +7,6 @@ import { Notifications, notifyError } from './js/_notifications';
 import { Icons, Badges, withChild, withClasses } from './js/_helpers';
 
 
-function intersect(a, b) {
-    const setA = new Set(a);
-    return b.filter(value => setA.has(value));
-}
-
 const icons = new Icons(document);
 const badges = new Badges(document);
 const notifications = new Notifications(document);
@@ -203,12 +198,19 @@ const table = new DataTable('#tblStudents .table', {
         return {
             "className": "session",
             "createdCell": (td, cd, rd, r, co) => {
-                let availableCourses = intersect(dataClasses[k], rd.signed_up_for);
+                const expired = (rd.membership === 'licenced' && rd.licence.exp) ||
+                    (rd.membership === 'trial' && rd.rem_trial_sessions <= 0);
+                if (expired) {
+                    td.className += ' disabled';
+                    return;
+                }
+
+                const availableCourses = dataClasses[k].filter(x => rd.signed_up_for.includes(x));
                 td.setAttribute('data-sessdate', k);
                 td.setAttribute('data-product', availableCourses);
 
-                if (!(availableCourses.length)) {
-                    td.classList.add('disabled');
+                if (!availableCourses.length) {
+                    td.className += ' disabled';
                 }
             },
             "data": null,
