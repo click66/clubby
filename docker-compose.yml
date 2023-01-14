@@ -1,7 +1,8 @@
 services:
   app:
-    build: .
-    command: "python manage.py runserver 0.0.0.0:8000"
+    build:
+      context: .
+      target: base
     volumes:
       - app:/var/www/html
 
@@ -9,8 +10,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.npm
-    entrypoint: npm
-    command: build
     volumes:
       - type: volume
         source: app

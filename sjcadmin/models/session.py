@@ -15,7 +15,10 @@ class Session:
         return Session(sess_date, course)
 
     @classmethod
-    def gen(cls, start: date, end: date, courses: list = [], exclusive=False):
+    def gen(cls, start: date, end: date, courses: list=None, exclusive=False):
+        if courses is None:
+            courses = []
+
         def daterange(start_date, end_date):
             end_date += timedelta(days=1)
             for n in range(int((end_date - start_date).days)):

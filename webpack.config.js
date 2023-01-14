@@ -15,18 +15,6 @@ module.exports = {
         use: [
           MiniCssExtractPlugin.loader,
           'css-loader',
-          // {
-          //   loader: 'postcss-loader',
-          //   options: {
-          //     postcssOptions: {
-          //       plugins: function () {
-          //         return [
-          //           require('autoprefixer'),
-          //         ];
-          //       }
-          //     }
-          //   }
-          // },
           'resolve-url-loader',
           {
             loader: 'sass-loader',

@@ -4,3 +4,4 @@ WORKDIR /app
 
 COPY . .
 ENTRYPOINT ["npm"]
+CMD ["run", "build"]

@@ -1,5 +1,8 @@
 services:
   app:
+    build:
+      context: .
+      target: dev-runtime
     environment:
       - DJANGO_SETTINGS_MODULE=sjcadmin.settings
       - DJANGO_SECRET_KEY="*(%z)+p^f+*&!zdv$j_ipce+)ru+f+g91udo2i&=1l1r6deyet"
@@ -7,8 +10,8 @@ services:
       - PGPASS=Rand0m!
     ports:
       - 8000:8000
-    volumes:
-      - .:/app
+    # volumes:
+      # - .:/app
   
   npm:
     command: ["run", "dev"]
@@ -29,7 +32,7 @@ services:
       - .:/app
 
   database:
-    image: postgres
+    image: postgres:14.5
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=Rand0m!

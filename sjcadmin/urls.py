@@ -21,8 +21,6 @@ from .controllers.api import attendance as api_attendance, members as api_member
 from .controllers import attendance, auth, home, members
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-
     path('auth/login', auth.login),
     path('auth/logout', auth.logout),
 

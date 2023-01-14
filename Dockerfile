@@ -1,22 +1,28 @@
+# Install base dependencies and application code
 FROM python:3.10 as base
 RUN apt-get update && apt-get install -y --no-install-recommends gcc
 
-# Install Poetry
 ENV PATH="/root/.local/bin:$PATH"
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
-# Install Poetry dependencies
 COPY poetry.* pyproject.toml /app/
 WORKDIR /app
 ENV POETRY_VIRTUALENVS_IN_PROJECT="true"
-RUN poetry install
+RUN poetry install --without dev --sync
 
-FROM base AS runtime
+WORKDIR /app
+COPY . .
 
-# Copy virtual env from python-deps stage
+
+# Install dev dependencies
+FROM base as dev-base
+RUN poetry install --with dev --sync
+
+
+# Run application in dev mode
+FROM dev-base AS dev-runtime
+
 COPY --from=base /app/.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
 
-# Install application into container
-WORKDIR /app
-COPY . .
+CMD python manage.py runserver 0.0.0.0:8000
