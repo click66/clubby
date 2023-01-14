@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['localhost', 'admin.southamptonjiujitsu.com']
 # Application definition
 
 INSTALLED_APPS = [
+    'dbbackup',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -83,6 +84,18 @@ DATABASES = {
         'PASSWORD': os.environ.get('PGPASS'),
         'PORT': 5432,
     }
+}
+
+DBBACKUP_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+DBBACKUP_STORAGE_OPTIONS = {
+    'access_key': os.environ.get('SJJ_S3_ACCESS_KEY'),
+    'secret_key': os.environ.get('SJJ_S3_SECRET_KEY'),
+    'bucket_name': 'southamptonjiujitsu',
+    'default_acl': 'private',
+    'location': 'sjcadmin-backups/django/',
+}
+DBBACKUP_CONNECTOR_MAPPING = {  
+    'django.db.backends.postgresql':'dbbackup.db.postgresql.PgDumpBinaryConnector',
 }
 
 

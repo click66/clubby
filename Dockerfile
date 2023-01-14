@@ -2,6 +2,14 @@
 FROM python:3.10 as base
 RUN apt-get update && apt-get install -y --no-install-recommends gcc
 
+# RUN apt-get install -y curl ca-certificates gnugp
+RUN curl https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+| gpg --dearmor \
+| tee /etc/apt/trusted.gpg.d/apt.postgresql.org.gpg >/dev/null
+RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" \
+> /etc/apt/sources.list.d/postgresql.list'
+RUN apt-get update && apt-get install -y postgresql-client-14
+
 ENV PATH="/root/.local/bin:$PATH"
 RUN curl -sSL https://install.python-poetry.org | python3 -
 

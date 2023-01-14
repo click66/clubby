@@ -8,3 +8,14 @@ $ ./manage.py migrate
 $ ./manage.py createsuperuser
 ```
 
+# Backups
+App is configured with django-dbbackup.
+
+```bash
+# Back up database
+$ ./manage.py dbbackup
+
+# Restore database
+$ ./manage.py migrate
+$ ./manage.py dbrestore
+```
