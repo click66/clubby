@@ -138,7 +138,7 @@ const boundAttendanceHandler = function (mdlHtml, table) {
                 attending = rd.attendances.includes(date),
                 complementary = rd.complementary.includes(date),
                 paid = rd.paid.includes(date),
-                prepaid = rd.has_prepaid;
+                prepaid = rd.prepayments[productUuid];
 
             eSessionDate.value = date;
             eProductUuid.value = productUuid;
@@ -184,7 +184,7 @@ const table = new DataTable('#tblStudents .table', {
                     c.appendChild(ac);
                 }
 
-                if (r.has_prepaid) {
+                if (Object.values(r.prepayments).some(b => b === true)) {
                     bc.setAttribute('href', '/members/' + r.uuid + '#payments');
                     bc.appendChild(icons.make('cash'));
                     c.appendChild(bc);
