@@ -98,6 +98,9 @@ class Student(models.Model):
     allowed_trial_sessions = models.IntegerField()
 
     join_date = models.DateField(null=False, default=timezone.now)
+
+    sessions_attended = 0
+
     _courses = models.ManyToManyField(Course)
 
     _existing_courses = []
@@ -109,26 +112,35 @@ class Student(models.Model):
     _used_payments = []
     _unused_payments = []
     _new_payments = []
+    _unused_and_new_payments = []
 
     @classmethod
-    def from_db(cls, db, field_names, values):
-        r = super().from_db(db, field_names, values)
+    def fetch_all(cls):
+        objects = cls.objects\
+            .select_related('licence')\
+            .prefetch_related('note_set')\
+            .prefetch_related('payment_set')\
+            .prefetch_related('attendance_set')\
+            .prefetch_related('_courses')\
+            .all()
 
-        r._notes = list(r.note_set.all())
-        r._new_notes = []
+        for o in objects:
+            payments = o.payment_set.all().order_by('-_datetime')
+            o._unused_payments = [p for p in payments if not p.used]
+            o._used_payments = [p for p in payments if p.used]
+            o._new_payments = []
+            o._unused_and_new_payments = o._unused_payments
 
-        r._unused_payments = list(r.payment_set.filter(
-            _used=False).order_by('-_datetime'))
-        r._used_payments = list(r.payment_set.filter(
-            _used=True).order_by('-_datetime'))
-        r._new_payments = []
+            o.sessions_attended = o.attendance_set.count()
 
-        r._existing_courses = list(r._courses.all())
-        r._new_courses = []
+            o._notes = list(o.note_set.all())
+            o._new_notes = []
 
-        # Eager read Attendance object into Student object
-        r.sessions_attended = r.attendance_set.count()
-        return r
+            o._existing_courses = list(o._courses.all())
+            o._new_courses = []
+
+        return objects
+
 
     def save(self, *args, **kwargs):
         for note in self._new_notes:
@@ -252,7 +264,7 @@ class Student(models.Model):
             course is None or
             p.course is None or
             p.course == course
-        ), self._unused_payments + self._new_payments))
+        ), self._unused_and_new_payments))
 
     def has_prepaid(self, course):
         prepayments = self.get_unused_payments(course)
@@ -261,10 +273,10 @@ class Student(models.Model):
     def take_payment(self, payment: Payment):
         payment._student = self
         self._new_payments.insert(0, payment)
+        self._unused_and_new_payments.insert(0, payment)
 
     def get_last_payments(self, n):
         return sorted(self._used_payments, key=lambda x: x.time, reverse=True)[0:n]
 
     def sign_up(self, course):
-        # self._courses.add(course)
         self._new_courses.append(course)

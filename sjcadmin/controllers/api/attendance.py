@@ -1,3 +1,6 @@
+import logging
+import time
+
 from collections import defaultdict
 from datetime import date, timedelta
 from django.http import JsonResponse
@@ -11,20 +14,32 @@ from ...models.student import Student, Payment
 
 
 def serialize_attendance(attendances: list[Attendance], students: list[Student]):
-    students = {
-        str(s.uuid): {
+    # Serialize students
+    serialized_students = {}
+    for s in students:
+        student_data = {
             'uuid': str(s.uuid),
             'name': s.name,
             'membership': 'trial' if not s.has_licence() else 'licenced',
             'rem_trial_sessions': s.remaining_trial_sessions,
             'signed_up_for': [c.uuid for c in s.courses],
             'has_notes': s.has_notes,
-            'has_prepaid': any(s.has_prepaid(c) for c in s.courses),
-            'prepayments': {str(c.uuid): prepaid is not None for c in s.courses for prepaid in [s.has_prepaid(c)]},
-            **({'licence': {'no': s.licence_no, 'exp_time': s.licence_expiry_date.strftime('%d/%m/%Y'), 'exp': s.is_licence_expired()}} if s.has_licence() else {})
-        } for s in students
-    }
+            'prepayments': {},
+        }
 
+        for c in s.courses:
+            prepaid = s.has_prepaid(c)
+            student_data['prepayments'][str(c.uuid)] = prepaid is not None
+
+        if s.has_licence():
+            student_data['licence'] = {
+                'no': s.licence_no,
+                'exp_time': s.licence_expiry_date.strftime('%d/%m/%Y'),
+                'exp': s.is_licence_expired()
+            }
+        serialized_students[str(s.uuid)] = student_data
+
+    # Hydrate attendance data
     attendance_dict = defaultdict(
         lambda: {'attendances': [], 'paid': [], 'complementary': []})
 
@@ -39,10 +54,11 @@ def serialize_attendance(attendances: list[Attendance], students: list[Student])
             attendance_dict[str(a.student_id)]['complementary'].append(
                 str(a.session_date))
 
-    for s in students:
-        students[s].update(attendance_dict[s])
+    # Merge attendence data with serialized students
+    for s in serialized_students:
+        serialized_students[s].update(attendance_dict[s])
 
-    return students
+    return serialized_students
 
 
 @login_required_401
@@ -50,10 +66,14 @@ def serialize_attendance(attendances: list[Attendance], students: list[Student])
 def get_attendance(request):
     today = date.today()
     range_end = today - timedelta(days=365)
-    return JsonResponse(list(serialize_attendance(
-        Attendance.objects.filter(date__gte=range_end),
-        Student.objects.all()).values(),
-    ), safe=False)
+
+    attendances = Attendance.objects.filter(date__gte=range_end)
+
+    students = Student.fetch_all()
+
+    response = JsonResponse(list(serialize_attendance(attendances, students).values()), safe=False)
+
+    return response
 
 
 @login_required_401
