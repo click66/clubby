@@ -90,7 +90,7 @@ def post_log_attendance(request):
     if not product_uuid:
         raise ValueError('No valid product/course found for this submission')
 
-    s = Student.objects.get(pk=student_uuid)
+    s = Student.fetch_by_uuid(student_uuid)
     c = Course.objects.get(_uuid=product_uuid)
     existing = Attendance.objects.filter(student=s, date=sess_date)
     if existing.count() > 0:
@@ -124,7 +124,7 @@ def post_log_attendance(request):
 def post_clear_attendance(request):
     student_uuid = request.POST.get('student_uuid')
     sess_date = request.POST.get('sess_date')
-    s = Student.objects.get(pk=student_uuid)
+    s = Student.fetch_by_uuid(student_uuid)
 
     Attendance.clear(s, date=date.fromisoformat(sess_date))
 

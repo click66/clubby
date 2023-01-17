@@ -23,7 +23,7 @@ def get_members(request):
     }
         | ({'licence': {'no': s.licence_no, 'exp_time': s.licence_expiry_date.strftime('%d/%m/%Y'),
                         'exp': s.is_licence_expired()}} if s.has_licence() else {})
-        for s in Student.objects.all()}
+        for s in Student.fetch_all()}
 
     return JsonResponse(list(students.values()), safe=False)
 
@@ -31,7 +31,7 @@ def get_members(request):
 @login_required_401
 @require_http_methods(['GET'])
 def get_member_licences(request, pk):
-    s = Student.objects.get(uuid=pk)
+    s = Student.fetch_by_uuid(pk)
     return JsonResponse(s.licences)
 
 
@@ -55,7 +55,7 @@ def post_add_member(request):
 @require_http_methods(['POST'])
 @handle_error
 def post_update_member_profile(request, pk):
-    s = Student.objects.get(uuid=pk)
+    s = Student.fetch_by_uuid(pk)
 
     s.set_profile(Profile(**json.loads(request.body)))
     s.save()
@@ -67,7 +67,7 @@ def post_update_member_profile(request, pk):
 @require_http_methods(['POST'])
 @handle_error
 def post_delete_member(request, pk):
-    s = Student.objects.get(uuid=pk)
+    s = Student.fetch_by_uuid(pk)
     if s:
         Attendance.objects.filter(student=s).delete()
     s.delete()
@@ -79,7 +79,7 @@ def post_delete_member(request, pk):
 @require_http_methods(['POST'])
 @handle_error
 def post_add_member_licence(request, pk):
-    s = Student.objects.get(uuid=pk)
+    s = Student.fetch_by_uuid(pk)
     number = request.POST.get('number')
     expire_date = date.fromisoformat(request.POST.get('expire_date'))
     s.add_licence(Licence(number=number, expires=expire_date))
@@ -93,7 +93,7 @@ def post_add_member_licence(request, pk):
 @handle_error
 def post_add_member_note(request, pk):
     data = json.loads(request.body)
-    s = Student.objects.get(uuid=pk)
+    s = Student.fetch_by_uuid(pk)
     text = data.get('text')
 
     s.add_note(Note.make(text, author=request.user, datetime=timezone.now()))
@@ -106,7 +106,7 @@ def post_add_member_note(request, pk):
 @require_http_methods(['POST'])
 @handle_error
 def post_add_member_payment(request, pk):
-    s = Student.objects.get(uuid=pk)
+    s = Student.fetch_by_uuid(pk)
     data = json.loads(request.body)
     product_id = data.get('product')
     c = Course.objects.get(_uuid=product_id)

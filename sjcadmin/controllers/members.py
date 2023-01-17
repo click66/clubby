@@ -18,7 +18,7 @@ def members(request):
 @login_required(login_url='/auth/login')
 def member(request, pk):
     try:
-        s = Student.objects.get(uuid=pk)
+        s = Student.fetch_by_uuid(pk)
     except Student.DoesNotExist:
         return redirect('members')
 

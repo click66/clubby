@@ -99,7 +99,7 @@ class Student(models.Model):
 
     join_date = models.DateField(null=False, default=timezone.now)
 
-    sessions_attended = 0
+    _sessions_attended = 0
 
     _courses = models.ManyToManyField(Course)
 
@@ -131,7 +131,7 @@ class Student(models.Model):
             o._new_payments = []
             o._unused_and_new_payments = o._unused_payments
 
-            o.sessions_attended = o.attendance_set.count()
+            o._sessions_attended = o.attendance_set.count()
 
             o._notes = list(o.note_set.all())
             o._new_notes = []
@@ -140,25 +140,26 @@ class Student(models.Model):
             o._new_courses = []
 
         return objects
+    
+    @classmethod
+    def fetch_by_uuid(cls, uuid: str):
+        o = cls.objects.get(pk=uuid)
 
+        o._notes = list(o.note_set.all())
+        o._new_notes = []
 
-    def save(self, *args, **kwargs):
-        for note in self._new_notes:
-            note.save()
-        self.note_set.add(*self._new_notes)
+        o._unused_payments = list(o.payment_set.filter(_used=False).order_by('-_datetime'))
+        o._used_payments = list(o.payment_set.filter(_used=True).order_by('-_datetime'))
+        o._new_payments = []
+        o._unused_and_new_payments = o._unused_payments
 
-        for payment in self._new_payments:
-            payment.save()
-        self.payment_set.add(*self._new_payments)
-        for payment in self._unused_payments:
-            payment.save()
+        o._existing_courses = list(o._courses.all())
+        o._new_courses = []
 
-        if self.has_licence():
-            self.licence.save()
+        o._sessions_attended = o.attendance_set.count()
 
-        self._courses.add(*self._new_courses)
+        return o
 
-        super().save(*args, **kwargs)
 
     @classmethod
     def make(
@@ -182,12 +183,32 @@ class Student(models.Model):
             _creator=creator,
         )
 
-        student.sessions_attended = 0
+        student._sessions_attended = 0
         student._notes = []
         student._new_notes = []
         student._new_courses = []
 
         return student
+    
+    
+    def save(self, *args, **kwargs):
+        for note in self._new_notes:
+            note.save()
+        self.note_set.add(*self._new_notes)
+
+        for payment in self._new_payments:
+            payment.save()
+        self.payment_set.add(*self._new_payments)
+        for payment in self._unused_payments:
+            payment.save()
+
+        if self.has_licence():
+            self.licence.save()
+
+        self._courses.add(*self._new_courses)
+
+        super().save(*args, **kwargs)
+
 
     def set_profile(self, profile: Profile):
         self.profile_name = profile.name
@@ -240,7 +261,7 @@ class Student(models.Model):
 
     @property
     def remaining_trial_sessions(self) -> int:
-        return self.allowed_trial_sessions - self.sessions_attended
+        return self.allowed_trial_sessions - self._sessions_attended
 
     def add_licence(self, licence: Licence):
         self.licence = licence
@@ -280,3 +301,9 @@ class Student(models.Model):
 
     def sign_up(self, course):
         self._new_courses.append(course)
+    
+    def increment_attendance(self):
+        self._sessions_attended += 1
+
+    def decrement_attendance(self, count: int):
+        self._sessions_attended -= count
