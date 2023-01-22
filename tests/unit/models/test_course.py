@@ -1,7 +1,7 @@
 import datetime
 import pytest
 
-from sjcadmin.models.course import Course
+from sjcadmin.sjcadmin.models.course import Course
 
 
 def test_can_check_if_session_date():

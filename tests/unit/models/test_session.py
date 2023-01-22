@@ -1,8 +1,8 @@
 from datetime import datetime
 import pytest
 
-from sjcadmin.models.session import Session
-from sjcadmin.models.course import Course
+from sjcadmin.sjcadmin.models.session import Session
+from sjcadmin.sjcadmin.models.course import Course
 
 
 def test_get_next_session():

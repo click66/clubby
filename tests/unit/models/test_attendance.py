@@ -1,10 +1,10 @@
 import datetime
 import pytest
 
-from sjcadmin.errors import *
-from sjcadmin.models.course import Course
-from sjcadmin.models.student import Student, Licence, Payment
-from sjcadmin.models.attendance import Attendance
+from sjcadmin.sjcadmin.errors import *
+from sjcadmin.sjcadmin.models.course import Course
+from sjcadmin.sjcadmin.models.student import Student, Licence, Payment
+from sjcadmin.sjcadmin.models.attendance import Attendance
 
 
 def test_register_student_into_class():

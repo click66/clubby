@@ -123,6 +123,18 @@ django = ">=2.2"
 pytz = "*"
 
 [[package]]
+name = "django-hosts"
+version = "5.2"
+description = "Dynamic and static host resolving for Django. Maps hostnames to URLconfs."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "django-hosts-5.2.tar.gz", hash = "sha256:32be764dbb0714878a1e6ba5c771418946eb0a17079a14f12e1afa90f182f191"},
+    {file = "django_hosts-5.2-py3-none-any.whl", hash = "sha256:cc4128b3020f059faaad6adb0f8a6784a72b74f979ef2c0d640677d872422dbe"},
+]
+
+[[package]]
 name = "django-storages"
 version = "1.13.2"
 description = "Support for many storage backends in Django"
@@ -447,4 +459,4 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "213f3b95513175f2aeb16e717b72dd319bf2638b566cd62be5efb4b35f738842"
+content-hash = "c1849d53c29c0f33b061930a230720df8ce3561cc7f767dfdf2c9631d1880738"

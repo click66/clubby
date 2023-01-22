@@ -3,8 +3,7 @@ import json
 from collections import defaultdict
 from datetime import date, timedelta
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
-from functools import reduce
+from django.shortcuts import render
 from ..models.session import Session
 from ..models.course import Course
 

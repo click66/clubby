@@ -2,8 +2,8 @@ import datetime
 import pytest
 
 from django.contrib.auth.models import User
-from sjcadmin.models.course import Course
-from sjcadmin.models.student import Student, Profile, Note, Licence, Payment
+from sjcadmin.sjcadmin.models.course import Course
+from sjcadmin.sjcadmin.models.student import Student, Profile, Note, Licence, Payment
 
 
 def test_make_student_with_only_name():
