@@ -13,8 +13,7 @@ const post = (headers, data) => url => fetch(url, {
     })
 });
 
-const postForm = form => post({ 'Content-Type': 'application/x-www-form-urlencoded' }, dataFromForm(form));
 const postJson = (csrfToken, data) => post({ 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' }, JSON.stringify(data))
 const postNone = csrfToken => postJson(csrfToken, null);
 
-export { postForm, postJson, postNone }
+export { postJson, postNone }

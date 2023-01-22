@@ -1,5 +1,5 @@
 import { Modal, Tab } from "bootstrap";
-import { postForm, postJson, postNone } from "./js/_networking";
+import { postJson, postNone } from "./js/_networking";
 import { Notifications, notifyError } from './js/_notifications'
 
 
@@ -21,15 +21,20 @@ btnUpdateLicence.addEventListener('click', function () {
 });
 
 frmLicence.addEventListener('submit', function (e) {
+    let fd = new FormData(this);
+
     e.preventDefault();
-    postForm(this)(`/api/members/${this.dataset.uuid}/licences/add`).then(function (r) {
+    
+    postJson(
+        fd.get('csrfmiddlewaretoken'),
+        Object.fromEntries(fd.entries()),
+    )(`/api/members/${this.dataset.uuid}/licences/add`).then(function (r) {
         location.reload();
     }).catch(notifyError(notifications));
 });
 
 frmUpdateProfile.addEventListener('submit', function (e) {
     e.preventDefault();
-    console.log(this);
     postJson(
         this.dataset.csrfToken, 
         Object.fromEntries(new FormData(frmUpdateProfile).entries()),
@@ -65,7 +70,6 @@ btnAddPayment.addEventListener('click', function () {
 
 frmPayment.addEventListener('submit', function (e) {
     e.preventDefault();
-    console.log(new FormData(this));
     postJson(this.dataset.csrfToken, {
         'product': new FormData(this).get('product'),
     })(`/api/members/${this.dataset.uuid}/payments/add`).then(function () {

@@ -1,5 +1,4 @@
-import logging
-import time
+import json
 
 from collections import defaultdict
 from datetime import date, timedelta
@@ -80,11 +79,13 @@ def get_attendance(request):
 @require_http_methods(['POST'])
 @handle_error
 def post_log_attendance(request):
-    student_uuid = request.POST.get('student_uuid')
-    sess_date = date.fromisoformat(request.POST.get('sess_date'))
-    product_uuid = request.POST.get('product').split(',')[0]
-    payment = request.POST.get('payment')
-    payment_option = request.POST.get('payment_option')
+    data = json.loads(request.body)
+
+    student_uuid = data.get('student_uuid')
+    sess_date = date.fromisoformat(data.get('sess_date'))
+    product_uuid = data.get('product').split(',')[0]
+    payment = data.get('payment')
+    payment_option = data.get('payment_option')
     existing_registration = False
 
     if not product_uuid:
@@ -122,8 +123,10 @@ def post_log_attendance(request):
 @login_required_401
 @require_http_methods(['POST'])
 def post_clear_attendance(request):
-    student_uuid = request.POST.get('student_uuid')
-    sess_date = request.POST.get('sess_date')
+    data = json.loads(request.body)
+
+    student_uuid = data.get('student_uuid')
+    sess_date = data.get('sess_date')
     s = Student.fetch_by_uuid(student_uuid)
 
     Attendance.clear(s, date=date.fromisoformat(sess_date))

@@ -1,5 +1,5 @@
 import { Popover } from 'bootstrap';
-import { postForm } from './_networking';
+import { postJson } from './_networking';
 import { Notifications, notifyError } from './_notifications';
 
 
@@ -28,7 +28,11 @@ export default function init(Document, table) {
 
         frmNewMember.addEventListener('click', function (e) {
             if (e.target && e.target.id == 'mdlNewMember_submit') {
-                postForm(frmNewMember)('/api/members/add').then(function (r) {
+                let fd = new FormData(frmNewMember);
+                postJson(
+                    fd.get('csrfmiddlewaretoken'),
+                    Object.fromEntries(fd.entries()),
+                )('/api/members/add').then(function (r) {
                     notifications.success('Member added');
                     popNewMember.hide();
                     frmNewMember.reset();

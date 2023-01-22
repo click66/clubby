@@ -2,7 +2,7 @@ import DataTable from 'datatables.net';
 import { Modal } from 'bootstrap';
 import mqa from './js/_member_quickadd';
 import membershipBadge from './js/_membership_badge';
-import { postForm } from './js/_networking';
+import { postJson } from './js/_networking';
 import { Notifications, notifyError } from './js/_notifications';
 import { Icons, Badges, withChild, withClasses } from './js/_helpers';
 
@@ -98,19 +98,21 @@ const boundAttendanceHandler = function (mdlHtml, table) {
 
     frmAttendance.addEventListener('submit', function (e) {
         if (e.submitter) {
-            let submitter = e.submitter.id;
+            let submitter = e.submitter.id,
+                fd = new FormData(frmAttendance),
+                post = postJson(fd.get('csrfmiddlewaretoken'), Object.fromEntries(fd.entries()));
             e.preventDefault();
 
             switch (submitter) {
                 case 'mdlAttendance_submit':
-                    postForm(frmAttendance)('/api/attendance/log').then(function (r) {
+                    post('/api/attendance/log').then(function (r) {
                         notifications.success('Attendance recorded');
                         rowRefresh(r.success.uuid, r.success);
                         mdlAttendance.hide();
                     }).catch(notifyError(notifications));
                     break;
                 case 'mdlAttendance_clear':
-                    postForm(frmAttendance)('/api/attendance/clear').then(function (r) {
+                    post('/api/attendance/clear').then(function (r) {
                         notifications.success('Attendance cleared');
                         rowRefresh(r.success.uuid, r.success);
                         mdlAttendance.hide();

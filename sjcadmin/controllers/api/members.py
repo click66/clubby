@@ -39,10 +39,11 @@ def get_member_licences(request, pk):
 @require_http_methods(['POST'])
 @handle_error
 def post_add_member(request):
-    s = Student.make(name=request.POST.get('studentName'), creator=request.user)
+    data = json.loads(request.body);
+    s = Student.make(name=data.get('studentName'), creator=request.user)
     s.save()
 
-    product_uuid = request.POST.get('product')
+    product_uuid = data.get('product')
     if product_uuid:
         c = Course.objects.get(_uuid=product_uuid)
         s.sign_up(c)
@@ -79,9 +80,10 @@ def post_delete_member(request, pk):
 @require_http_methods(['POST'])
 @handle_error
 def post_add_member_licence(request, pk):
+    data = json.loads(request.body)
     s = Student.fetch_by_uuid(pk)
-    number = request.POST.get('number')
-    expire_date = date.fromisoformat(request.POST.get('expire_date'))
+    number = data.get('number')
+    expire_date = date.fromisoformat(data.get('expire_date'))
     s.add_licence(Licence(number=number, expires=expire_date))
     s.save()
 
