@@ -3,3 +3,4 @@ manage.py
 poetry.lock
 poetry.toml
 pyproject.toml
+templates
