@@ -8,8 +8,8 @@ services:
       - DJANGO_SECRET_KEY="*(%z)+p^f+*&!zdv$j_ipce+)ru+f+g91udo2i&=1l1r6deyet"
       - ENVIRONMENT_NAME=local
       - PGPASS=Rand0m!
-      - SJJ_S3_ACCESS_KEY=foo
-      - SJJ_S3_SECRET_KEY=bar
+      - SJJ_S3_ACCESS_KEY=AKIARGPGSK4LMB2A3YFS
+      - SJJ_S3_SECRET_KEY=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
     ports:
       - 8000:8000
     volumes:

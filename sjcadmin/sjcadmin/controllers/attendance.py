@@ -22,7 +22,7 @@ def attendance(request):
     for c in classes:
         unique_classes[c.date.isoformat()].append(str(c.course_uuid))
 
-    return render(request, 'attendance.html', {
+    return render(request, 'sjcadmin/attendance.html', {
         'classes': dict(unique_classes),
         'dataClasses': json.dumps(unique_classes),
         'courses': courses,

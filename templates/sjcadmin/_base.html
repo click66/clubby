@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {% load static %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'sjcadmin/common.css' %}"/>
+    <script type="text/javascript" src="{% static 'sjcadmin/common.js' %}" defer></script>
+
+    {% block assets %}
+    {% endblock assets %}
+
+    <title>Southampton Jiu Jitsu</title>
+</head>
+<body>
+<div class="topBar">
+    {% if user.is_authenticated %}<a href="/auth/logout" class="btn btn-light">Sign Out</a>{% endif %}
+</div>
+
+<div class="main bg-dark">
+    <div class="container-fluid">
+        {% block content %}
+        {% endblock content %}
+    </div>
+</div>
+
+<div aria-live="polite" aria-atomic="true">
+    <div class="toastrack position-absolute top-0 end-0 p-3" id="toastRack">
+    </div>
+</div>
+
+</body>
+</html>

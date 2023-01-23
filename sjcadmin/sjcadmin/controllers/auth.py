@@ -19,7 +19,7 @@ def login(request):
 
         error = 'invalid_password'
 
-    return render(request, 'auth/login.html', {'error': error})
+    return render(request, 'sjcadmin/auth/login.html', {'error': error})
 
 
 def logout(request):

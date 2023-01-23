@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_hosts',
     'sjcadmin.sjcadmin',
-    'sjcadmin.sjcstore',
+    'sjcadmin.sjcmembers',
 ]
 
 MIDDLEWARE = [
@@ -62,8 +62,8 @@ DEFAULT_HOST= 'admin'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'APP_DIRS': False,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -159,12 +159,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/sjcadmin/'
-
-# STATIC_ROOT = Path.joinpath(BASE_DIR, 'static')
+STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static/sjcadmin'),
+    os.path.join(BASE_DIR, 'static'),
 ]
 
 # Default primary key field type
