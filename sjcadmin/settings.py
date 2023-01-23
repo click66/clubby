@@ -26,8 +26,13 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('ENVIRONMENT_NAME') == 'local'
 
-ALLOWED_HOSTS = ['localhost', 'admin.southamptonjiujitsu.com', 'members.southamptonjiujitsu.com']
-
+ALLOWED_HOSTS = [
+    'localhost',
+    'admin.southamptonjiujitsu.local',
+    'members.southamptonjiujitsu.local',
+    'admin.southamptonjiujitsu.com',
+    'members.southamptonjiujitsu.com',
+]
 
 # Application definition
 

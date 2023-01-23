@@ -7,6 +7,7 @@ module.exports = {
     'sjcadmin/attendance': './client/sjcadmin/attendance.js',
     'sjcadmin/member': './client/sjcadmin/member.js',
     'sjcadmin/members': './client/sjcadmin/members.js',
+    'sjcmembers/common': './client/sjcmembers/common.js',
   },
   module: {
     rules: [

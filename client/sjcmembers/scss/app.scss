@@ -1,0 +1,34 @@
+$bootstrap-icons-font: "bootstrap-icons" !default;
+$bootstrap-icons-font-dir: "./fonts" !default;
+$bootstrap-icons-font-file: "#{$bootstrap-icons-font-dir}/#{$bootstrap-icons-font}" !default;
+
+@import "../../_common/fonts.scss";
+
+@import "./variables";
+@import "~bootstrap/scss/bootstrap";
+@import "~bootstrap-icons/font/bootstrap-icons.scss";
+
+body {
+    font-family: 'open_sansregular', 'sans-serif';
+}
+
+.scjj-logo {
+    font-family: 'tjjf';
+    font-size: 3vw;
+    text-transform: uppercase;
+    line-height: 1em;
+    text-align: center;
+    border: 0.04em solid #ddd;
+    color: #ddd;
+    padding: 0.2em 0.2em 0.1em;
+
+    &:hover {
+        color: #ddd;
+    }
+}
+
+h1 {
+    font-family: 'tjjf', 'Impact', 'sans-serif';
+    font-size: 3em;
+    font-weight: normal;
+}

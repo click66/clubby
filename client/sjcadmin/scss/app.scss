@@ -2,10 +2,7 @@ $bootstrap-icons-font: "bootstrap-icons" !default;
 $bootstrap-icons-font-dir: "./fonts" !default;
 $bootstrap-icons-font-file: "#{$bootstrap-icons-font-dir}/#{$bootstrap-icons-font}" !default;
 
-@font-face {
-    font-family: 'tjjf';
-    src: url("./tjjf.woff") format("woff");
-}
+@import "../../_common/fonts.scss";
 
 @import "./variables";
 @import "~bootstrap/scss/bootstrap";
@@ -19,6 +16,10 @@ body {
 
 html {
     font-size: 0.9em;
+}
+
+body {
+    font-family: 'open_sansregular', 'sans-serif';
 }
 
 .toastrack {
@@ -50,10 +51,14 @@ html {
 
 h1 {
     font-size: 2em;
+    font-family: 'open_sanssemibold', 'sans-serif';
+    font-weight: bold;
 }
 
 h2 {
     font-size: 1.5em;
+    font-family: 'open_sanssemibold', 'sans-serif';
+    font-weight: bold;
 }
 
 .topBar {
