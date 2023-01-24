@@ -129,7 +129,7 @@ const boundAttendanceHandler = function (mdlHtml, table) {
     });
 
     return function (e) {
-        if (e.target.matches('td.session:not(.disabled), td.session:not(.disabled) *')) {
+        if (e.target.matches('td.session, td.session *')) {
             let td = e.target.closest('td'),
                 cell = table.cell(td).node(),
                 date = cell.getAttribute('data-sessdate'),
@@ -204,7 +204,6 @@ const table = new DataTable('#tblStudents .table', {
                     (rd.membership === 'trial' && rd.rem_trial_sessions <= 0);
                 if (expired) {
                     td.className += ' disabled';
-                    return;
                 }
 
                 const availableCourses = dataClasses[k].filter(x => rd.signed_up_for.includes(x));

@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from functools import wraps
 
@@ -31,7 +32,7 @@ def handle_error(function=None):
     def inner(request, *args, **kwargs):
         try:
             return function(request, *args, **kwargs)
-        except (DomainError, ValueError) as e:
+        except (DomainError, ValueError, ValidationError) as e:
             return JsonResponse({'error': str(e)})
 
     return inner

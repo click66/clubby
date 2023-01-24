@@ -86,20 +86,16 @@ def post_log_attendance(request):
     product_uuid = data.get('product').split(',')[0]
     payment = data.get('payment')
     payment_option = data.get('payment_option')
-    existing_registration = False
 
     if not product_uuid:
         raise ValueError('No valid product/course found for this submission')
 
     s = Student.fetch_by_uuid(student_uuid)
     c = Course.objects.get(_uuid=product_uuid)
-    existing = Attendance.objects.filter(student=s, date=sess_date)
-    if existing.count() > 0:
-        existing_registration = True
-        existing.delete()
+    Attendance.clear(s, sess_date)
 
     a = Attendance.register_student(
-        s, date=sess_date, existing_registration=existing_registration, course=c)
+        s, date=sess_date, course=c)
 
     match payment:
         case 'complementary':

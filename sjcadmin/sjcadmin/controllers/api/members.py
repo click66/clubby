@@ -3,7 +3,7 @@ import json
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
-from datetime import date, timedelta
+from datetime import date
 
 from ._middleware import handle_error, login_required_401
 from ...models.attendance import Attendance
@@ -14,18 +14,25 @@ from ...models.student import Licence, Note, Student, Payment, Profile
 @login_required_401
 @require_http_methods(['GET'])
 def get_members(request):
-    students = {str(s.uuid): {
-        'uuid': str(s.uuid),
-        'name': s.name,
-        'membership': 'trial' if not s.has_licence() else 'licenced',
-        'rem_trial_sessions': s.remaining_trial_sessions,
-        'signed_up_for': list(map(lambda c: c.uuid, s.courses)),
-    }
-        | ({'licence': {'no': s.licence_no, 'exp_time': s.licence_expiry_date.strftime('%d/%m/%Y'),
-                        'exp': s.is_licence_expired()}} if s.has_licence() else {})
-        for s in Student.fetch_all()}
-
-    return JsonResponse(list(students.values()), safe=False)
+    students = Student.fetch_all();
+    students_data = []
+    for s in students:
+        student_data = {
+            'uuid': str(s.uuid),
+            'name': s.name,
+            'email': s.email,
+            'membership': 'trial' if not s.has_licence() else 'licenced',
+            'rem_trial_sessions': s.remaining_trial_sessions,
+            'signed_up_for': list(map(lambda c: str(c.uuid), s.courses)),
+        }
+        if s.has_licence():
+            student_data.update({'licence': {
+                'no': s.licence_no, 
+                'exp_time': s.licence_expiry_date.strftime('%d/%m/%Y'),
+                'exp': s.is_licence_expired()
+            }})
+        students_data.append(student_data)
+    return JsonResponse(students_data, safe=False)
 
 
 @login_required_401

@@ -15,6 +15,7 @@ const table = new DataTable('#tblStudents .table', {
     },
     columns: [
         { "data": "name", "className": "studentName" },
+        { "data": "email" },
         { "data": "membership", "render": mBadgeRenderer, "className": "studentMembership" },
     ],
     paging: false,
