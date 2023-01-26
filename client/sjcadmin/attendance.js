@@ -180,12 +180,6 @@ const table = new DataTable('#tblStudents .table', {
                 sn.appendChild(document.createTextNode(d));
                 c.appendChild(sn);
 
-                if (r.has_notes) {
-                    ac.setAttribute('href', '/members/' + r.uuid + '#notes');
-                    ac.appendChild(icons.make('chat-left-text'));
-                    c.appendChild(ac);
-                }
-
                 if (Object.values(r.prepayments).some(b => b === true)) {
                     bc.setAttribute('href', '/members/' + r.uuid + '#payments');
                     bc.appendChild(icons.make('cash'));
