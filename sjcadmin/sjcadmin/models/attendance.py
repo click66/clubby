@@ -15,6 +15,15 @@ class Attendance(models.Model):
         'Course', null=True, on_delete=models.SET_NULL, db_column='course_uuid')
 
     @classmethod
+    def fetch_for_course(
+        cls,
+        uuid: str,
+        earliest: date,
+        latest: date,
+    ):
+        return cls.objects.filter(date__gte=earliest, date__lte=latest, _course=uuid)
+
+    @classmethod
     def register_student(
             cls,
             student: Student,
@@ -25,7 +34,8 @@ class Attendance(models.Model):
             raise ExpiredStudentLicenceError('Student licence is expired')
 
         if not student.has_licence() and student.remaining_trial_sessions <= 0:
-            raise NoRemainingTrialSessionsError('Unlicenced student has no remaining trial sessions')
+            raise NoRemainingTrialSessionsError(
+                'Unlicenced student has no remaining trial sessions')
 
         attendance = Attendance(student=student, date=date, _course=course)
         student.increment_attendance()
@@ -38,6 +48,10 @@ class Attendance(models.Model):
         existing.delete()
 
     @property
+    def student_name(self):
+        return self.student.name
+
+    @property
     def has_paid(self):
         return self.paid
 
@@ -48,7 +62,7 @@ class Attendance(models.Model):
     @property
     def is_complementary(self):
         return self.complementary
-    
+
     def mark_as_complementary(self):
         self.complementary = True
         self.paid = False
@@ -57,7 +71,7 @@ class Attendance(models.Model):
         prepayment = self.student.has_prepaid(self._course)
         if not prepayment:  # Student has not prepaid
             raise NoPaymentFound('Usable payment was not found on account')
-        
+
         self.complementary = False
         self.paid = True
         prepayment.mark_used()

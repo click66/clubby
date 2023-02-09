@@ -142,14 +142,25 @@ nav ol.breadcrumb a {
             margin-right: 10px;
         }
     }
-}
 
-#tblStudents_buttons {
-    display: inline-block;
-    margin-bottom: 1em;
+    .dataTables_filter {
+        display: flex;
+        justify-content: right;
+        align-items: center;
 
-    .btn {
-        font-size: 0.9em;
+        .btn {
+            font-size: 0.9em;
+        }
+        
+        .btn-text {
+            display: inline-block;
+
+            @media (max-width: 500px) {
+                & {
+                    display: none;
+                }
+            }
+        }
     }
 }
 
@@ -263,5 +274,21 @@ ul#portalLinks {
         border-left-color: transparent;
         border-right-color: transparent;
         color: $nav-tabs-link-active-color;
+    }
+}
+
+.report-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: bold;
+
+    .btn-icon {
+        font-size: 2em;
+    }
+
+    &:hover {
+        background-color: $gray-500 !important;
     }
 }

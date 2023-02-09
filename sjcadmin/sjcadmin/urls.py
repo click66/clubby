@@ -3,7 +3,7 @@ from django.urls import path
 
 from .controllers.api import attendance as api_attendance, members as api_members
 
-from .controllers import attendance, auth, home, members
+from .controllers import attendance, auth, home, members, reports
 
 urlpatterns = [
     path('auth/login', auth.login),
@@ -15,6 +15,9 @@ urlpatterns = [
     path('members/<uuid:pk>', members.member, name='member'),
 
     path('attendance', attendance.attendance, name='attendance'),
+
+    path('reports', reports.reports, name='reports'),
+    path('reports/attendance/download', reports.attendance_download),
 
     path('api/members', api_members.get_members),
     path('api/members/add', api_members.post_add_member),

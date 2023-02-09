@@ -126,3 +126,11 @@ def test_cannot_be_paid_and_complementary():
     attendance.mark_as_complementary()
     assert attendance.complementary is True
     assert attendance.has_paid is False
+
+def test_get_student_name():
+    student = Student.make(name='John Smith')
+    course = Course.make('Test course', [0])
+
+    attendance = Attendance.register_student(student=student, date=datetime.datetime(2020, 1, 1), course=course)
+
+    assert attendance.student_name is 'John Smith'

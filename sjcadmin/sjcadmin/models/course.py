@@ -14,6 +14,14 @@ class Course(models.Model):
         size=7,
         db_column='days',
     )
+    
+    @classmethod
+    def fetch_all(cls):
+        return cls.objects.all()
+
+    @classmethod
+    def fetch_by_uuid(cls, uuid):
+        return cls.objects.get(pk=uuid)
 
     def __str__(self):
         return self._label
