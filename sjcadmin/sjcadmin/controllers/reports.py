@@ -1,6 +1,5 @@
-from collections import defaultdict
 from datetime import date, datetime, timedelta
-import pandas as pd
+import csv
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -30,25 +29,27 @@ def attendance_download(request):
     def _marker(a):
         return "\u2713" + (' P' if a.has_paid else ' F' if a.is_complementary else '')
 
-    attendances = Attendance.fetch_for_course(
-        uuid=request.POST.get('product'),
-        earliest=date.fromisoformat(request.POST.get('earliest')),
-        latest=date.fromisoformat(request.POST.get('latest')),
-    )
+    course = Course.fetch_by_uuid(request.POST.get('product'))
+    earliest = date.fromisoformat(request.POST.get('earliest'))
+    latest = date.fromisoformat(request.POST.get('latest'))
 
-    pivot = defaultdict(dict)
+    attendances = (a for a in Attendance.fetch_for_course(course, earliest, latest))
+    students = (s for s in Student.fetch_signed_up_for(course))
+    classes = Session.gen(earliest, latest, [course], exclusive=False)
+
+    pivot = {student.name: {str(c.date): None for c in classes} for student in students}
+
     for a in attendances:
         pivot[a.student_name][str(a.session_date)] = _marker(a)
 
-    pivot = [{**a, 'name': k} for k, a in sorted(pivot.items())]
+    response = HttpResponse(content_type='text/csv', headers={'Content-Disposition': 'attachment; filename="report.csv"'})
+    writer = csv.writer(response)
 
-    df = pd.DataFrame(pivot).set_index('name')
-    df = df.sort_index(axis=1)
+    header = ['name'] + [str(c.date) for c in classes]
+    writer.writerow(header)
 
-    response = HttpResponse(
-        content=df.to_csv(index=True),
-        content_type='text/csv',
-        headers={'Content-Disposition': 'attachment; filename="report.csv"'},
-    )
+    for name, values in sorted(pivot.items()):
+        row = [name] + [values.get(str(c.date), '') for c in classes]
+        writer.writerow(row)
 
     return response

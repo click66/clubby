@@ -17,11 +17,11 @@ class Attendance(models.Model):
     @classmethod
     def fetch_for_course(
         cls,
-        uuid: str,
+        course: Course,
         earliest: date,
         latest: date,
     ):
-        return cls.objects.filter(date__gte=earliest, date__lte=latest, _course=uuid)
+        return cls.objects.filter(date__gte=earliest, date__lte=latest, _course=course)
 
     @classmethod
     def register_student(

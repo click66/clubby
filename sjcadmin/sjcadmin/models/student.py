@@ -159,6 +159,11 @@ class Student(models.Model):
         o._sessions_attended = o.attendance_set.count()
 
         return o
+    
+
+    @classmethod
+    def fetch_signed_up_for(cls, course: Course):
+        return course.student_set.all()
 
 
     @classmethod
