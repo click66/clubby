@@ -9,7 +9,6 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('sjcadmin', '0004_student_join_date'),
     ]
 
@@ -25,7 +24,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('_text', models.TextField(blank=True, db_column='text')),
                 ('_datetime', models.DateTimeField(db_column='datetime')),
-                ('_author', models.ForeignKey(db_column='author_id', null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                ('_author', models.UUIDField(db_column='author_id', null=True, editable=False, primary_key=False, serialize=False)),
                 ('_student', models.ForeignKey(db_column='student_uuid', on_delete=django.db.models.deletion.CASCADE, to='sjcadmin.student')),
             ],
         ),

@@ -47,7 +47,7 @@ def get_member_licences(request, pk):
 @handle_error
 def post_add_member(request):
     data = json.loads(request.body);
-    s = Student.make(name=data.get('studentName'), creator=request.user)
+    s = Student.make(name=data.get('studentName'), creator=request.user.uuid)
     s.save()
 
     product_uuid = data.get('product')
@@ -105,7 +105,7 @@ def post_add_member_note(request, pk):
     s = Student.fetch_by_uuid(pk)
     text = data.get('text')
 
-    s.add_note(Note.make(text, author=request.user, datetime=timezone.now()))
+    s.add_note(Note.make(text, author=request.user.uuid, datetime=timezone.now()))
     s.save()
 
     return JsonResponse({'success': None})

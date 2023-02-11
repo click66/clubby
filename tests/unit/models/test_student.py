@@ -1,7 +1,7 @@
 import datetime
 import pytest
 
-from django.contrib.auth.models import User
+from sjcadmin.sjcauth.models import User
 from sjcadmin.sjcadmin.models.course import Course
 from sjcadmin.sjcadmin.models.student import Student, Profile, Note, Licence, Payment
 
@@ -144,12 +144,12 @@ def test_add_note():
     user.username = 'joe.b'
 
     student.add_note(Note.make("I''m back from the future",
-                               author=user,
+                               author=user.uuid,
                                datetime=now))
 
     notes = student.get_last_notes(3)
     assert notes[0].text == "I''m back from the future"
-    assert notes[0].author_name == 'joe.b'
+    assert notes[0].author == user.uuid
     assert notes[0].time == now
 
 
@@ -258,3 +258,10 @@ def test_handle_payment_without_course():
     # Then the payment is returned
     # (To avoid the student missing out, we count this payment as being redeemable for any course)
     assert len(result) is 1
+
+
+def test_with_creator():
+    creator_uuid = 'b5857ed4-2485-40b6-95e1-17f6481e36b7'
+    s = Student.make(name='John Doe', creator=creator_uuid)
+
+    assert s._creator is creator_uuid

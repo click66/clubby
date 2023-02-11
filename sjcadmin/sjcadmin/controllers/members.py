@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.template.defaulttags import register
 from ..models import Student, Session
+from ...sjcauth.models import User
 
 
 @register.filter
@@ -17,6 +18,12 @@ def members(request):
 
 @login_required(login_url='/auth/login')
 def member(request, pk):
+    def _username(uuid) -> str: 
+        u = User.fetch_by_uuid(uuid)
+        if u:
+            return u.email
+        return 'Anonymous User'
+
     try:
         s = Student.fetch_by_uuid(pk)
     except Student.DoesNotExist:
@@ -28,8 +35,13 @@ def member(request, pk):
 
     return render(request, 'sjcadmin/member.html', {
         'student': s,
+        'added_by': _username(s.added_by),
         'classes': dict(map(lambda sess_type: (str(sess_type.uuid), sess_type), classes)),
-        'notes': s.get_last_notes(5),
+        'notes': list(map(lambda n: {
+            "author_name": _username(n.author),
+            "time": n.time,
+            "text": n.text,
+        }, s.get_last_notes(5))),
         'payments': list(map(lambda p: {
             "time": p.time,
             "course": p.course,

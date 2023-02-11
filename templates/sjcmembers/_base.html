@@ -30,9 +30,28 @@
     </nav>
 
     <div class="container">
-        {% block content %}
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-6">
+                {% if user.is_authenticated %}
+                <div class="mb-5">
+                    <ul id="accountLinks">
+                        <li><a href="/profiles"><i class="bi bi-people-fill"></i><span>Profiles</span></a></li>
+                        <li><a href="/licences"><i class="bi bi-card-heading"></i><span>Licences</span></a></li>
+                        <li><a href="/pay"><i class="bi bi-cart-fill"></i><span>Pay</span></a></li>
+                        <li><a href="/history"><i class="bi bi-clock-history"></i><span>History</span></a></li>
+                    </ul>
+                </div>
+                {% endif %}
 
-        {% endblock content %}
+                <div>
+
+                    {% block content %}
+
+                    {% endblock content %}
+
+                </div>
+            </div>
+        </div>
     </div>
 
 </body>

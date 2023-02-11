@@ -29,7 +29,7 @@
             <span class="badge bg-danger align-middle">Expired</span>
             {% endif %}
         </div>
-        <p class="mb-0">Member since: {{ student.join_date }} {% if student.added_by %}<span class="text-secondary">(Added by: {{ student.added_by }}){% endif %}</span></p>
+        <p class="mb-0">Member since: {{ student.join_date }} {% if added_by %}<span class="text-secondary">(Added by: {{ added_by }}){% endif %}</span></p>
     </div>
 
     <div class="rounded-3 bg-white text-dark" id="copy">
@@ -156,8 +156,7 @@
                         <ul class="comments">
                             {% for note in notes %}
                             <li class="mb-3 p-2">
-                                <span class="commentAuthor">{{ note.author_name }} ({{ note.time|date:'M. d,
-                                    Y'}}):</span>
+                                <span class="commentAuthor">{{ note.author_name }} ({{ note.time|date:'M. d, Y'}}):</span>
                                 <span class="commentText">{{ note.text }}</span>
                             </li>
                             {% endfor %}

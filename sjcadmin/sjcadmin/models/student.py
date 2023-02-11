@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
-from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+from ...sjcauth.models import User
 from uuid import UUID, uuid4
 
 from ..errors import *
@@ -28,11 +28,10 @@ class Note(models.Model):
     _student = models.ForeignKey(
         'Student', on_delete=models.CASCADE, db_column='student_uuid')
     _datetime = models.DateTimeField(null=False, db_column='datetime')
-    _author = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, db_column='author_id')
+    _author = models.UUIDField(null=True, db_column='author_id')
 
     @classmethod
-    def make(cls, text, author: User, datetime: datetime):
+    def make(cls, text, author: UUID, datetime: datetime):
         note = cls(_text=text, _author=author, _datetime=datetime)
         return note
 
@@ -41,8 +40,8 @@ class Note(models.Model):
         return self._text
 
     @property
-    def author_name(self):
-        return self._author.username
+    def author(self):
+        return self._author
 
     @property
     def time(self):
@@ -84,8 +83,7 @@ class Payment(models.Model):
 
 class Student(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    _creator = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, db_column='creator_id')
+    _creator = models.UUIDField(null=True, db_column='creator_id')
 
     profile_name = models.CharField(null=True, max_length=120)
     profile_dob = models.DateField(null=True)
@@ -172,7 +170,7 @@ class Student(models.Model):
             name: str=None,
             profile=None,
             licence=None,
-            creator: User=None,
+            creator: UUID=None,
     ):
         if not name and (not profile or (profile and not profile.name)):
             raise ValueError('Student name cannot be blank')
@@ -228,7 +226,7 @@ class Student(models.Model):
 
     @property
     def added_by(self) -> str | None:
-        return self._creator.username if self._creator else None
+        return self._creator
 
     @property
     def dob(self) -> str:

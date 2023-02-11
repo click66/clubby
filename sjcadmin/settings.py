@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django_hosts',
     'sjcadmin.sjcadmin',
     'sjcadmin.sjcmembers',
+    'sjcadmin.sjcauth',
 ]
 
 MIDDLEWARE = [
@@ -129,6 +130,8 @@ DBBACKUP_CONNECTOR_MAPPING = {
     'django.db.backends.postgresql':'dbbackup.db.postgresql.PgDumpBinaryConnector',
 }
 
+
+AUTH_USER_MODEL = 'sjcauth.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
