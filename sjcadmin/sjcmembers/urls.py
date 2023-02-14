@@ -9,7 +9,9 @@ urlpatterns = [
     path('pay', pay, name='pay'),
     path('history', history, name='history'),
 
-    path('auth/register', auth.register_view),
-    path('auth/login', auth.login_view),
-    path('auth/logout', auth.logout_view),
+    path('auth/register', auth.register),
+    path('activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/',
+         auth.activate, name='auth.activate'),
+    path('auth/login', auth.login),
+    path('auth/logout', auth.logout),
 ]

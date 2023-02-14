@@ -17,7 +17,7 @@ def login(request):
             auth.login(request, user)
             return redirect('home')
 
-        error = 'invalid_password'
+        error = 'Invalid email or password'
 
     return render(request, 'sjcadmin/auth/login.html', {'error': error})
 
