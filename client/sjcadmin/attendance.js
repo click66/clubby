@@ -1,7 +1,7 @@
 import DataTable from 'datatables.net';
 import { Modal } from 'bootstrap';
 import mqa from './js/_member_quickadd';
-import membershipBadge from './js/_membership_badge';
+import { membershipBadge, membershipIndex } from './js/_membership_badge';
 import { postJson } from './js/_networking';
 import { Notifications, notifyError } from './js/_notifications';
 import { Icons, Badges, withChild, withClasses } from './js/_helpers';
@@ -11,7 +11,16 @@ const icons = new Icons(document);
 const badges = new Badges(document);
 const notifications = new Notifications(document);
 
-const mBadgeRenderer = (d, t, r) => membershipBadge(document)(badges, r).outerHTML;
+const mBadgeRenderer = (d, t, r) => {
+    switch (t) {
+        case "filter":
+        case "display":
+            return membershipBadge(document)(badges, r).outerHTML;
+        case "sort":
+        default:
+            return membershipIndex(r);
+    }
+}
 
 const attendanceBadge = r => date => {
     let paid = r.paid.includes(date),

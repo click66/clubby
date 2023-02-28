@@ -1,12 +1,21 @@
 import DataTable from 'datatables.net';
 import mqa from './js/_member_quickadd';
-import membershipBadge from './js/_membership_badge';
+import { membershipBadge, membershipIndex } from './js/_membership_badge';
 import { Badges } from './js/_helpers';
 
 
 const badges = new Badges(document);
 
-const mBadgeRenderer = (d, t, r) => membershipBadge(document)(badges, r).outerHTML;
+const mBadgeRenderer = (d, t, r) => {
+    switch (t) {
+        case "filter":
+        case "display":
+            return membershipBadge(document)(badges, r).outerHTML;
+        case "sort":
+        default:
+            return membershipIndex(r);
+    }
+}
 
 const table = new DataTable('#tblStudents .table', {
     ajax: {

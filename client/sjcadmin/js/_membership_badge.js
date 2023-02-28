@@ -1,4 +1,4 @@
-export default Document => function (badges, record) {
+const membershipBadge = Document => function (badges, record) {
     switch (record.membership) {
         case 'licenced':
             if (record.licence.exp) {
@@ -14,3 +14,14 @@ export default Document => function (badges, record) {
             return badges.warning(Document.createTextNode('Trial'));
     }
 }
+
+const membershipIndex = (record) => {
+    if ((record.membership === 'licenced' && record.licence.exp) || (record.membership === 'trial' && record.rem_trial_sessions <= 0)) {
+        return 2;
+    }
+
+    return record.membership === 'trial' ? 1 : 0;
+};
+
+export { membershipBadge, membershipIndex }
+
