@@ -49,7 +49,7 @@ def licences(request):
     licences = find_student_licences(request)
 
     return render(request, 'sjcmembers/licences.html', {
-        'rendered_licences': map(lambda licence: render_licence(*licence_template(licence)), licences),
+        'rendered_licences': list(map(lambda licence: render_licence(*licence_template(licence)), licences)),
     })
 
 

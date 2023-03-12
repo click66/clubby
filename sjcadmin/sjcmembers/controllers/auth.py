@@ -14,16 +14,28 @@ def login(request):
     if request.user.is_authenticated:
         return redirect('home')
 
-    context = {}
+    context = {
+        'message': request.GET.get('message'),
+        'error': request.GET.get('error'),
+    }
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = auth.authenticate(request, username=username, password=password)
-        if user is not None:
+        if user:
             auth.login(request, user)
             return redirect('home')
         else:
-            context['error'] = 'Invalid email or password'
+            context['error'] = 'invalid_login'
+
+    messages = {
+        'invalid_activation_link': 'Registration link invalid',
+        'account_activated': 'Your account has been activated successfully. Please sign in.',
+        'account_activation_sent': 'An email has been sent containing a link to activate your account.',
+        'invalid_login': 'Invalid login credentials',
+    }
+    context['message'] = messages.get(context['message'], context['message'])
+    context['error'] = messages.get(context['error'], context['error'])
 
     return render(request, 'sjcmembers/auth/login.html', context)
 
@@ -51,7 +63,7 @@ def register(request):
             to_email = form.cleaned_data.get('email')
             email = EmailMessage(subject, message, to=[to_email])
             email.send()
-            return HttpResponse('Please confirm your email address to complete the registration')
+            return redirect('/auth/login?message=account_activation_sent')
     else:
         form = RegisterForm()
     return render(request, 'sjcmembers/auth/register.html', {'form': form})
@@ -67,6 +79,6 @@ def activate(request, uidb64, token):
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
         user.save()
-        return redirect('auth/login')
+        return redirect('/auth/login?message=account_activated')
     else:
-        return HttpResponse('Activation link is invalid!')
+        return redirect('/auth/login?error=invalid_activation_link')

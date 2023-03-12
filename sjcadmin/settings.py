@@ -177,3 +177,14 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Mail setup
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST') # AWS = email-smtp.eu-west-1.amazonaws.com
+EMAIL_PORT = os.environ.get('EMAIL_PORT')   # AWS = 587
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS') == 'true'
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = 'noreply@southamptonjiujitsu.com'
