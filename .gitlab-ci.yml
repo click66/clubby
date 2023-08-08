@@ -9,8 +9,8 @@ test:
   services:
     - docker:dind
   script:
-    - docker compose -f docker-compose.yml build app
-    - docker compose -f docker-compose.yml run --rm app poetry run pytest
+    - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
+    - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest
 
 build:
   stage: build
