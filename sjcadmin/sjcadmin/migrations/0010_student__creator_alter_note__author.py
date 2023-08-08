@@ -10,7 +10,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL('ALTER TABLE sjcadmin_student DROP COLUMN creator_id'),
         migrations.AddField(
             model_name='student',
             name='_creator',

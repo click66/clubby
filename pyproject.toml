@@ -22,3 +22,7 @@ pytest-django = "^4.5.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "sjcadmin.settings"
+python_files = ["test_*.py", "*_test.py", "testing/python/*.py"]
