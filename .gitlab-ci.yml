@@ -42,6 +42,8 @@ deploy:
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   script:
     - ./deploy.sh $CI_PROJECT_DIR $SSH_HOST $SSH_USER
+  only:
+    - main
   variables:
     SSH_USER: "ci_deploy"
     SSH_HOST: "ec2-18-135-153-48.eu-west-2.compute.amazonaws.com"
