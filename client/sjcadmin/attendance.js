@@ -176,6 +176,7 @@ const boundAttendanceHandler = function (mdlHtml, table) {
 const table = new DataTable('#tblStudents .table', {
     ajax: {
         url: "/api/attendance",
+        data: {"courses": Object.keys(dataCourses)},
         dataSrc: "",
     },
     columns: [

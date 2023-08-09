@@ -45,7 +45,7 @@ def member(request, pk):
         'payments': list(map(lambda p: {
             "time": p.time,
             "course": p.course,
-            "next_session_date": Session.gen_next(today, p.course).date,
+            "next_session_date": Session.gen_next(today, p.course).date if p.course else None,
         }, s.get_unused_payments())),
         'payments_historical': s.get_last_payments(30),
         'prospective_licence_expiry': today.replace(year=today.year + 1).strftime('%Y-%m-%d'),

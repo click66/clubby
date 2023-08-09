@@ -48,8 +48,7 @@ def test_update_profile():
     s.set_profile(Profile(
         name='Jason Bourne',
         dob='1991-10-16',
-        phone='07555654321',
-        email='new@example.com',
+        phone='07555654321',email='new@example.com',
         address='456 Real St. Portsmouth',
     ))
 

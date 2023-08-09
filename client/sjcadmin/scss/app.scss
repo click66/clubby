@@ -98,6 +98,14 @@ nav ol.breadcrumb a {
     }
 }
 
+.tblButtons {
+    display: flex;
+
+    >button {
+        margin: 0 3px;
+    }
+}
+
 #tblStudents {
     &.tblAttendance {
         td.session {
@@ -151,7 +159,7 @@ nav ol.breadcrumb a {
         .btn {
             font-size: 0.9em;
         }
-        
+
         .btn-text {
             display: inline-block;
 
@@ -277,12 +285,27 @@ ul#portalLinks {
     }
 }
 
+.report-link-container {
+    position: relative;
+}
+
 .report-link {
     display: flex;
     align-items: center;
     text-decoration: none;
     cursor: pointer;
-    font-weight: bold;
+
+    > div {
+        width: 100%;
+    }
+
+    span {
+        display: block;
+    }
+
+    .title {
+        font-weight: bold;
+    }
 
     .btn-icon {
         font-size: 2em;
@@ -290,5 +313,19 @@ ul#portalLinks {
 
     &:hover {
         background-color: $gray-500 !important;
+    }
+}
+
+.report-button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 2em;
+    text-decoration: none;
+    color: $dark;
+
+    &:hover {
+        color: $gray-600;
     }
 }

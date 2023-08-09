@@ -26,12 +26,6 @@ class Course(models.Model):
     def __str__(self):
         return self._label
 
-    def __eq__(self, other):
-        # Note: If we ever want to declare two courses
-        # as being equivalent (i.e. a payment for one
-        # course is redeemable for another, update THIS method)
-        return self.uuid == other.uuid
-
     @classmethod
     def make(cls, label: str, days: list[int]):
         return cls(
@@ -46,6 +40,10 @@ class Course(models.Model):
     @property
     def label(self):
         return self._label
+    
+    @property
+    def days(self):
+        return self._days
 
     def is_session_date(self, d: datetime):
         return d.weekday() in self._days
