@@ -1,5 +1,5 @@
 # Install base dependencies and application code
-FROM python:3.10 as base
+FROM python:3.10-bullseye as base
 RUN apt-get update && apt-get install -y --no-install-recommends gcc
 
 # RUN apt-get install -y curl ca-certificates gnugp
