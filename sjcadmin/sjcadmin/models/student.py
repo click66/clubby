@@ -79,6 +79,9 @@ class Payment(models.Model):
     @property
     def course(self):
         return self._course
+    
+    def can_pay_for(self, course: Course):
+        return course.uuid == self._course.uuid
 
 
 class Student(models.Model):
@@ -143,18 +146,18 @@ class Student(models.Model):
     def fetch_by_uuid(cls, uuid: str):
         o = cls.objects.get(pk=uuid)
 
-        o._notes = list(o.note_set.all())
-        o._new_notes = []
-
         o._unused_payments = list(o.payment_set.filter(_used=False).order_by('-_datetime'))
         o._used_payments = list(o.payment_set.filter(_used=True).order_by('-_datetime'))
         o._new_payments = []
         o._unused_and_new_payments = o._unused_payments
 
+        o._sessions_attended = o.attendance_set.count()
+
+        o._notes = list(o.note_set.all())
+        o._new_notes = []
+
         o._existing_courses = list(o._courses.all())
         o._new_courses = []
-
-        o._sessions_attended = o.attendance_set.count()
 
         return o
     
@@ -162,7 +165,33 @@ class Student(models.Model):
     @classmethod
     def fetch_signed_up_for(cls, course: Course):
         return course.student_set.all()
+    
+    @classmethod
+    def fetch_signed_up_for_multiple(cls, course_uuids: list[str]):
+        objects = cls.objects\
+            .select_related('licence')\
+            .prefetch_related('note_set')\
+            .prefetch_related('payment_set')\
+            .prefetch_related('attendance_set')\
+            .prefetch_related('_courses')\
+            .all().filter(_courses__in=course_uuids)
+        
+        for o in objects:
+            payments = o.payment_set.all().order_by('-_datetime')
+            o._unused_payments = [p for p in payments if not p.used]
+            o._used_payments = [p for p in payments if p.used]
+            o._new_payments = []
+            o._unused_and_new_payments = o._unused_payments
 
+            o._sessions_attended = o.attendance_set.count()
+
+            o._notes = list(o.note_set.all())
+            o._new_notes = []
+
+            o._existing_courses = list(o._courses.all())
+            o._new_courses = []
+
+        return objects
 
     @classmethod
     def make(
@@ -287,7 +316,7 @@ class Student(models.Model):
         return list(filter(lambda p: not p.used and (
             course is None or
             p.course is None or
-            p.course == course
+            p.can_pay_for(course)
         ), self._unused_and_new_payments))
 
     def has_prepaid(self, course):

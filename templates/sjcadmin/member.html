@@ -94,8 +94,8 @@
                             <h2>Signed Up For</h2>
                             <ul>
                                 {% for uuid, class in classes.items %}
-                                <li><a href="/attendance">{{ class }}</a>
-                                    {% endfor %}
+                                <li><a href="/attendance/{{ uuid }}">{{ class }}</a>
+                                {% endfor %}
                             </ul>
                             <div class="row">
                                 <div class="col-lg-12 col-md-6 col-sm-12">
@@ -185,7 +185,7 @@
                             <tbody>
                                 <tr>
                                     <td>{{ payment.time|date:'M. d, Y H:i:s' }}</td>
-                                    <td>{{ payment.course }}</td>
+                                    <td>{{ payment.course|default:'Any' }}</td>
                                     <td>{{ payment.next_session_date|date:'M. d, Y' }}</td>
                                 </tr>
                             </tbody>

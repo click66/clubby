@@ -5,6 +5,7 @@ module.exports = {
   entry: {
     'sjcadmin/common': './client/sjcadmin/common.js',
     'sjcadmin/attendance': './client/sjcadmin/attendance.js',
+    'sjcadmin/courses': './client/sjcadmin/courses.js',
     'sjcadmin/member': './client/sjcadmin/member.js',
     'sjcadmin/members': './client/sjcadmin/members.js',
     'sjcadmin/reports': './client/sjcadmin/reports.js',

@@ -63,12 +63,14 @@ def serialize_attendance(attendances: list[Attendance], students: list[Student])
 @login_required_401
 @require_http_methods(['GET'])
 def get_attendance(request):
+    course_uuids = request.GET.getlist('courses[]')
+
     today = date.today()
     range_end = today - timedelta(days=365)
 
     attendances = Attendance.objects.filter(date__gte=range_end)
 
-    students = Student.fetch_all()
+    students = Student.fetch_signed_up_for_multiple(course_uuids)
 
     response = JsonResponse(list(serialize_attendance(attendances, students).values()), safe=False)
 

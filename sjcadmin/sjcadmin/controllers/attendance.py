@@ -9,10 +9,10 @@ from ..models.course import Course
 
 
 @login_required(login_url='/auth/login')
-def attendance(request):
+def attendance(request, course_uuid=None):
     # Class register, showing historical class records and allowing registry of students into the current class
     today = date.today()
-    courses = Course.objects.all()
+    courses = [Course.fetch_by_uuid(course_uuid)] if course_uuid else Course.objects.all()
     classes = Session.gen(today - timedelta(days=365),
                           today, courses, exclusive=False)
     classes.reverse()

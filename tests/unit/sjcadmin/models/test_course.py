@@ -34,3 +34,8 @@ def test_stringifies_to_label():
     course = Course.make(days=[0], label='Contemporary Dressmaking')
 
     assert str(course) == 'Contemporary Dressmaking'
+
+def test_get_days():
+    course = Course.make(days=[1,4,6], label='Advanced Mathematics')
+
+    assert course.days == [1,4,6]

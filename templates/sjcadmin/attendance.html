@@ -38,7 +38,8 @@
 
 <!-- End body -->
 
-<div id="tblStudents_buttons">
+<div id="tblStudents_buttons" class="tblButtons">
+    <!-- <button class="btn btn-primary" id="btnConfigure"><div class="btn-text">Configure View&nbsp;</div><i class="bi bi-gear"></i></button> -->
     <button class="btn btn-primary" id="btnNewMember"><div class="btn-text">New Member</div><i class="bi bi-plus"></i></button>
 </div>
 
@@ -57,7 +58,7 @@
                     </div>
                     <div class="mb-3 row">
                         <div class="col-sm-12">
-                            <select class="form-select" name="product" id="mdlNewMember_productUuid">
+                            <select class="form-select" name="product" id="mdlNewMember_productUuid" {% if courses|length == 1 %}disabled{% endif %}>
                                 {% for course in courses %}
                                 <option value="{{ course.uuid }}">{{ course }}</option>
                                 {% endfor %}

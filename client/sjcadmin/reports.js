@@ -1,6 +1,4 @@
 import { Modal } from 'bootstrap';
-import { postJson } from './js/_networking';
-import { Notifications, notifyError } from './js/_notifications';
 
 
 document.querySelectorAll('.report-modal').forEach(function (modal) {
