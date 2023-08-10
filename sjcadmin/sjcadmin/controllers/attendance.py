@@ -27,4 +27,5 @@ def attendance(request, course_uuid=None):
         'dataClasses': json.dumps(unique_classes),
         'courses': courses,
         'dataCourses': json.dumps(dict(map(lambda c: (str(c.uuid), c.label), courses))),
+        'course_title': courses[0].label if course_uuid else None,
     })

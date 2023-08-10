@@ -16,7 +16,7 @@
         </ol>
     </nav>
 
-    <h1>Attendance</h1>
+    <h1>Attendance{% if course_title %}&nbsp;<span class="text-secondary">({{ course_title }})</span>{% endif %}</h1>
 
     <div class="rounded-3 bg-white p-3 text-dark" id="copy">
         <div id="tblStudents" class="tblAttendance">
