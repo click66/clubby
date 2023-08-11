@@ -27,11 +27,19 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 DEBUG = os.environ.get('ENVIRONMENT_NAME') == 'local'
 
 ALLOWED_HOSTS = [
+    'app',
     'localhost',
     'admin.southamptonjiujitsu.local',
     'members.southamptonjiujitsu.local',
     'admin.southamptonjiujitsu.com',
     'members.southamptonjiujitsu.com',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://admin.southamptonjiujitsu.local:8000',
+    'http://members.southamptonjiujitsu.local:8000',
+    'http://admin.southamptonjiujitsu.com',
+    'http://members.southamptonjiujitsu.com',
 ]
 
 # Application definition

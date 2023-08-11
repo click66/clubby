@@ -15,10 +15,25 @@ services:
       - EMAIL_USE_TLS=false
       - EMAIL_HOST_USER='username'
       - EMAIL_HOST_PASSWORD='password'
+    volumes:
+      - .:/app
+
+  nginx:
+    image: nginx
+    hostname: nginx
     ports:
       - 8000:8000
     volumes:
-      - .:/app
+      - ./config/nginx:/etc/nginx/conf.d
+    depends_on:
+      - app
+  
+  static:
+    image: nginx
+    hostname: static
+    volumes:
+      - ./static:/var/www/sjcadmin/current/static
+      - ./config/static:/etc/nginx/conf.d
 
   npm:
     command: [ "run", "dev" ]

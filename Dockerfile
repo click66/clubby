@@ -34,3 +34,12 @@ COPY --from=base /app/.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
 
 CMD python manage.py runserver 0.0.0.0:8000
+
+
+# Run application in prod mode
+FROM base as prod-runtime
+
+COPY --from=base /app/.venv /.venv
+ENV path="/.venv/bin:$PATH"
+
+CMD ["sh", "/app/start.sh"]

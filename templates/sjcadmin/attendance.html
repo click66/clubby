@@ -58,7 +58,7 @@
                     </div>
                     <div class="mb-3 row">
                         <div class="col-sm-12">
-                            <select class="form-select" name="product" id="mdlNewMember_productUuid" {% if courses|length == 1 %}disabled{% endif %}>
+                            <select class="form-select" name="product" id="mdlNewMember_productUuid">
                                 {% for course in courses %}
                                 <option value="{{ course.uuid }}">{{ course }}</option>
                                 {% endfor %}
