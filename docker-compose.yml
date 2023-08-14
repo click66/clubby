@@ -3,9 +3,28 @@ services:
     build:
       context: .
       target: prod-runtime
-    image: southamptonjiujitu/sjcadmin
+    image: 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app
     volumes:
       - app:/var/www/html
+
+  static:
+    build:
+      context: .
+      dockerfile: Dockerfile.static
+    image: 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static
+    hostname: static
+  
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    image: 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx
+    hostname: nginx
+    ports:
+      - 8000:8000
+    depends_on:
+      - app
+      - static
 
   npm:
     build:

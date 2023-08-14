@@ -7,6 +7,7 @@ services:
       - DJANGO_SETTINGS_MODULE=sjcadmin.settings
       - DJANGO_SECRET_KEY="*(%z)+p^f+*&!zdv$j_ipce+)ru+f+g91udo2i&=1l1r6deyet"
       - ENVIRONMENT_NAME=local
+      - PGHOST=database
       - PGPASS=Rand0m!
       - SJJ_S3_ACCESS_KEY=AKIARGPGSK4LMB2A3YFS
       - SJJ_S3_SECRET_KEY=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
@@ -19,21 +20,17 @@ services:
       - .:/app
 
   nginx:
-    image: nginx
-    hostname: nginx
     ports:
       - 8000:8000
     volumes:
       - ./config/nginx:/etc/nginx/conf.d
-    depends_on:
-      - app
   
   static:
-    image: nginx
-    hostname: static
     volumes:
       - ./static:/var/www/sjcadmin/current/static
       - ./config/static:/etc/nginx/conf.d
+    ports:
+      - 9000:80
 
   npm:
     command: [ "run", "dev" ]
