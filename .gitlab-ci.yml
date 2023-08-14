@@ -1,6 +1,5 @@
 stages:
   - test
-  - build
   - deploy
 
 test:
@@ -12,38 +11,29 @@ test:
     - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
     - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest
 
-build:
-  stage: build
-  image: docker
+deploy:
+  stage: deploy
+  image: docker:latest
   services:
     - docker:dind
   before_script:
-    - apk --no-cache add docker-compose
+    - apk add --no-cache curl jq python3 py3-pip
+    - pip install awscli
+    - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 082624796438.dkr.ecr.eu-west-2.amazonaws.com
+    - aws --version
     - docker info
-    - docker-compose --version
+    - docker --version
   script:
-    - ./build.sh $CI_PROJECT_DIR
-  artifacts:
-    when: always
-    paths:
-      - $CI_PROJECT_DIR/app.tar.gz
-      - $CI_PROJECT_DIR/static.tar.gz
-    expire_in: 1 day
-
-deploy:
-  stage: deploy
-  before_script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-    # Run ssh-agent (inside the build environment)
-    - eval $(ssh-agent -s)
-    # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
-    - ssh-add <(echo "$SSH_PRIVATE_KEY" | base64 -d)
-    - mkdir -p ~/.ssh
-    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-  script:
-    - ./deploy.sh $CI_PROJECT_DIR $SSH_HOST $SSH_USER
+    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app -f Dockerfile --target prod-runtime .
+    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx -f Dockerfile.nginx .
+    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static -f Dockerfile.static .
+    - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app
+    - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx
+    - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static
+    - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
   only:
-    - main
+   - main
+   - feature/dockerisation
   variables:
-    SSH_USER: "ci_deploy"
-    SSH_HOST: "ec2-18-135-153-48.eu-west-2.compute.amazonaws.com"
+    ECS_CLUSTER: "CS-ECS-01"
+    ECS_SERVICE: "sjcadmin"

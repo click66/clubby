@@ -1,0 +1,20 @@
+FROM node:latest as frontend-base
+
+WORKDIR /app
+COPY client client
+COPY package.json package-lock.json webpack.config.js ./
+
+
+FROM frontend-base as frontend
+WORKDIR /app
+RUN npm run build
+
+
+FROM nginx:latest
+
+WORKDIR /var/www/html/sjcadmin/current
+
+COPY --from=frontend /app/static /var/www/html/sjcadmin/current/static
+
+RUN rm /etc/nginx/conf.d/default.conf
+COPY ./config/static/static.conf /etc/nginx/conf.d/static.conf
