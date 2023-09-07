@@ -1,6 +1,23 @@
 stages:
   - test
+  - infra
   - deploy
+
+infra:
+  stage: infra
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker compose -f docker-compose.yml build terraform
+    - docker compose -f docker-compose.yml run --rm terraform init -input=false
+    - docker compose -f docker-compose.yml run --rm terraform plan -out=tfplan -input=false
+    - docker compose -f docker-compose.yml run --rm terraform apply -input=false tfplan
+  only:
+    - main
+  variables:
+    AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
 
 test:
   stage: test
