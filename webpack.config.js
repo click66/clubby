@@ -35,7 +35,7 @@ module.exports = {
   },
   output: {
     filename: "[name].js",
-    path: path.resolve(__dirname, "static")
+    path: path.resolve(__dirname, "static"),
   },
   plugins: [
     new MiniCssExtractPlugin({

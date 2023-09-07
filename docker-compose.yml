@@ -11,6 +11,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.static
+      target: prod-runtime
     image: 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static
     hostname: static
 
@@ -26,14 +27,14 @@ services:
       - app
       - static
 
-  npm:
-    build:
-      context: .
-      dockerfile: Dockerfile.npm
-    volumes:
-      - type: volume
-        source: app
-        target: /app
+  # npm:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.npm
+  #   volumes:
+  #     - type: volume
+  #       source: app
+  #       target: /app
 
   terraform:
     build:

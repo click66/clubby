@@ -26,16 +26,18 @@ services:
       - ./config/nginx:/etc/nginx/conf.d
 
   static:
+    build:
+      target: dev-runtime
     volumes:
-      - ./static:/var/www/sjcadmin/current/static
-      - ./config/static:/etc/nginx/conf.d
+      - .:/app
+      # - ./config/static:/etc/nginx/conf.d
     ports:
       - 9000:80
 
-  npm:
-    command: ["run", "dev"]
-    volumes:
-      - .:/app
+  # npm:
+  #   command: ["run", "dev"]
+  #   volumes:
+  #     - .:/app
 
   base:
     build:

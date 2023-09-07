@@ -7,7 +7,7 @@
   },
   "scripts": {
     "build": "npm run init && webpack --mode production",
-    "dev": "webpack --mode development --watch",
+    "dev": "nodemon -L --watch /app/client -e scss,js --exec \"npm run build && node ./serve-static.js\"",
     "init": "npm install && npm rebuild node-sass",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -28,9 +28,11 @@
     "css-loader": "^6.7.3",
     "datatables.net": "^1.13.1",
     "datatables.net-bs5": "^1.13.1",
+    "express": "^4.18.2",
     "file-loader": "^6.2.0",
     "mini-css-extract-plugin": "^2.7.2",
     "node-sass": "^8.0.0",
+    "nodemon": "^3.0.1",
     "postcss-loader": "^7.0.2",
     "resolve-url-loader": "^5.0.0",
     "sass-loader": "^13.2.0",
