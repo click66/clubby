@@ -171,19 +171,17 @@ class Student(models.Model):
         objects = cls.objects\
             .select_related('licence')\
             .prefetch_related('note_set')\
-            .prefetch_related('payment_set')\
-            .prefetch_related('attendance_set')\
+            .prefetch_related(models.Prefetch('payment_set', queryset=Payment.objects.order_by('-_datetime')))\
+            .annotate(_sessions_attended=models.Count('attendance'))\
             .prefetch_related('_courses')\
             .all().filter(_courses__in=course_uuids)
         
         for o in objects:
-            payments = o.payment_set.all().order_by('-_datetime')
+            payments = o.payment_set.all()
             o._unused_payments = [p for p in payments if not p.used]
             o._used_payments = [p for p in payments if p.used]
             o._new_payments = []
             o._unused_and_new_payments = o._unused_payments
-
-            o._sessions_attended = o.attendance_set.count()
 
             o._notes = list(o.note_set.all())
             o._new_notes = []
