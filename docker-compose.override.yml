@@ -24,7 +24,7 @@ services:
       - 8000:8000
     volumes:
       - ./config/nginx:/etc/nginx/conf.d
-  
+
   static:
     volumes:
       - ./static:/var/www/sjcadmin/current/static
@@ -33,7 +33,7 @@ services:
       - 9000:80
 
   npm:
-    command: [ "run", "dev" ]
+    command: ["run", "dev"]
     volumes:
       - .:/app
 
@@ -52,7 +52,7 @@ services:
 
   database:
     image: postgres:14.5
-    command: [ "postgres", "-c", "log_statement=all" ]
+    command: ["postgres", "-c", "log_statement=all"]
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=Rand0m!
@@ -68,3 +68,7 @@ services:
     ports:
       - "1025:1025" # SMTP port
       - "8025:8025" # Web UI for testing
+
+  terraform:
+    volumes:
+      - ./terraform:/app

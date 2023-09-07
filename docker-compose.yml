@@ -13,7 +13,7 @@ services:
       dockerfile: Dockerfile.static
     image: 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static
     hostname: static
-  
+
   nginx:
     build:
       context: .
@@ -35,5 +35,16 @@ services:
         source: app
         target: /app
 
+  terraform:
+    build:
+      context: ./terraform
+    environment:
+      - AWS_ACCESS_KEY_ID=$TERRAFORM_AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$TERRAFORM_AWS_SECRET_ACCESS_KEY
+      - AWS_DEFAULT_REGION=eu-west-2
+    volumes:
+      - terraform:/app
+
 volumes:
   app:
+  terraform:
