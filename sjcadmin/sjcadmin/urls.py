@@ -6,7 +6,6 @@ from .controllers.api import attendance as api_attendance, courses as api_course
 from .controllers import attendance, auth, courses, home, members, reports
 
 urlpatterns = [
-
     path('auth/login', auth.login),
     path('auth/logout', auth.logout),
 
