@@ -5,7 +5,8 @@ deploy:
     - docker:dind
   before_script:
     - cd workers/attendance
-    - apk add --update npm
+    - apk add --update npm#
+    - npm ci
     - npm install -g serverless
   script:
     - sls deploy --stage prod
