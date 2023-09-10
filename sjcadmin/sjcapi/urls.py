@@ -8,6 +8,4 @@ def trigger_error(request):
 
 urlpatterns = [
     path('attendance/', include(attendance_urls)),
-
-    path('sentry-debug/', trigger_error),
 ]
