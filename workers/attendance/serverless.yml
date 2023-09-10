@@ -3,13 +3,21 @@ frameworkVersion: "3"
 
 provider:
   name: aws
-  runtime: python3.10
+  deploymentBucket:
+    name: serverless-eu-west-2-082624796438
+  ecr:
+    images:
+      attendance-consumer:
+        path: ./
+  region: eu-west-2
+
+  # runtime: python3.10
 
 constructs:
   jobs:
     type: queue
     worker:
-      handler: handler.consumer
+      image: attendance-consumer
 
 # functions:
 #   producer:
@@ -23,7 +31,7 @@ constructs:
 
 plugins:
   - serverless-lift
-  - serverless-python-requirements
+  # - serverless-python-requirements
 
 package:
   patterns:

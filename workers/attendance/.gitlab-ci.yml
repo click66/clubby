@@ -5,9 +5,10 @@ deploy:
     - docker:dind
   before_script:
     - cd workers/attendance
-    - apk add --update npm#
+    - apk add --update npm #python3 curl
     - npm ci
     - npm install -g serverless
+    # - curl -sSL https://install.python-poetry.org | python3 -
   script:
     - sls deploy --stage prod
   only:

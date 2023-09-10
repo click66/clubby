@@ -56,3 +56,6 @@ include:
 #   variables:
 #     ECS_CLUSTER: "CS-ECS-01"
 #     ECS_SERVICE: "sjcadmin"
+#     AWS_ACCESS_KEY_ID: $DEPLOY_AWS_ACCESS_KEY_ID
+#     AWS_SECRET_ACCESS_KEY: $DEPLOY_AWS_SECRET_ACCESS_KEY
+
