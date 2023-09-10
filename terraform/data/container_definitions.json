@@ -13,6 +13,10 @@
             {
                 "name": "PGHOST",
                 "value": "10.0.0.186"
+            },
+            {
+                "name": "API_ROOT",
+                "value": "https://api.southamptonjiujitsu.com"
             }
         ],
         "mountPoints": [],

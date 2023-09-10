@@ -1,6 +1,10 @@
 service: sjcadmin-attendance-worker
 frameworkVersion: "3"
 
+custom:
+  arnAttendanceTopic:
+    Fn::ImportValue: AttendanceTopicArn
+
 provider:
   name: aws
   deploymentBucket:
@@ -10,22 +14,6 @@ provider:
       attendance-consumer:
         path: ./
   region: eu-west-2
-  iam:
-    role:
-      statements:
-        - Effect: Allow
-          Principal:
-            Service:
-             - sns.amazonaws.com
-          Action:
-            - sqs:SendMessage
-          Resource: ${construct:jobs.queueUrl}
-          Condition:
-            ArnEquals: !ImportValue sns-event-${sls:stage}
-
-custom:
-  arnAttendanceTopic:
-    Fn::ImportValue: AttendanceTopicArn
 
 constructs:
   jobs:
@@ -36,11 +24,24 @@ constructs:
 resources:
   Resources:
     Subscription:
-      Type: "AWS::SNS::Subscription"
+      Type: AWS::SNS::Subscription
       Properties:
         Endpoint: ${construct:jobs.queueArn}
         Protocol: sqs
         TopicArn: ${self:custom.arnAttendanceTopic}
+    ExtraQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - ${construct:jobs.queueUrl}
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: sns.amazonaws.com
+              Action:
+                - sqs:*
+              Resource: ${construct:jobs.queueArn}
 
 plugins:
   - serverless-lift

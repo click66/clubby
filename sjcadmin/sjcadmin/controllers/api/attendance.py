@@ -1,4 +1,6 @@
 import json
+import os
+import requests
 
 from collections import defaultdict
 from datetime import date, timedelta
@@ -13,7 +15,54 @@ from ...models.student import Student, Payment
 from ...services.attendance import get_producer as attendance_producer
 
 
-def serialize_attendance(attendances: list[Attendance], students: list[Student]):
+def serialize_attendance_dict(attendances: list[dict], students: list[Student]):
+    # Serialize students
+    serialized_students = {}
+    for s in students:
+        student_data = {
+            'uuid': str(s.uuid),
+            'name': s.name,
+            'membership': 'trial' if not s.has_licence() else 'licenced',
+            'rem_trial_sessions': s.remaining_trial_sessions,
+            'signed_up_for': [c.uuid for c in s.courses],
+            'has_notes': s.has_notes,
+            'prepayments': {},
+        }
+
+        for c in s.courses:
+            prepaid = s.has_prepaid(c)
+            student_data['prepayments'][str(c.uuid)] = prepaid is not None
+
+        if s.has_licence():
+            student_data['licence'] = {
+                'no': s.licence_no,
+                'exp_time': s.licence_expiry_date.strftime('%d/%m/%Y'),
+                'exp': s.is_licence_expired()
+            }
+        serialized_students[str(s.uuid)] = student_data
+
+    # Hydrate attendance data
+    attendance_dict = defaultdict(
+        lambda: {'attendances': [], 'paid': [], 'complementary': []})
+
+    for a in attendances:
+        attendance_dict[str(a['student_uuid'])
+                        ]['attendances'].append(a['date'])
+
+        if a['resolution'] == 'paid':
+            attendance_dict[str(a['student_uuid'])]['paid'].append(a['date'])
+        elif a['resolution'] == 'comp':
+            attendance_dict[str(a['student_uuid'])][
+                'complementary'].append(a['date'])
+
+    # Merge attendence data with serialized students
+    for s in serialized_students:
+        serialized_students[s].update(attendance_dict[s])
+
+    return serialized_students
+
+
+def serialize_attendance_local(attendances: list[dict], students: list[Student]):
     # Serialize students
     serialized_students = {}
     for s in students:
@@ -69,11 +118,36 @@ def get_attendance(request):
     today = date.today()
     range_end = today - timedelta(days=365)
 
-    attendances = Attendance.objects.filter(date__gte=range_end)
-
     students = Student.fetch_signed_up_for_multiple(course_uuids)
 
-    response = JsonResponse(list(serialize_attendance(attendances, students).values()), safe=False)
+    batch_size = 10
+    student_batches = [students[i:i + batch_size]
+                       for i in range(0, len(students), batch_size)]
+
+    attendances = []
+
+    for course_uuid in course_uuids:
+        for student_batch in student_batches:
+            attendances_response = requests.get(f"{os.getenv('API_ROOT')}/attendance/", {
+                'course': course_uuid,
+                'student[]': [student.uuid for student in student_batch],
+                'date_earliest': range_end,
+                'date_latest': today,
+            }).json()['attendances']
+
+        attendances.extend(attendances_response)
+    # # attendances = Attendance.objects.filter(date__gte=range_end)
+    # attendances = []
+    # for course_uuid in course_uuids:
+    #     attendances = attendances + requests.get(f"{os.getenv('API_ROOT')}/attendance/", {
+    #         'course': course_uuid,
+    #         'student[]': list(map(lambda s: s.uuid, students)),
+    #         'date_earliest': range_end,
+    #         'date_latest': today,
+    #     }).json()['attendances']
+
+    response = JsonResponse(list(serialize_attendance_dict(
+        attendances, students).values()), safe=False)
 
     return response
 
@@ -121,14 +195,14 @@ def post_log_attendance(request):
     producer.publish({
         'action': 'create',
         'data': {
-            'date': today.isoformat(),
+            'date': sess_date.isoformat(),
             'student_uuid': student_uuid,
             'course_uuid': product_uuid,
             'resolution': None if payment is None else payment[:4],
         }
     })
 
-    return JsonResponse({'success': serialize_attendance(
+    return JsonResponse({'success': serialize_attendance_local(
         Attendance.objects.filter(
             date__gte=range_end, student__uuid=str(s.uuid)),
         [s])[str(s.uuid)]})
@@ -141,13 +215,27 @@ def post_clear_attendance(request):
 
     student_uuid = data.get('student_uuid')
     sess_date = data.get('sess_date')
+    product_uuid = data.get('product')
     s = Student.fetch_by_uuid(student_uuid)
 
     Attendance.clear(s, date=date.fromisoformat(sess_date))
 
+    '''
+        Attendance event producer
+    '''
+    producer = attendance_producer()
+    producer.publish({
+        'action': 'delete',
+        'data': {
+            'date': sess_date,
+            'student_uuid': student_uuid,
+            'course_uuid': product_uuid,
+        }
+    })
+
     today = date.today()
     range_end = today - timedelta(days=365)
-    return JsonResponse({'success': serialize_attendance(
+    return JsonResponse({'success': serialize_attendance_local(
         Attendance.objects.filter(
             date__gte=range_end, student__uuid=str(student_uuid)
         ), [s])[str(student_uuid)]})

@@ -6,31 +6,65 @@ import os
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-QUEUE_URL = os.getenv('QUEUE_URL')
+API_ROOT = os.getenv('API_ROOT')
+
+
+def _create(payload: dict):
+    api_url = f"{API_ROOT}/attendance/"
+
+    try:
+        # Make a POST request to the API endpoint
+        response = requests.post(api_url, json=payload)
+
+        if response.status_code == 204:
+            logger.info(f"Successfully POST message to {api_url}")
+        else:
+            logger.info(
+                f"Failed to POST message to {api_url}. Status code: {response.status_code}")
+    except Exception as e:
+        logger.info(f"Error while POSTting message to {api_url}: {str(e)}")
+
+
+def _delete_by_id(payload: dict):
+    api_url = f"{API_ROOT}/attendance/{payload['id']}"
+
+    try:
+        response = requests.delete(api_url)
+
+        if response.status_code == 204:
+            logger.info(f"Successfully issued DELETE to {api_url}")
+        else:
+            logger.info(
+                f"Failed to DELETE {api_url}. Status code: {response.status_code}")
+    except Exception as e:
+        logger.info(f"Error while DELETing {api_url}: {str(e)}")
+
+
+def _delete_by_criteria(payload: dict):
+    api_url = f"{API_ROOT}/attendance/delete"
+
+    try:
+        response = requests.post(api_url, json=payload)
+
+        if response.status_code == 204:
+            logger.info(f"Successfully POST message to {api_url}")
+        else:
+            logger.info(
+                f"Failed to POST message to {api_url}. Status code: {response.status_code}")
+    except Exception as e:
+        logger.info(f"Error while POSTting message to {api_url}: {str(e)}")
 
 
 def consumer(event, context):
-    api_url = f"{os.getenv('API_ROOT')}/attendance/"
+    router = {
+        'create': _create,
+        'delete': _delete_by_criteria,
+    }
 
-    # Process each SQS message in the event
     for record in event['Records']:
-        # Decode the SQS message body
-        message_body = json.loads(record['body'])
+        message_body = json.loads(json.loads(
+            record['body'])['Message'])['default']
+        logger.debug(message_body)
 
-        # Assuming 'producer.publish' format for the message
-        payload = {
-            'action': message_body['action'],
-            'data': message_body['data']
-        }
-
-        try:
-            # Make a PUT request to the API endpoint
-            response = requests.put(api_url, json=payload)
-
-            if response.status_code == 200:
-                logger.info(f"Successfully PUT message to {api_url}")
-            else:
-                logger.info(
-                    f"Failed to PUT message to {api_url}. Status code: {response.status_code}")
-        except Exception as e:
-            logger.info(f"Error while PUTting message to {api_url}: {str(e)}")
+        if callable(target := router.get(message_body['action'])):
+            target(message_body['data'])

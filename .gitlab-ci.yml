@@ -15,21 +15,22 @@ include:
 #     - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
 #     - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest
 
-# infra:
-#   stage: infra
-#   image: docker:latest
-#   services:
-#     - docker:dind
-#   script:
-#     - docker compose -f docker-compose.yml build terraform
-#     - docker compose -f docker-compose.yml run --rm terraform init -input=false
-#     - docker compose -f docker-compose.yml run --rm terraform plan -out=tfplan -input=false
-#     - docker compose -f docker-compose.yml run --rm terraform apply -input=false tfplan
-#   only:
-#     - main
-#   variables:
-#     AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
-#     AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
+terraform:
+  stage: infra
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker compose -f docker-compose.yml build terraform
+    - docker compose -f docker-compose.yml run --rm terraform init -input=false
+    - docker compose -f docker-compose.yml run --rm terraform plan -out=tfplan -input=false
+    - docker compose -f docker-compose.yml run --rm terraform apply -input=false tfplan
+  only:
+    - main
+    - feature/attendance-app # Remove
+  variables:
+    AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
 
 serverless:
   stage: infra

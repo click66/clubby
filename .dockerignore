@@ -1,1 +1,6 @@
 pgdata
+static
+terraform
+workers
+
+serverless.uml
