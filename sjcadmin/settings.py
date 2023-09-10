@@ -31,6 +31,7 @@ ALLOWED_HOSTS = [
     'localhost',
     'admin.southamptonjiujitsu.local',
     'members.southamptonjiujitsu.local',
+    'api.southamptonjiujitsu.local',
     'admin.southamptonjiujitsu.com',
     'members.southamptonjiujitsu.com',
 ]
@@ -38,6 +39,7 @@ ALLOWED_HOSTS = [
 CSRF_TRUSTED_ORIGINS = [
     'http://admin.southamptonjiujitsu.local:8000',
     'http://members.southamptonjiujitsu.local:8000',
+    'http://api.southamptonjiujitsu.local:8000',
     'https://admin.southamptonjiujitsu.com',
     'https://members.southamptonjiujitsu.com',
 ]
@@ -55,6 +57,7 @@ INSTALLED_APPS = [
     'sjcadmin.sjcadmin',
     'sjcadmin.sjcmembers',
     'sjcadmin.sjcauth',
+    'sjcadmin.sjcattendance',
     'silk',
 ]
 
@@ -126,15 +129,17 @@ DATABASES = {
         'PASSWORD': os.environ.get('PGPASS'),
         'PORT': 5432,
     },
-    'members': {
-        'ENGINER': 'django.db.backends.postgresql',
+    'attendance': {
+        'ENGINE': 'django.db.backends.postgresql',
         'HOST': os.environ.get('PGHOST'),
-        'NAME': 'sjcmembers',
-        'USER': 'sjcmembers',
+        'NAME': 'sjcattendance',
+        'USER': 'sjcattendance',
         'PASSWORD': os.environ.get('PGPASS'),
         'PORT': 5432,
     },
 }
+
+DATABASE_ROUTERS = ['sjcadmin.sjcattendance.router.AttendanceRouter']
 
 DBBACKUP_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 DBBACKUP_STORAGE_OPTIONS = {
