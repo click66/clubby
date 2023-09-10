@@ -10,12 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
+import sentry_sdk
 
 from pathlib import Path
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -76,7 +77,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'sjcadmin.sjcadmin.urls'
 ROOT_HOSTCONF = 'sjcadmin.hosts'
-DEFAULT_HOST= 'admin'
+DEFAULT_HOST = 'admin'
 
 TEMPLATES = [
     {
@@ -149,8 +150,8 @@ DBBACKUP_STORAGE_OPTIONS = {
     'default_acl': 'private',
     'location': 'sjcadmin-backups/django/',
 }
-DBBACKUP_CONNECTOR_MAPPING = {  
-    'django.db.backends.postgresql':'dbbackup.db.postgresql.PgDumpBinaryConnector',
+DBBACKUP_CONNECTOR_MAPPING = {
+    'django.db.backends.postgresql': 'dbbackup.db.postgresql.PgDumpBinaryConnector',
 }
 
 
@@ -205,10 +206,20 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Mail setup
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('EMAIL_HOST') # AWS = email-smtp.eu-west-1.amazonaws.com
+# AWS = email-smtp.eu-west-1.amazonaws.com
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_PORT = os.environ.get('EMAIL_PORT')   # AWS = 587
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS') == 'true'
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'noreply@southamptonjiujitsu.com'
+
+# Sentry setup
+sentry_sdk.init(
+    dsn="https://d5aabe61b93c35aac123b8a1ba004256@o4505855644205056.ingest.sentry.io/4505855655608320",
+    integrations=[DjangoIntegration()],
+    send_default_pii=True,
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+)
