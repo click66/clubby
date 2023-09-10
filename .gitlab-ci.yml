@@ -1,10 +1,10 @@
 stages:
   # - test
-  # - infra
+  - infra
   - deploy
 
 include:
-  - 'workers/attendance/.gitlab-ci.yml'
+  - "workers/attendance/.gitlab-ci.yml"
 
 # test:
 #   stage: test
@@ -31,7 +31,24 @@ include:
 #     AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
 #     AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
 
-# deploy-app:
+serverless:
+  stage: infra
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - apk add --update npm
+    - npm install -g serverless
+  script:
+    - sls deploy --stage prod
+  only:
+    - main
+    - feature/attendance-app # Remove
+  variables:
+    AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
+
+# deploy:
 #   stage: deploy
 #   image: docker:latest
 #   services:

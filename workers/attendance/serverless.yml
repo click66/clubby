@@ -11,13 +11,24 @@ provider:
         path: ./
   region: eu-west-2
 
-  # runtime: python3.10
+custom:
+  arnAttendanceTopic:
+    Fn::ImportValue: AttendanceTopicArn
 
 constructs:
   jobs:
     type: queue
     worker:
       image: attendance-consumer
+
+resources:
+  Resources:
+    Subscription:
+      Type: "AWS::SNS::Subscription"
+      Properties:
+        Endpoint: ${construct:jobs.queueArn}
+        Protocol: sqs
+        TopicArn: ${self:custom.arnAttendanceTopic}
 
 # functions:
 #   producer:
