@@ -10,6 +10,18 @@ provider:
       attendance-consumer:
         path: ./
   region: eu-west-2
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Principal:
+            Service:
+             - sns.amazonaws.com
+          Action:
+            - sqs:SendMessage
+          Resource: ${construct:jobs.queueUrl}
+          Condition:
+            ArnEquals: !ImportValue sns-event-${sls:stage}
 
 custom:
   arnAttendanceTopic:
@@ -30,19 +42,8 @@ resources:
         Protocol: sqs
         TopicArn: ${self:custom.arnAttendanceTopic}
 
-# functions:
-#   producer:
-#     handler: handler.producer
-#     events:
-#       - httpApi:
-#           method: post
-#           path: /produce
-#     environment:
-#       QUEUE_URL: ${construct:jobs.queueUrl}
-
 plugins:
   - serverless-lift
-  # - serverless-python-requirements
 
 package:
   patterns:

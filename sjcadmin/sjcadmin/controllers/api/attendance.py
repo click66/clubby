@@ -10,6 +10,7 @@ from ._middleware import handle_error, login_required_401
 from ...models.attendance import Attendance
 from ...models.course import Course
 from ...models.student import Student, Payment
+from ...services.attendance import get_producer as attendance_producer
 
 
 def serialize_attendance(attendances: list[Attendance], students: list[Student]):
@@ -112,6 +113,21 @@ def post_log_attendance(request):
 
     today = date.today()
     range_end = today - timedelta(days=365)
+
+    '''
+        Attendance event producer
+    '''
+    producer = attendance_producer()
+    producer.publish({
+        'action': 'create',
+        'data': {
+            'date': today.isoformat(),
+            'student_uuid': student_uuid,
+            'course_uuid': product_uuid,
+            'resolution': None if payment is None else payment[:4],
+        }
+    })
+
     return JsonResponse({'success': serialize_attendance(
         Attendance.objects.filter(
             date__gte=range_end, student__uuid=str(s.uuid)),
