@@ -1,56 +1,58 @@
 stages:
-  - test
-  - infra
+  # - test
+  # - infra
   - deploy
 
-infra:
-  stage: infra
-  image: docker:latest
-  services:
-    - docker:dind
-  script:
-    - docker compose -f docker-compose.yml build terraform
-    - docker compose -f docker-compose.yml run --rm terraform init -input=false
-    - docker compose -f docker-compose.yml run --rm terraform plan -out=tfplan -input=false
-    - docker compose -f docker-compose.yml run --rm terraform apply -input=false tfplan
-  only:
-    - main
-  variables:
-    AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
+include:
+  - 'workers/attendance/.gitlab-ci.yml'
 
-test:
-  stage: test
-  image: docker
-  services:
-    - docker:dind
-  script:
-    - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
-    - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest
+# test:
+#   stage: test
+#   image: docker
+#   services:
+#     - docker:dind
+#   script:
+#     - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
+#     - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest
 
-deploy:
-  stage: deploy
-  image: docker:latest
-  services:
-    - docker:dind
-  before_script:
-    - apk add --no-cache curl jq python3 py3-pip
-    - pip install awscli
-    - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 082624796438.dkr.ecr.eu-west-2.amazonaws.com
-    - aws --version
-    - docker info
-    - docker --version
-  script:
-    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app -f Dockerfile --target prod-runtime .
-    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx -f Dockerfile.nginx .
-    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static -f Dockerfile.static .
-    - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app
-    - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx
-    - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static
-    - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
-  only:
-   - main
-   - feature/dockerisation
-  variables:
-    ECS_CLUSTER: "CS-ECS-01"
-    ECS_SERVICE: "sjcadmin"
+# infra:
+#   stage: infra
+#   image: docker:latest
+#   services:
+#     - docker:dind
+#   script:
+#     - docker compose -f docker-compose.yml build terraform
+#     - docker compose -f docker-compose.yml run --rm terraform init -input=false
+#     - docker compose -f docker-compose.yml run --rm terraform plan -out=tfplan -input=false
+#     - docker compose -f docker-compose.yml run --rm terraform apply -input=false tfplan
+#   only:
+#     - main
+#   variables:
+#     AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
+#     AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
+
+# deploy-app:
+#   stage: deploy
+#   image: docker:latest
+#   services:
+#     - docker:dind
+#   before_script:
+#     - apk add --no-cache curl jq python3 py3-pip
+#     - pip install awscli
+#     - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 082624796438.dkr.ecr.eu-west-2.amazonaws.com
+#     - aws --version
+#     - docker info
+#     - docker --version
+#   script:
+#     - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app -f Dockerfile --target prod-runtime .
+#     - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx -f Dockerfile.nginx .
+#     - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static -f Dockerfile.static .
+#     - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app
+#     - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx
+#     - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static
+#     - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
+#   only:
+#     - main
+#   variables:
+#     ECS_CLUSTER: "CS-ECS-01"
+#     ECS_SERVICE: "sjcadmin"

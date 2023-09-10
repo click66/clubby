@@ -129,15 +129,17 @@ DATABASES = {
         'PASSWORD': os.environ.get('PGPASS'),
         'PORT': 5432,
     },
-    'members': {
-        'ENGINER': 'django.db.backends.postgresql',
+    'attendance': {
+        'ENGINE': 'django.db.backends.postgresql',
         'HOST': os.environ.get('PGHOST'),
-        'NAME': 'sjcmembers',
-        'USER': 'sjcmembers',
+        'NAME': 'sjcattendance',
+        'USER': 'sjcattendance',
         'PASSWORD': os.environ.get('PGPASS'),
         'PORT': 5432,
     },
 }
+
+DATABASE_ROUTERS = ['sjcadmin.sjcattendance.router.AttendanceRouter']
 
 DBBACKUP_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 DBBACKUP_STORAGE_OPTIONS = {

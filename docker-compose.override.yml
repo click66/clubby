@@ -30,14 +30,8 @@ services:
       target: dev-runtime
     volumes:
       - .:/app
-      # - ./config/static:/etc/nginx/conf.d
     ports:
       - 9000:80
-
-  # npm:
-  #   command: ["run", "dev"]
-  #   volumes:
-  #     - .:/app
 
   base:
     build:
@@ -74,3 +68,7 @@ services:
   terraform:
     volumes:
       - ./terraform:/app
+
+  attendance-worker:
+    volumes:
+      - ./workers/attendance:/app

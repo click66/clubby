@@ -1,0 +1,30 @@
+service: sjcadmin-attendance-worker
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: python3.10
+
+constructs:
+  jobs:
+    type: queue
+    worker:
+      handler: handler.consumer
+
+# functions:
+#   producer:
+#     handler: handler.producer
+#     events:
+#       - httpApi:
+#           method: post
+#           path: /produce
+#     environment:
+#       QUEUE_URL: ${construct:jobs.queueUrl}
+
+plugins:
+  - serverless-lift
+  - serverless-python-requirements
+
+package:
+  patterns:
+    - "!node_modules/**"
