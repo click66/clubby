@@ -218,6 +218,7 @@ DEFAULT_FROM_EMAIL = 'noreply@southamptonjiujitsu.com'
 # Sentry setup
 sentry_sdk.init(
     dsn="https://d5aabe61b93c35aac123b8a1ba004256@o4505855644205056.ingest.sentry.io/4505855655608320",
+    environment=os.environ.get('ENVIRONMENT_NAME'),
     integrations=[DjangoIntegration()],
     send_default_pii=True,
     traces_sample_rate=1.0,
