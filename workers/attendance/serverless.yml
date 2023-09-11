@@ -20,6 +20,8 @@ constructs:
     type: queue
     worker:
       image: attendance-consumer
+      environment:
+        API_ROOT: https://api.southamptonjiujitsu.com
 
 resources:
   Resources:

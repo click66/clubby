@@ -2,7 +2,7 @@ services:
   app:
     build:
       context: .
-      target: dev-runtime
+      # target: dev-runtime
     environment:
       - API_ROOT=http://api.southamptonjiujitsu.local:8000
       - DJANGO_SETTINGS_MODULE=sjcadmin.settings
@@ -77,8 +77,6 @@ services:
       - ./terraform:/app
 
   attendance-worker:
-    build:
-      target: base
     volumes:
       - ./workers/attendance:/app
 

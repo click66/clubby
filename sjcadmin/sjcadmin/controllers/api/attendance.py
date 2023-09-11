@@ -120,7 +120,7 @@ def get_attendance(request):
 
     students = Student.fetch_signed_up_for_multiple(course_uuids)
 
-    batch_size = 10
+    batch_size = 50
     student_batches = [students[i:i + batch_size]
                        for i in range(0, len(students), batch_size)]
 
@@ -135,16 +135,7 @@ def get_attendance(request):
                 'date_latest': today,
             }).json()['attendances']
 
-        attendances.extend(attendances_response)
-    # # attendances = Attendance.objects.filter(date__gte=range_end)
-    # attendances = []
-    # for course_uuid in course_uuids:
-    #     attendances = attendances + requests.get(f"{os.getenv('API_ROOT')}/attendance/", {
-    #         'course': course_uuid,
-    #         'student[]': list(map(lambda s: s.uuid, students)),
-    #         'date_earliest': range_end,
-    #         'date_latest': today,
-    #     }).json()['attendances']
+            attendances.extend(attendances_response)
 
     response = JsonResponse(list(serialize_attendance_dict(
         attendances, students).values()), safe=False)
