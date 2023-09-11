@@ -1,0 +1,20 @@
+service: sjcadmin
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  deploymentBucket:
+    name: serverless-eu-west-2-082624796438
+  region: eu-west-2
+
+resources:
+  Resources:
+    AttendanceTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: sjcadmin-attendance
+  Outputs:
+    AttendanceTopicArn:
+      Value: {"Ref": "AttendanceTopic"}
+      Export:
+        Name: AttendanceTopicArn

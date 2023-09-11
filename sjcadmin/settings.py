@@ -35,6 +35,7 @@ ALLOWED_HOSTS = [
     'api.southamptonjiujitsu.local',
     'admin.southamptonjiujitsu.com',
     'members.southamptonjiujitsu.com',
+    'api.southamptonjiujitsu.com',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -43,6 +44,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://api.southamptonjiujitsu.local:8000',
     'https://admin.southamptonjiujitsu.com',
     'https://members.southamptonjiujitsu.com',
+    'https://api.southamptonjiujitsu.com',
 ]
 
 # Application definition

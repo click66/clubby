@@ -1,0 +1,53 @@
+service: sjcadmin-attendance-worker
+frameworkVersion: "3"
+
+custom:
+  arnAttendanceTopic:
+    Fn::ImportValue: AttendanceTopicArn
+
+provider:
+  name: aws
+  deploymentBucket:
+    name: serverless-eu-west-2-082624796438
+  ecr:
+    images:
+      attendance-consumer:
+        path: ./
+  region: eu-west-2
+
+constructs:
+  jobs:
+    type: queue
+    worker:
+      image: attendance-consumer
+      environment:
+        API_ROOT: https://api.southamptonjiujitsu.com
+
+resources:
+  Resources:
+    Subscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: ${construct:jobs.queueArn}
+        Protocol: sqs
+        TopicArn: ${self:custom.arnAttendanceTopic}
+    ExtraQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - ${construct:jobs.queueUrl}
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: sns.amazonaws.com
+              Action:
+                - sqs:*
+              Resource: ${construct:jobs.queueArn}
+
+plugins:
+  - serverless-lift
+
+package:
+  patterns:
+    - "!node_modules/**"

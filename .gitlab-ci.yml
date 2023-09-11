@@ -3,7 +3,19 @@ stages:
   - infra
   - deploy
 
-infra:
+include:
+  - "workers/attendance/.gitlab-ci.yml"
+
+test:
+  stage: test
+  image: docker
+  services:
+    - docker:dind
+  script:
+    - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
+    - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest
+
+terraform:
   stage: infra
   image: docker:latest
   services:
@@ -19,14 +31,21 @@ infra:
     AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
 
-test:
-  stage: test
-  image: docker
+serverless:
+  stage: infra
+  image: docker:latest
   services:
     - docker:dind
+  before_script:
+    - apk add --update npm
+    - npm install -g serverless
   script:
-    - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
-    - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest
+    - sls deploy --stage prod
+  only:
+    - main
+  variables:
+    AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
 
 deploy:
   stage: deploy
@@ -49,10 +68,11 @@ deploy:
     - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static
     - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
   only:
-   - main
-   - feature/dockerisation
+    - main
   variables:
     AWS_ACCESS_KEY_ID: $DEPLOY_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $DEPLOY_AWS_SECRET_ACCESS_KEY
     ECS_CLUSTER: "CS-ECS-01"
     ECS_SERVICE: "sjcadmin"
+    AWS_ACCESS_KEY_ID: $DEPLOY_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $DEPLOY_AWS_SECRET_ACCESS_KEY

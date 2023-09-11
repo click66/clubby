@@ -1,5 +1,6 @@
 import json
 from datetime import date
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -7,37 +8,44 @@ from pydantic import BaseModel
 from typing import Literal, Optional
 from uuid import UUID
 
+from ._middleware import handle_error
 from ...models import Attendance as AttendanceModel, Resolution as ResolutionModel
 
 
 class AttendanceQuery(BaseModel):
     student_uuids: list[UUID]
     course_uuid: UUID
-    date: date
+    date_earliest: date
+    date_latest: date
 
 
-class Attendance(BaseModel):
+class AttendanceBase(BaseModel):
     student_uuid: UUID
     resolution: Optional[Literal['paid', 'comp']] = None
-
-
-class AttendancePost(Attendance):
     course_uuid: UUID
     date: date
 
 
-@require_http_methods(['GET', 'PUT'])
+class AttendancePost(AttendanceBase):
+    pass
+
+
+class AttendanceRead(AttendanceBase):
+    id: int
+
+
+@require_http_methods(['GET', 'POST'])
 @csrf_exempt
 def dispatch(request):
     match request.method:
         case 'GET':
             return get_attendance(request)
-        case 'PUT':
-            return put_attendance(request)
+        case 'POST':
+            return post_attendance(request)
 
 
 def get_attendance(request):
-    def resolution(attendance: Attendance):
+    def resolution(attendance: AttendanceRead):
         match True:
             case attendance.paid:
                 return 'paid'
@@ -48,19 +56,24 @@ def get_attendance(request):
 
     query = AttendanceQuery(student_uuids=request.GET.getlist('student[]'),
                             course_uuid=request.GET.get('course'),
-                            date=request.GET.get('date'))
+                            date_earliest=request.GET.get('date_earliest'),
+                            date_latest=request.GET.get('date_latest'))
 
     results = AttendanceModel.objects.filter(student_uuid__in=query.student_uuids,
                                              course_uuid=query.course_uuid,
-                                             date=query.date).select_related('resolution')
+                                             date__gte=query.date_earliest,
+                                             date__lte=query.date_latest).select_related('resolution')
 
-    response = list(map(lambda a: Attendance(student_uuid=a.student_uuid,
-                                             resolution=resolution(a)).model_dump_json(), results))
+    response = list(map(lambda a: dict(AttendanceRead(id=a.pk,
+                                                      student_uuid=a.student_uuid,
+                                                      course_uuid=a.course_uuid,
+                                                      date=a.date,
+                                                      resolution=resolution(a))), results))
 
     return JsonResponse({'attendances': response})
 
 
-def put_attendance(request):
+def post_attendance(request):
     data = json.loads(request.body)
     post = AttendancePost(course_uuid=data.get('course_uuid'),
                           date=data.get('date'),
@@ -78,5 +91,35 @@ def put_attendance(request):
             create.set_resolution(ResolutionModel.make(complementary=True))
 
     create.save()
+
+    return HttpResponse(status=204)
+
+
+@require_http_methods(['DELETE'])
+@csrf_exempt
+@handle_error
+def delete_attendance(request, pk: int):
+    try:
+        AttendanceModel.objects.get(pk=pk).delete()
+        return HttpResponse(status=204)
+    except ObjectDoesNotExist:
+        return HttpResponse(status=404)
+
+
+@require_http_methods(['POST'])
+@csrf_exempt
+@handle_error
+def delete_by_criteria(request):
+    data = json.loads(request.body)
+
+    query = AttendanceQuery(course_uuid=data.get('course_uuid'),
+                            date_earliest=data.get('date'),
+                            date_latest=data.get('date'),
+                            student_uuids=[data.get('student_uuid')])
+
+    AttendanceModel.objects.filter(student_uuid__in=query.student_uuids,
+                                   course_uuid=query.course_uuid,
+                                   date__gte=query.date_earliest,
+                                   date__lte=query.date_latest).select_related('resolution').delete()
 
     return HttpResponse(status=204)

@@ -27,15 +27,6 @@ services:
       - app
       - static
 
-  # npm:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.npm
-  #   volumes:
-  #     - type: volume
-  #       source: app
-  #       target: /app
-
   terraform:
     build:
       context: ./terraform
@@ -45,6 +36,10 @@ services:
       - AWS_DEFAULT_REGION=eu-west-2
     volumes:
       - terraform:/app
+
+  attendance-worker:
+    build:
+      context: ./workers/attendance
 
 volumes:
   app:

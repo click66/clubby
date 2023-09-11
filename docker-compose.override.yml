@@ -4,6 +4,7 @@ services:
       context: .
       target: dev-runtime
     environment:
+      - API_ROOT=http://api.southamptonjiujitsu.local:8000
       - DJANGO_SETTINGS_MODULE=sjcadmin.settings
       - DJANGO_SECRET_KEY="*(%z)+p^f+*&!zdv$j_ipce+)ru+f+g91udo2i&=1l1r6deyet"
       - ENVIRONMENT_NAME=local
@@ -16,6 +17,12 @@ services:
       - EMAIL_USE_TLS=false
       - EMAIL_HOST_USER='username'
       - EMAIL_HOST_PASSWORD='password'
+    networks:
+      default:
+        aliases:
+          - admin.southamptonjiujitsu.local
+          - api.southamptonjiujitsu.local
+          - members.southamptonjiujitsu.local
     volumes:
       - .:/app
 
@@ -30,14 +37,8 @@ services:
       target: dev-runtime
     volumes:
       - .:/app
-      # - ./config/static:/etc/nginx/conf.d
     ports:
       - 9000:80
-
-  # npm:
-  #   command: ["run", "dev"]
-  #   volumes:
-  #     - .:/app
 
   base:
     build:
@@ -62,7 +63,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - ./pgsetup.sql:/docker-entrypoint-initdb.d/_init.sql
+      - ./init-postgres.sql:/docker-entrypoint-initdb.d/_init.sql
       - ./pgdata:/var/lib/postgresql/data
 
   mail:
@@ -74,3 +75,22 @@ services:
   terraform:
     volumes:
       - ./terraform:/app
+
+  attendance-worker:
+    volumes:
+      - ./workers/attendance:/app
+
+  localstack:
+    image: localstack/localstack:latest
+    environment:
+      - SERVICES=lambda,sqs,sns
+      - AWS_DEFAULT_REGION=eu-central-1
+      - EDGE_PORT=4566
+      - DEBUG=1
+    ports:
+      - "4566-4597:4566-4597"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - ./init-localstack.sh:/etc/localstack/init/ready.d/init-aws.sh
+      - ./workers:/app/workers
+

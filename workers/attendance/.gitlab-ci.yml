@@ -1,0 +1,17 @@
+deploy-attendance-worker:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - cd workers/attendance
+    - apk add --update npm
+    - npm ci
+    - npm install -g serverless
+  script:
+    - sls deploy --stage prod
+  only:
+    - main
+  variables:
+    AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
