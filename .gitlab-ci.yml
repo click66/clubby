@@ -1,19 +1,19 @@
 stages:
-  # - test
+  - test
   - infra
   - deploy
 
 include:
   - "workers/attendance/.gitlab-ci.yml"
 
-# test:
-#   stage: test
-#   image: docker
-#   services:
-#     - docker:dind
-#   script:
-#     - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
-#     - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest
+test:
+  stage: test
+  image: docker
+  services:
+    - docker:dind
+  script:
+    - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
+    - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest
 
 terraform:
   stage: infra
@@ -27,7 +27,6 @@ terraform:
     - docker compose -f docker-compose.yml run --rm terraform apply -input=false tfplan
   only:
     - main
-    - feature/attendance-app # Remove
   variables:
     AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
@@ -44,7 +43,6 @@ serverless:
     - sls deploy --stage prod
   only:
     - main
-    - feature/attendance-app # Remove
   variables:
     AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
@@ -71,10 +69,8 @@ deploy:
     - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
   only:
     - main
-    - feature/attendance-app # Remove
   variables:
     ECS_CLUSTER: "CS-ECS-01"
     ECS_SERVICE: "sjcadmin"
     AWS_ACCESS_KEY_ID: $DEPLOY_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $DEPLOY_AWS_SECRET_ACCESS_KEY
-

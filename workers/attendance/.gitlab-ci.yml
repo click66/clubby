@@ -12,7 +12,6 @@ deploy-attendance-worker:
     - sls deploy --stage prod
   only:
     - main
-    - feature/attendance-app  # Remove
   variables:
     AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
