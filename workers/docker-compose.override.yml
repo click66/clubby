@@ -1,0 +1,4 @@
+services:  
+  attendance-worker:
+    volumes:
+      - ./attendance:/app

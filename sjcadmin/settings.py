@@ -32,19 +32,19 @@ ALLOWED_HOSTS = [
     'localhost',
     'admin.southamptonjiujitsu.local',
     'members.southamptonjiujitsu.local',
-    'api.southamptonjiujitsu.local',
+    # 'api.southamptonjiujitsu.local',
     'admin.southamptonjiujitsu.com',
     'members.southamptonjiujitsu.com',
-    'api.southamptonjiujitsu.com',
+    # 'api.southamptonjiujitsu.com',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://admin.southamptonjiujitsu.local:8000',
     'http://members.southamptonjiujitsu.local:8000',
-    'http://api.southamptonjiujitsu.local:8000',
+    # 'http://api.southamptonjiujitsu.local:8000',
     'https://admin.southamptonjiujitsu.com',
     'https://members.southamptonjiujitsu.com',
-    'https://api.southamptonjiujitsu.com',
+    # 'https://api.southamptonjiujitsu.com',
 ]
 
 # Application definition

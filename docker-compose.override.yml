@@ -1,10 +1,17 @@
+include:
+  - services/docker-compose.override.yml
+  - workers/docker-compose.override.yml
+
 services:
   app:
     build:
       context: .
       target: dev-runtime
+    depends_on:
+      - api-gateway
     environment:
-      - API_ROOT=http://api.southamptonjiujitsu.local:8000
+      - API_ROOT=http://api.southamptonjiujitsu.local:9000
+      - API_KEY=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZiB5b3UgYXJlIHJlYWRpbmcgdGhpcyI6InlvdSBoYXZlIHRvbyBtdWNoIHRpbWUgb24geW91ciBoYW5kcyJ9.a2Vm6eY2cbWIhwteh1lK3zn8sb6gH7rk38SNtnm_6XKvz2vnNqajXx2uxYtF7Cwl9n-f1Vn7FVg8y2OwWknkqDg3OY2leNN6GbDvdZpDiafYipVssOqo3Lq361vQCzSHtHnBlMu_Gf_EIwSqT1gsAtRwJlZ2oOD_otIVlpap7bU
       - DJANGO_SETTINGS_MODULE=sjcadmin.settings
       - DJANGO_SECRET_KEY="*(%z)+p^f+*&!zdv$j_ipce+)ru+f+g91udo2i&=1l1r6deyet"
       - ENVIRONMENT_NAME=local
@@ -21,24 +28,21 @@ services:
       default:
         aliases:
           - admin.southamptonjiujitsu.local
-          - api.southamptonjiujitsu.local
           - members.southamptonjiujitsu.local
     volumes:
       - .:/app
-
-  nginx:
-    ports:
-      - 8000:8000
-    volumes:
-      - ./config/nginx:/etc/nginx/conf.d
 
   static:
     build:
       target: dev-runtime
     volumes:
       - .:/app
+
+  gateway:
     ports:
-      - 9000:80
+      - 8000:8000
+    volumes:
+      - ./config/nginx:/etc/nginx/conf.d
 
   base:
     build:
@@ -54,12 +58,6 @@ services:
       - .:/app
 
   database:
-    image: postgres:14.5
-    command: ["postgres", "-c", "log_statement=all"]
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=Rand0m!
-      - PGDATA=/var/lib/postgresql/data/pgdata
     ports:
       - 5432:5432
     volumes:
@@ -76,10 +74,6 @@ services:
     volumes:
       - ./terraform:/app
 
-  attendance-worker:
-    volumes:
-      - ./workers/attendance:/app
-
   localstack:
     image: localstack/localstack:latest
     environment:
@@ -93,4 +87,3 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - ./init-localstack.sh:/etc/localstack/init/ready.d/init-aws.sh
       - ./workers:/app/workers
-

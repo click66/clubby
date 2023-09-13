@@ -1,0 +1,46 @@
+[
+    {
+        "name": "app",
+        "image": "082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin-attendance/app:latest",
+        "cpu": 0,
+        "portMappings": [
+            {
+                "containerPort": 8000,
+                "hostPort": 8003,
+                "protocol": "tcp"
+            }
+        ],
+        "essential": true,
+        "environment": [
+            {
+                "name": "ENVIRONMENT_NAME",
+                "value": "production"
+            },
+            {
+                "name": "PGHOST",
+                "value": "10.0.0.186"
+            },
+            {
+                "name": "API_ROOT",
+                "value": "https://api.southamptonjiujitsu.com"
+            }
+        ],
+        "mountPoints": [],
+        "volumesFrom": [],
+        "secrets": [
+            {
+                "name": "PGPASS",
+                "valueFrom": "sjcadmin_PGPASS"
+            }
+        ],
+        "logConfiguration": {
+            "logDriver": "awslogs",
+            "options": {
+                "awslogs-create-group": "true",
+                "awslogs-group": "/ecs/",
+                "awslogs-region": "eu-west-2",
+                "awslogs-stream-prefix": "ecs"
+            }
+        }
+    }
+]

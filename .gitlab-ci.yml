@@ -4,6 +4,7 @@ stages:
   - deploy
 
 include:
+  - "services/attendance/.gitlab-ci.yml"
   - "workers/attendance/.gitlab-ci.yml"
 
 test:
@@ -13,7 +14,7 @@ test:
     - docker:dind
   script:
     - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
-    - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest
+    - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest tests/unit
 
 terraform:
   stage: infra
@@ -74,5 +75,3 @@ deploy:
     AWS_SECRET_ACCESS_KEY: $DEPLOY_AWS_SECRET_ACCESS_KEY
     ECS_CLUSTER: "CS-ECS-01"
     ECS_SERVICE: "sjcadmin"
-    AWS_ACCESS_KEY_ID: $DEPLOY_AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY: $DEPLOY_AWS_SECRET_ACCESS_KEY

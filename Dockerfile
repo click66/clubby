@@ -2,7 +2,6 @@
 FROM python:3.10-bullseye as base
 RUN apt-get update && apt-get install -y --no-install-recommends gcc
 
-# RUN apt-get install -y curl ca-certificates gnugp
 RUN curl https://www.postgresql.org/media/keys/ACCC4CF8.asc \
 | gpg --dearmor \
 | tee /etc/apt/trusted.gpg.d/apt.postgresql.org.gpg >/dev/null

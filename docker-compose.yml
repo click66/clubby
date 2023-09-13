@@ -1,3 +1,7 @@
+include:
+  - services/docker-compose.yml
+  - workers/docker-compose.yml
+
 services:
   app:
     build:
@@ -15,7 +19,7 @@ services:
     image: 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static
     hostname: static
 
-  nginx:
+  gateway:
     build:
       context: .
       dockerfile: Dockerfile.nginx
@@ -36,10 +40,14 @@ services:
       - AWS_DEFAULT_REGION=eu-west-2
     volumes:
       - terraform:/app
-
-  attendance-worker:
-    build:
-      context: ./workers/attendance
+  
+  database:
+    image: postgres:14.5
+    command: ["postgres", "-c", "log_statement=all"]
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Rand0m!
+      - PGDATA=/var/lib/postgresql/data/pgdata
 
 volumes:
   app:

@@ -25,8 +25,8 @@ resource "aws_ecs_task_definition" "sjcadmin" {
     execution_role_arn       = "arn:aws:iam::082624796438:role/ecsTaskExecutionRole"
     network_mode             = "bridge"
     requires_compatibilities = ["EC2"]
-    cpu                      = "512"
-    memory                   = "512"
+    cpu                      = "256"
+    memory                   = "256"
 
     runtime_platform {
         cpu_architecture = "X86_64"
@@ -49,7 +49,7 @@ data "aws_iam_policy_document" "sjcadmin-deploy" {
     statement {
         effect = "Allow"
         actions = ["ecs:UpdateService"]
-        resources = ["arn:aws:ecs:eu-west-2:082624796438:service/CS-ECS-01/sjcadmin"]
+        resources = ["arn:aws:ecs:eu-west-2:082624796438:service/CS-ECS-01/sjcadmin*"]
     }
 
     statement {

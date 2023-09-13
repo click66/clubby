@@ -1,0 +1,11 @@
+services:
+  attendance-service:
+    build:
+      context: ./attendance
+      target: dev-runtime
+    depends_on:
+      - database
+    environment:
+      - ENVIRONMENT_NAME=local
+      - PGHOST=database
+      - PGPASS=Rand0m!

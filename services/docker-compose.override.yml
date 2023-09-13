@@ -1,0 +1,19 @@
+services:
+  attendance-service:
+    environment:
+      - API_ROOT=http://api.southamptonjiujitsu.local:9000
+    volumes:
+      - ./attendance:/app
+
+  api-gateway:
+    image: nginx:latest
+    depends_on:
+      - attendance-service
+    networks:
+      default:
+        aliases:
+          - api.southamptonjiujitsu.local
+    ports:
+      - 9000:9000
+    volumes:
+      - ./gateway.conf:/etc/nginx/conf.d/default.conf

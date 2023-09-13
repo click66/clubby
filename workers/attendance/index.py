@@ -1,3 +1,4 @@
+import boto3
 import json
 import requests
 import logging
@@ -9,12 +10,21 @@ logger.setLevel(logging.DEBUG)
 API_ROOT = os.getenv('API_ROOT')
 
 
+def get_secret(param_name):
+    ssm = boto3.client('ssm')
+    return ssm.get_parameter(Name=f'sjcadmin_{param_name}')['Parameter']['Value']
+
+
+API_KEY = get_secret('API_KEY')
+
+
 def _create(payload: dict):
-    api_url = f"{API_ROOT}/attendance/"
+    api_url = f"{API_ROOT}/attendance/create"
 
     try:
         # Make a POST request to the API endpoint
-        response = requests.post(api_url, json=payload)
+        response = requests.post(api_url, json=payload, headers={
+                                 'Authorization': f'Bearer {API_KEY}'})
 
         if response.status_code == 204:
             logger.info(f"Successfully POST message to {api_url}")
@@ -44,7 +54,8 @@ def _delete_by_criteria(payload: dict):
     api_url = f"{API_ROOT}/attendance/delete"
 
     try:
-        response = requests.post(api_url, json=payload)
+        response = requests.post(api_url, json=payload, headers={
+                                 'Authorization': f'Bearer {API_KEY}'})
 
         if response.status_code == 204:
             logger.info(f"Successfully POST message to {api_url}")

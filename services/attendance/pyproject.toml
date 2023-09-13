@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "sjcadmin-attendance"
+version = "0.1.0"
+description = ""
+authors = ["Clark Sirl <click66@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.103.1"
+SQLAlchemy = "^2.0.20"
+pydantic = "^2.3.0"
+boto3 = "^1.28.45"
+alembic = "^1.12.0"
+psycopg2 = "^2.9.7"
+python-jose = {version = "^3.3.0", extras = ["cryptography"]}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.2"
+uvicorn = "^0.23.2"
+requests = "^2.31.0"
+httpx = "^0.25.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

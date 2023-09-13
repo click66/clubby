@@ -1,0 +1,17 @@
+{
+    "listeners": {
+        "*:8000": {
+            "pass": "applications/sjcadmin-attendance"
+        }
+    },
+
+    "applications": {
+        "sjcadmin-attendance": {
+            "type": "python 3.11",
+            "path": "/app/",
+            "home": "/app/.venv/",
+            "module": "main",
+            "callable": "app"
+        }
+    }
+}

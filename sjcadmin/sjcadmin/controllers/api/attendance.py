@@ -14,6 +14,9 @@ from ...models.course import Course
 from ...models.student import Student, Payment
 from ...services.attendance import get_producer as attendance_producer
 
+API_ROOT = os.getenv('API_ROOT')
+API_KEY = os.getenv('API_KEY')
+
 
 def serialize_attendance_dict(attendances: list[dict], students: list[Student]):
     # Serialize students
@@ -120,22 +123,17 @@ def get_attendance(request):
 
     students = Student.fetch_signed_up_for_multiple(course_uuids)
 
-    batch_size = 50
-    student_batches = [students[i:i + batch_size]
-                       for i in range(0, len(students), batch_size)]
-
     attendances = []
 
     for course_uuid in course_uuids:
-        for student_batch in student_batches:
-            attendances_response = requests.get(f"{os.getenv('API_ROOT')}/attendance/", {
-                'course': course_uuid,
-                'student[]': [student.uuid for student in student_batch],
-                'date_earliest': range_end,
-                'date_latest': today,
-            }).json()['attendances']
+        attendances_response = requests.post(f'{API_ROOT}/attendance/query', json={
+            'course_uuid': str(course_uuid),
+            'student_uuids': [str(student.uuid) for student in students],
+            'date_earliest': range_end.isoformat(),
+            'date_latest': today.isoformat(),
+        }, headers={'Authorization': f'Bearer {API_KEY}'}).json()
 
-            attendances.extend(attendances_response)
+        attendances.extend(attendances_response)
 
     response = JsonResponse(list(serialize_attendance_dict(
         attendances, students).values()), safe=False)
@@ -180,18 +178,24 @@ def post_log_attendance(request):
     range_end = today - timedelta(days=365)
 
     '''
-        Attendance event producer
+        Post new attendance event
     '''
-    producer = attendance_producer()
-    producer.publish({
-        'action': 'create',
-        'data': {
-            'date': sess_date.isoformat(),
-            'student_uuid': student_uuid,
-            'course_uuid': product_uuid,
-            'resolution': None if payment is None else payment[:4],
-        }
-    })
+    # producer = attendance_producer()
+    # producer.publish({
+    #     'action': 'create',
+    #     'data': {
+    #         'date': sess_date.isoformat(),
+    #         'student_uuid': student_uuid,
+    #         'course_uuid': product_uuid,
+    #         'resolution': None if payment is None else payment[:4],
+    #     }
+    # })
+    requests.post(f'{API_ROOT}/attendance/create', json={
+        'date': sess_date.isoformat(),
+        'student_uuid': student_uuid,
+        'course_uuid': product_uuid,
+        'resolution': None if payment is None else payment[:4],
+    }, headers={'Authorization': f'Bearer {API_KEY}'}).json()
 
     return JsonResponse({'success': serialize_attendance_local(
         Attendance.objects.filter(
@@ -214,15 +218,21 @@ def post_clear_attendance(request):
     '''
         Attendance event producer
     '''
-    producer = attendance_producer()
-    producer.publish({
-        'action': 'delete',
-        'data': {
-            'date': sess_date,
-            'student_uuid': student_uuid,
-            'course_uuid': product_uuid,
-        }
-    })
+    # producer = attendance_producer()
+    # producer.publish({
+    #     'action': 'delete',
+    #     'data': {
+    #         'date': sess_date,
+    #         'student_uuid': student_uuid,
+    #         'course_uuid': product_uuid,
+    #     }
+    # })
+    requests.post(f'{API_ROOT}/attendance/delete', json={
+        'date_earliest': sess_date,
+        'date_latest': sess_date,
+        'student_uuids': [student_uuid],
+        'course_uuid': product_uuid,
+    }, headers={'Authorization': f'Bearer {API_KEY}'})
 
     today = date.today()
     range_end = today - timedelta(days=365)
