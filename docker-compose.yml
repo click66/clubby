@@ -48,6 +48,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=Rand0m!
       - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./init-postgres.sql:/docker-entrypoint-initdb.d/_init.sql
 
 volumes:
   app:
