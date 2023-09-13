@@ -1,5 +1,6 @@
 import os
 import src.models as models
+import urllib
 
 from src.database import db_url
 from logging.config import fileConfig
@@ -75,7 +76,7 @@ target_metadata = [models.AttendanceBase.metadata]
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 config.set_main_option("sqlalchemy.url", db_url(
-    os.getenv('PGHOST'), os.getenv("PGPASS")))
+    os.getenv('PGHOST'), urllib.parse.quote_plus(os.getenv("PGPASS")).replace("%", "%%")))
 
 if context.is_offline_mode():
     run_migrations_offline()
