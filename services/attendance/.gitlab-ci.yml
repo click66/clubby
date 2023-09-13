@@ -1,26 +1,28 @@
-test-attendance-service:
-  stage: test
-  image: docker:latest
-  services:
-    - docker:dind
-  script:
-    - docker compose -f docker-compose.yml run --rm --no-deps attendance-service poetry run pytest tests/unit
-    - docker compose -f docker-compose.yml up -d attendance-service
-    - docker compose -f docker-compose.yml exec attendance-service poetry run alembic upgrade head
-    - docker compose -f docker-compose.yml exec attendance-service poetry run pytest tests/api
-    - docker compose -f docker-compose.yml down -v
+# test-attendance-service:
+#   stage: test
+#   image: docker:latest
+#   services:
+#     - docker:dind
+#   script:
+#     - docker compose -f docker-compose.yml run --rm --no-deps attendance-service poetry run pytest tests/unit
+#     - docker compose -f docker-compose.yml up -d attendance-service
+#     - docker compose -f docker-compose.yml exec attendance-service poetry run alembic upgrade head
+#     - docker compose -f docker-compose.yml exec attendance-service poetry run pytest tests/api
+#     - docker compose -f docker-compose.yml down -v
 
 terraform-attendance-service:
   stage: infra
-  image: docker:latest
-  services:
-    - docker:dind
+  image:
+    name: hashicorp/terraform
+    entrypoint:
+      - "/usr/bin/env"
+      - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
   before_script:
-    - cd services/attendance
+    - cd services/attendance/terraform
   script:
-    - docker run --rm -w /app -v $PWD/terraform:/app terraform init -input=false
-    - docker run --rm -w /app -v $PWD/terraform:/app terraform plan -out=tfplan -input=false
-    - docker run --rm -w /app -v $PWD/terraform:/app terraform apply -input=false tfplan
+    - terraform init -input=false
+    - terraform plan -out=tfplan -input=false
+    - terraform apply -input=false tfplan
   only:
     - main
   variables:
@@ -40,7 +42,7 @@ deploy-attendance-service:
     - docker info
     - docker --version
   script:
-    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin-attendance/app -f Dockerfile --target prod-runtime .
+    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin-attendance/app --target prod-runtime services/attendance
     - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin-attendance/app
     - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
   only:

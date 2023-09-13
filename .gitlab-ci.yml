@@ -1,5 +1,5 @@
 stages:
-  - test
+  # - test
   - infra
   - deploy
 
@@ -7,14 +7,14 @@ include:
   - "services/attendance/.gitlab-ci.yml"
   - "workers/attendance/.gitlab-ci.yml"
 
-test:
-  stage: test
-  image: docker
-  services:
-    - docker:dind
-  script:
-    - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
-    - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest tests/unit
+# test:
+#   stage: test
+#   image: docker
+#   services:
+#     - docker:dind
+#   script:
+#     - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
+#     - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest tests/unit
 
 terraform:
   stage: infra

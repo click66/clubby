@@ -8,7 +8,7 @@ terraform {
 
     backend "s3" {
         bucket = "terraform-eu-west-2-082624796438"
-        key    = "sjcadmin"
+        key    = "sjcadmin-attendance"
         region = "eu-west-2"
     }
 }

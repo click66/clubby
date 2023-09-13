@@ -29,6 +29,6 @@ resource "aws_ecs_task_definition" "sjcadmin-attendance" {
 resource "aws_ecs_service" "sjcadmin-attendance" {
     name                = "sjcadmin-attendance"
     cluster             = data.aws_ecs_cluster.sjcadmin.arn
-    task_definition     = aws_ecs_task_definition.sjcadmin.arn
+    task_definition     = aws_ecs_task_definition.sjcadmin-attendance.arn
     scheduling_strategy = "DAEMON"
 }
