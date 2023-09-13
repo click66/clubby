@@ -1,5 +1,5 @@
 data "aws_ecs_cluster" "sjcadmin" {
-    cluster_name = "CS-ECS-01"
+    cluster_name = "CS-ECS-02"
 }
 
 resource "aws_ecr_repository" "app" {
