@@ -23,6 +23,7 @@ FROM dev-build as dev-runtime
 ENV PYTHONPATH=/app
 
 WORKDIR /app
+COPY certs ./certs
 COPY migrations ./migrations
 COPY src ./src
 COPY tests ./tests
@@ -38,6 +39,7 @@ COPY nginx.json /docker-entrypoint.d/config.json
 
 WORKDIR /app
 COPY --from=build /app/.venv .venv
+COPY certs ./certs
 COPY migrations ./migrations
 COPY src ./src
 COPY alembic.ini main.py ./
