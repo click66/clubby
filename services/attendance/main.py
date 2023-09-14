@@ -1,4 +1,5 @@
 import os
+import urllib
 
 from fastapi import FastAPI, Response
 from sqlalchemy import create_engine, select
@@ -19,7 +20,7 @@ CERT_PATH = os.path.join(os.path.dirname(
 
 app = FastAPI()
 
-sa_engine = create_engine(db_url(os.getenv('PGHOST'), os.getenv('PGPASS')))
+sa_engine = create_engine(db_url(os.getenv('PGHOST'), urllib.parse.quote_plus(os.getenv('PGPASS'))))
 session = Session(sa_engine)
 
 app.add_middleware(JWTAuthorisation, config=JWTConfig(

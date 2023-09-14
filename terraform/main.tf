@@ -49,7 +49,7 @@ data "aws_iam_policy_document" "sjcadmin-deploy" {
     statement {
         effect = "Allow"
         actions = ["ecs:UpdateService"]
-        resources = ["arn:aws:ecs:eu-west-2:082624796438:service/CS-ECS-01/sjcadmin*"]
+        resources = ["arn:aws:ecs:eu-west-2:082624796438:service/CS-ECS-*/sjcadmin*"]
     }
 
     statement {

@@ -1,20 +1,20 @@
 stages:
-  # - test
+  - test
   - infra
   - deploy
 
 include:
   - "services/attendance/.gitlab-ci.yml"
-  - "workers/attendance/.gitlab-ci.yml"
+  # - "workers/attendance/.gitlab-ci.yml"
 
-# test:
-#   stage: test
-#   image: docker
-#   services:
-#     - docker:dind
-#   script:
-#     - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
-#     - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest tests/unit
+test:
+  stage: test
+  image: docker
+  services:
+    - docker:dind
+  script:
+    - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
+    - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest tests/unit
 
 terraform:
   stage: infra
@@ -32,21 +32,21 @@ terraform:
     AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
 
-serverless:
-  stage: infra
-  image: docker:latest
-  services:
-    - docker:dind
-  before_script:
-    - apk add --update npm
-    - npm install -g serverless
-  script:
-    - sls deploy --stage prod
-  only:
-    - main
-  variables:
-    AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
+# serverless:
+#   stage: infra
+#   image: docker:latest
+#   services:
+#     - docker:dind
+#   before_script:
+#     - apk add --update npm
+#     - npm install -g serverless
+#   script:
+#     - sls deploy --stage prod
+#   only:
+#     - main
+#   variables:
+#     AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
+#     AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
 
 deploy:
   stage: deploy

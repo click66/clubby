@@ -1,14 +1,14 @@
-# test-attendance-service:
-#   stage: test
-#   image: docker:latest
-#   services:
-#     - docker:dind
-#   script:
-#     - docker compose -f docker-compose.yml run --rm --no-deps attendance-service poetry run pytest tests/unit
-#     - docker compose -f docker-compose.yml up -d attendance-service
-#     - docker compose -f docker-compose.yml exec attendance-service poetry run alembic upgrade head
-#     - docker compose -f docker-compose.yml exec attendance-service poetry run pytest tests/api
-#     - docker compose -f docker-compose.yml down -v
+test-attendance-service:
+  stage: test
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker compose -f docker-compose.yml run --rm --no-deps attendance-service poetry run pytest tests/unit
+    - docker compose -f docker-compose.yml up -d attendance-service
+    - docker compose -f docker-compose.yml exec attendance-service poetry run alembic upgrade head
+    - docker compose -f docker-compose.yml exec attendance-service poetry run pytest tests/api
+    - docker compose -f docker-compose.yml down -v
 
 terraform-attendance-service:
   stage: infra
@@ -50,5 +50,5 @@ deploy-attendance-service:
   variables:
     AWS_ACCESS_KEY_ID: $DEPLOY_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $DEPLOY_AWS_SECRET_ACCESS_KEY
-    ECS_CLUSTER: "CS-ECS-01"
+    ECS_CLUSTER: "CS-ECS-02"
     ECS_SERVICE: "sjcadmin-attendance"
