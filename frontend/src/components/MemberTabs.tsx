@@ -1,12 +1,13 @@
 import { useLocation, useNavigate } from "react-router"
-import useMember from "../hooks/member";
 import useCourses from "../hooks/courses";
+import { useContext } from "react";
+import { MemberContext } from "../contexts/MemberContext";
 
 function MemberTabs({ selected }: { selected: string }) {
     const navigate = useNavigate()
     const location = useLocation()
     const courses = useCourses()
-    const [member] = useMember()
+    const [member] = useContext(MemberContext)
 
     const replacePath = (newWord: string) => {
         const currentPath = location.pathname;

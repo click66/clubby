@@ -1,7 +1,7 @@
 import http from "../utils/http"
 
-const API_URL = 'http://api.southamptonjiujitsu.local:9000'
-const LEGACY_API_URL = 'http://monolith.southamptonjiujitsu.local:8000/api'
+const API_URL = import.meta.env.VITE_API_URL
+const LEGACY_API_URL = import.meta.env.VITE_LEGACY_API_URL
 
 type DtoAttendanceQuery = {
     student_uuids: string[]
@@ -24,6 +24,13 @@ type DtoNewAttendance = {
     paymentOption: string | undefined
 }
 
+type DtoAttendance = {
+    student_uuid: string
+    course_uuid: string
+    date: Date
+    resolution: string
+}
+
 const isoDate = (date: Date) => date.toISOString().split('T')[0]
 
 export function fetchAttendances(query: DtoAttendanceQuery) {
@@ -31,7 +38,14 @@ export function fetchAttendances(query: DtoAttendanceQuery) {
         ...query,
         date_earliest: isoDate(query.date_earliest),
         date_latest: isoDate(query.date_latest),
-    })
+    }).then((data) => data.map((d: DtoAttendance) => {
+        return {
+            studentUuid: d.student_uuid,
+            courseUuid: d.course_uuid,
+            date: new Date(d.date),
+            resolution: d.resolution,
+        }
+    }))
 }
 
 export function logAttendance(data: DtoNewAttendance) {

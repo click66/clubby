@@ -33,7 +33,6 @@ services:
           - admin.southamptonjiujitsu.local
           - members.southamptonjiujitsu.local
     volumes:
-      # - .:/app
       - ./sjcadmin:/app/sjcadmin
       - ./static:/app/static
       - ./templates:/app/templates
@@ -41,36 +40,11 @@ services:
       - ./poetry.toml:/app/poetry.toml
       - ./pyproject.toml:/app/pyproject.toml
 
-  static:
-    build:
-      target: dev-runtime
-    volumes:
-      # - .:/app
-      - ./node_modules:/app/node_modules
-      - ./client:/app/client
-      - ./static:/app/static
-      - ./package.json:/app/package.json
-      - ./package-lock.json:/app/package-lock.json
-      - ./serve-static.js:/app/serve-static.js
-
   gateway:
     ports:
       - 8000:8000
     volumes:
       - ./config/nginx:/etc/nginx/conf.d
-
-  # base:
-  #   build:
-  #     context: .
-  #     target: base
-  #   environment:
-  #     - DJANGO_SETTINGS_MODULE=sjcadmin.settings
-  #     - DJANGO_SECRET_KEY="*(%z)+p^f+*&!zdv$j_ipce+)ru+f+g91udo2i&=1l1r6deyet"
-  #     - ENVIRONMENT_NAME=local
-  #     - PGPASS=Rand0m!
-  #   working_dir: /app
-  #   volumes:
-  #     - .:/app
 
   database:
     ports:

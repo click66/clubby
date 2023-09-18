@@ -51,7 +51,7 @@ function Members() {
                         </thead>
                         <tbody>
                             {table.getRowModel().rows.map((row) => (
-                                <tr key={row.id} onClick={() => navigate(`/members/${row.original.uuid}/profile`)}>
+                                <tr key={row.id} onClick={() => navigate(`/members/${row.original.uuid}/profile`, { state: { member: row.original } })}>
                                     {row.getVisibleCells().map((cell) => (
                                         <td key={cell.id}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}

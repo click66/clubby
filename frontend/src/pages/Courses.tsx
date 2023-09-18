@@ -26,7 +26,7 @@ function Courses() {
     }
 
     const submitNewCourse = (data: DtoNewCourse) => {
-        addCourse(data).then((c) => {
+        addCourse(data).then((_) => {
             notifySuccess('New course added')
             fetchAndSetCourses()
             closeAddForm()

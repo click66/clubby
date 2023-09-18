@@ -1,12 +1,12 @@
 import { Button, Modal } from "react-bootstrap"
 import MemberHeader from "../../components/MemberHeader"
-import useMember from "../../hooks/member"
 import Member from "../../models/Member"
 import MemberTabs from "../../components/MemberTabs"
-import { useState } from "react"
+import { useContext, useState } from "react"
 import { Field, Form, Formik } from "formik"
 import { addMemberLicence } from "../../services/members"
 import { notifyError, notifySuccess } from "../../utils/notifications"
+import { MemberContext } from "../../contexts/MemberContext"
 
 function MemberLicenceAlert({ member, openForm }: { member: Member, openForm: () => void }) {
     const ActiveLicenceAlert = () => (
@@ -54,11 +54,11 @@ function MemberLicenceAlert({ member, openForm }: { member: Member, openForm: ()
 
 function MemberLicence() {
     const [licenceFormOpen, setLicenceFormOpen] = useState(false)
-    const [member] = useMember()
+    const [member, setMember] = useContext(MemberContext)
 
-    return member && member.uuid != undefined ? (
+    return member ? (
         <>
-            <MemberHeader member={member} />
+            <MemberHeader />
             <div className="rounded-3 bg-white text-dark" id="copy">
                 <MemberTabs selected="licence" />
                 <div className="tab-content">
@@ -82,6 +82,7 @@ function MemberLicence() {
                     }}
                     onSubmit={(values, { setSubmitting }) => {
                         addMemberLicence(member.uuid!, { ...values, expiryDate: new Date(values.expiryDate) }).then(() => {
+                            setMember(new Member({ ...member, membership: { ...member.membership, licence: { idNumber: values.licenceNo, expires: new Date(values.expiryDate) } } }))
                             setSubmitting(false)
                             notifySuccess('Member licence updated')
 

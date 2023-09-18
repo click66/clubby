@@ -14,7 +14,7 @@ function useMember(): [Member | undefined, Dispatch<SetStateAction<Member | unde
             setMember(new Member(location.state.member))
             return
         }
-        if (memberUuid) {
+        if (memberUuid && member === undefined) {
             fetchMemberByUuid(memberUuid).then(setMember).catch(() => navigate('/404'))
         }
     }, [])

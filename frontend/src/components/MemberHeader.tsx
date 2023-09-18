@@ -1,8 +1,11 @@
-import Member from "../models/Member";
+import { useContext } from "react";
 import MemberBadge from "./MemberBadge";
+import { MemberContext } from "../contexts/MemberContext";
 
-function MemberHeader({ member }: { member: Member }) {
-    return (
+function MemberHeader() {
+    const [member] = useContext(MemberContext)
+
+    return member ? (
         <>
             <div className="mb-3 row">
                 <div>
@@ -15,7 +18,7 @@ function MemberHeader({ member }: { member: Member }) {
                 </p>
             </div>
         </>
-    )
+    ) : 'Loading header...'
 }
 
 export default MemberHeader

@@ -34,12 +34,12 @@ ALLOWED_HOSTS = [
     'auth.southamptonjiujitsu.local',
     'members.southamptonjiujitsu.local',
     'monolith.southamptonjiujitsu.local',
-    # 'api.southamptonjiujitsu.local',
     'admin.southamptonjiujitsu.com',
     'members.southamptonjiujitsu.com',
     'auth.southamptonjiujitsu.com',
+    'auth.southcoastjiujitsu.com',
     'monolith.southamptonjiujitsu.com',
-    # 'api.southamptonjiujitsu.com',
+    'monolith.southcoastjiujitsu.com',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -47,11 +47,10 @@ CSRF_TRUSTED_ORIGINS = [
     'http://admin.southamptonjiujitsu.local:8000',
     'http://members.southamptonjiujitsu.local:8000',
     'http://monolith.southamptonjiujitsu.local:8000',
-    # 'http://api.southamptonjiujitsu.local:8000',
     'https://admin.southamptonjiujitsu.com',
     'https://members.southamptonjiujitsu.com',
     'https://monolith.southamptonjiujitsu.com',
-    # 'https://api.southamptonjiujitsu.com',
+    'https://admin.southcoastjiujitsu.com',
 ]
 
 # Application definition
@@ -68,7 +67,6 @@ INSTALLED_APPS = [
     'sjcadmin.sjcadmin',
     'sjcadmin.sjcmembers',
     'sjcadmin.sjcauth',
-    'sjcadmin.sjcattendance',
     'silk',
 ]
 
@@ -91,6 +89,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://admin.southamptonjiujitsu.local:8080",
     "http://admin.southamptonjiujitsu.local:8000",
     "https://admin.southamptonjiujitsu.com",
+    "https://admin.southcoastjiujitsu.com",
 ]
 
 ROOT_URLCONF = 'sjcadmin.sjcadmin.urls'
@@ -148,17 +147,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('PGPASS'),
         'PORT': 5432,
     },
-    'attendance': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'HOST': os.environ.get('PGHOST'),
-        'NAME': 'sjcattendance',
-        'USER': 'sjcattendance',
-        'PASSWORD': os.environ.get('PGPASS'),
-        'PORT': 5432,
-    },
 }
-
-DATABASE_ROUTERS = ['sjcadmin.sjcattendance.router.AttendanceRouter']
 
 DBBACKUP_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 DBBACKUP_STORAGE_OPTIONS = {

@@ -13,17 +13,7 @@ import { BoxArrowUpRight, Cash } from 'react-bootstrap-icons';
 import MemberBadge from './MemberBadge';
 import { DomainError } from '../errors';
 import LogAttendanceModal from './LogAttendanceModal';
-
-declare module '@tanstack/table-core' {
-    interface TableMeta<TData extends RowData> {
-        courses: Course[]
-    }
-}
-
-type Session = {
-    courses: Course[],
-    date: Date,
-}
+import { BarLoader } from 'react-spinners';
 
 interface RegisterProps {
     courses: Course[]
@@ -32,10 +22,24 @@ interface RegisterProps {
 
 interface CourseRegisterData {
     id: number
-    course_uuid: string
+    courseUuid: string
     resolution: string
-    student_uuid: string
+    studentUuid: string
     date: Date
+}
+
+type Session = {
+    courses: Course[],
+    date: Date,
+}
+
+type RegisterMap = Map<string, Map<string, Map<string, CourseRegisterData>>>
+
+declare module '@tanstack/table-core' {
+    interface TableMeta<TData extends RowData> {
+        courses: Course[],
+        registerData: RegisterMap,
+    }
 }
 
 function generatePrevious30Dates(courses: Course[], squash: boolean): Session[] {
@@ -86,7 +90,7 @@ function Register({ courses = [], squashDates }: RegisterProps) {
     const [members, setMembers] = useState<Member[]>([])
 
     const [loaded, setLoaded] = useState(false)
-    const [registerData, setRegisterData] = useState<Map<string, Map<string, Map<string, CourseRegisterData>>>>(new Map())
+    const [registerData, setRegisterData] = useState<RegisterMap>(new Map())
     const [selectedMember, setSelectedMember] = useState<Member | undefined>(undefined)
     const [selectedSession, setSelectedSession] = useState<Session | undefined>(undefined)
     const [showLogModal, setShowLogModal] = useState<boolean>(false)
@@ -99,7 +103,7 @@ function Register({ courses = [], squashDates }: RegisterProps) {
         columns,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
-        meta: { courses },
+        meta: { courses, registerData },
         state: {
             sorting,
         },
@@ -115,32 +119,43 @@ function Register({ courses = [], squashDates }: RegisterProps) {
         setShowLogModal(true)
     }
 
-    const lookupAttendance = (date: Date, member: Member, courses: Course[]): CourseRegisterData | null => courses.reduce(
-        (acc, course: Course) => acc ?? (registerData.get(member.uuid!)?.get(course.uuid!)?.get(isoDate(date)) ?? null),
-        null as CourseRegisterData | null,
-    )
+    const lookupAttendance = (date: Date, member: Member, courses: Course[]): CourseRegisterData | null => {
+        return courses.reduce(
+            (acc, course: Course) => acc ?? (registerData.get(member.uuid!)?.get(course.uuid!)?.get(isoDate(date)) ?? null),
+            null as CourseRegisterData | null,
+        )
+    }
+
+    const storeAttendance = (data: CourseRegisterData[]) =>
+        setRegisterData((map: RegisterMap) => data.reduce((acc: RegisterMap, d: CourseRegisterData) => {
+            const { studentUuid, courseUuid, date } = d
+            acc.set(studentUuid, acc.get(studentUuid) || new Map());
+            acc.get(studentUuid)!.set(courseUuid, acc.get(studentUuid)!.get(courseUuid) || new Map());
+            acc.get(studentUuid)!.get(courseUuid)!.set(isoDate(date), d);
+            return acc
+        }, map))
 
     useEffect(() => {
-        fetchMembersByCourses(courses).then((members) => {
-            const dates = generatePrevious30Dates(courses, squashDates)
-            setDates(dates)
-            setMembers(members)
+        if (courses.length) {
+            fetchMembersByCourses(courses).then((members) => {
+                const dates = generatePrevious30Dates(courses, squashDates)
+                setDates(dates)
+                // setMembers(members)
 
-            // Might be more efficient to have the attendance API read by course, then these can be performed in unison
-            const student_uuids = members.map((m) => m.uuid).filter(Boolean) as string[]
-            Promise.all(courses.map((c) => fetchAttendances({
-                student_uuids,
-                course_uuid: c.uuid!,
-                date_earliest: dates[dates.length - 1].date,
-                date_latest: dates[0].date,
-            }))).then((data: CourseRegisterData[][]) => data.flat().reduce((map, obj) => {
-                const { student_uuid, course_uuid, date } = obj;
-                map.set(student_uuid, map.get(student_uuid) || new Map());
-                map.get(student_uuid).set(course_uuid, map.get(student_uuid).get(course_uuid) || new Map());
-                map.get(student_uuid).get(course_uuid).set(date, obj);
-                return map;
-            }, new Map())).then(setRegisterData).then(() => { setLoaded(true) }).catch(notifyError)
-        })
+                // Might be more efficient to have the attendance API read by course, then these can be performed in unison
+                const studentUuids = members.map((m) => m.uuid).filter(Boolean) as string[]
+                return Promise.all(courses.map((c) => fetchAttendances({
+                    student_uuids: studentUuids,
+                    course_uuid: c.uuid!,
+                    date_earliest: dates[dates.length - 1].date,
+                    date_latest: dates[0].date,
+                }))).then((data: CourseRegisterData[][]) => {
+                    storeAttendance(data.flat())
+                    setMembers(members)
+                    setLoaded(true)
+                })
+            })
+        }
     }, [courses])
 
     const AttendanceBadge = ({ date, member, courses }: { date: Date, member: Member, courses: Course[] }) => {
@@ -268,24 +283,22 @@ function Register({ courses = [], squashDates }: RegisterProps) {
                     show={showLogModal}
                     close={() => setShowLogModal(false)}
                     addAttendance={(member: Member, session: Session, { resolution, paymentOption }) => {
+                        const newAttendances = [] as CourseRegisterData[]
                         try {
-                            member.attend({ ...session, payment: resolution === 'paid' && paymentOption === 'advance' ? { courseUuid: session.courses[0].uuid! } : null }) // TODO Just handling first course payment rn
+                            // TODO Just handling first course payment rn
+                            member.attend({ ...session, payment: resolution === 'paid' && paymentOption === 'advance' ? { courseUuid: session.courses[0].uuid! } : null })
                             setMembers(members)
 
-                            let data = registerData ? new Map(registerData) : new Map()
                             Promise.all(session.courses.filter((c) => c.uuid != undefined && member.courseUuids.includes(c.uuid)).reduce((acc: Promise<any>[], c: Course) => {
                                 let memberUuid = member.uuid!,
-                                    courseUuid = c.uuid!,
-                                    date = isoDate(session.date)
+                                    courseUuid = c.uuid!
 
-                                data.set(memberUuid, data.get(memberUuid) || new Map())
-                                data.get(memberUuid).set(courseUuid, data.get(memberUuid).get(courseUuid) || new Map())
-                                data.get(memberUuid).get(courseUuid).set(date, {
+                                newAttendances.push({
                                     id: 0,
-                                    course_uuid: courseUuid,
-                                    resolution: resolution,
-                                    student_uuid: memberUuid,
+                                    studentUuid: memberUuid,
+                                    courseUuid,
                                     date: session.date,
+                                    resolution: resolution
                                 })
 
                                 acc.push(logAttendance({
@@ -301,7 +314,7 @@ function Register({ courses = [], squashDates }: RegisterProps) {
                                 notifySuccess('Attendance recorded')
                             }).catch(notifyError)
 
-                            setRegisterData(data)
+                            storeAttendance(newAttendances)
                             setShowLogModal(false)
                         } catch (e: any) {
                             if (e instanceof DomainError) {
@@ -344,7 +357,7 @@ function Register({ courses = [], squashDates }: RegisterProps) {
                 /> : ''
             }
         </>
-    ) : 'Loading...'
+    ) : <BarLoader />
 }
 
 export default Register

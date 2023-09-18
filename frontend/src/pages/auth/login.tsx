@@ -1,11 +1,11 @@
-import axios from 'axios'
-
 import { useNavigate } from 'react-router'
 import { useState, useEffect } from 'react'
 
 import Cookies from 'universal-cookie'
+import http from '../../utils/http'
+import { notifyError } from '../../utils/notifications'
 
-const API_URL = 'http://auth.southamptonjiujitsu.local:8000'
+const API_URL = import.meta.env.VITE_AUTH_API_URL
 
 function Login() {
     const navigate = useNavigate()
@@ -16,25 +16,18 @@ function Login() {
 
     const login = (token: string, expire_ts: number) => {
         cookies.set('jwt_authorisation', token, {
-            expires: new Date(expire_ts*1000),
+            expires: new Date(expire_ts * 1000),
             path: '/',
         })
     }
-    
+
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        axios.post(API_URL + '/api/auth/login', { email, password }).then(response => {
-            let data = response.data
-            if (data.hasOwnProperty('error')) {
-                console.log('ERROR')    //TODO
-            }
-
-            if (data.hasOwnProperty('success')) {
-                login(data.success.token, data.success.expires)
-                navigate('/')
-            }
-        })
+        http.post(`${API_URL}/auth/login`, { email, password }).then((data) => {
+            login(data.token, data.expires)
+            navigate('/')
+        }).catch(notifyError)
     }
 
     useEffect(() => {

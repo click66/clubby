@@ -25,14 +25,6 @@ services:
     volumes:
       - app:/var/www/html
 
-  static:
-    build:
-      context: .
-      dockerfile: Dockerfile.static
-      target: prod-runtime
-    image: 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static
-    hostname: static
-
   gateway:
     build:
       context: .
@@ -41,7 +33,6 @@ services:
     hostname: nginx
     depends_on:
       - app
-      - static
     networks:
       default:
         aliases:

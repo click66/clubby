@@ -1,12 +1,13 @@
+import { useContext } from "react"
 import MemberHeader from "../../components/MemberHeader"
-import useMember from "../../hooks/member"
+import { MemberContext } from "../../contexts/MemberContext"
 
 function MemberNotes() {
-    const [member] = useMember()
+    const [member] = useContext(MemberContext)
 
     return member ? (
         <>
-            <MemberHeader member={member} />
+            <MemberHeader />
             <p>{member.name}</p>
         </>
     ) : 'Loading'

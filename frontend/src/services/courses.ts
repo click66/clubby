@@ -1,8 +1,7 @@
 import Course from "../models/Course"
 import http from "../utils/http"
 
-
-const API_URL = 'http://monolith.southamptonjiujitsu.local:8000/api'
+const API_URL = import.meta.env.VITE_LEGACY_API_URL
 
 export type DtoCourse = {
     uuid: string

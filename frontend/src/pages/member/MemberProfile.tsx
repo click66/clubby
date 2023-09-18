@@ -1,7 +1,6 @@
 import { Field, Form, Formik } from "formik"
 import MemberHeader from "../../components/MemberHeader"
 import MemberTabs from "../../components/MemberTabs"
-import useMember from "../../hooks/member"
 import { Button } from "react-bootstrap"
 import confirmModal from "../../components/ConfirmModal"
 import { Link, useNavigate } from "react-router-dom"
@@ -9,15 +8,17 @@ import { deleteMember, updateMemberProfile } from "../../services/members"
 import useCourses from "../../hooks/courses"
 import { notifyError, notifySuccess } from "../../utils/notifications"
 import Member from "../../models/Member"
+import { useContext } from "react"
+import { MemberContext } from "../../contexts/MemberContext"
 
 function MemberProfile() {
     const navigate = useNavigate()
-    const [member, setMember] = useMember()
+    const [member, setMember] = useContext(MemberContext)
     const courses = useCourses()
 
     return member ? (
         <>
-            <MemberHeader member={member} />
+            <MemberHeader />
             <div className="rounded-3 bg-white text-dark" id="copy">
                 <MemberTabs selected="profile" />
                 <div className="tab-content">

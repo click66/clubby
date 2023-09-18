@@ -1,8 +1,7 @@
 import http from "../utils/http"
 import Member from "../models/Member"
 
-
-const API_URL = 'http://monolith.southamptonjiujitsu.local:8000/api'
+const API_URL = import.meta.env.VITE_LEGACY_API_URL
 
 export type DtoMember = {
     uuid: string
