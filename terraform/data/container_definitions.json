@@ -33,6 +33,10 @@
             {
                 "name": "API_KEY",
                 "valueFrom": "sjcadmin_API_KEY"
+            },
+            {
+                "name": "PRIV_KEY",
+                "valueFrom": "sjcadmin_PRIV_KEY"
             }
         ],
         "logConfiguration": {

@@ -1,0 +1,320 @@
+html,
+body {
+  height: 100%;
+}
+
+html {
+  font-size: 0.9em;
+}
+
+body {
+  font-family: "open_sansregular", "sans-serif";
+}
+
+.toastrack {
+  z-index: 2000;
+}
+
+@media (max-width: 480px) {
+  .toastrack {
+    width: 100%;
+    bottom: 0 !important;
+    top: auto !important;
+  }
+
+  .toast {
+    width: 100%;
+  }
+}
+
+.main.bg-dark {
+  display: flex;
+  flex-wrap: nowrap;
+  height: 100vh;
+  height: -webkit-fill-available;
+  max-height: 100vh;
+  overflow-x: auto;
+  overflow-y: hidden;
+  color: $light;
+}
+
+h1 {
+  font-size: 2em;
+  font-family: "open_sanssemibold", "sans-serif";
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 1.5em;
+  font-family: "open_sanssemibold", "sans-serif";
+  font-weight: bold;
+}
+
+.topBar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 10px;
+  text-align: right;
+
+  a {
+    font-size: 0.9em;
+  }
+}
+
+.containerInner {
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+}
+
+#copy {
+  overflow-y: auto;
+  flex: 1;
+}
+
+nav ol.breadcrumb a:hover,
+nav ol.breadcrumb a {
+  text-decoration: none;
+  color: inherit;
+}
+
+#DataTables_Table_0_filter {
+  text-align: right;
+
+  > label {
+    margin-left: 1em;
+  }
+}
+
+.tblButtons {
+  display: flex;
+
+  > button {
+    margin: 0 3px;
+  }
+}
+
+#tblStudents {
+  &.tblAttendance {
+    td.session {
+      cursor: pointer;
+
+      &:hover {
+        background-color: $gray-500;
+      }
+
+      &.disabled {
+        background-color: $gray-300 !important;
+      }
+    }
+  }
+
+  th,
+  td {
+    border-left-width: 1px;
+    font-size: 0.85em;
+  }
+
+  .studentMembership {
+    border-right-width: 2px;
+  }
+
+  .studentName,
+  .studentMembership {
+    border-left-width: 0;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .classHeader {
+    white-space: nowrap;
+  }
+
+  ul.details {
+    list-style-type: none;
+    margin: 0;
+
+    label {
+      margin-right: 10px;
+    }
+  }
+
+  .dataTables_filter {
+    display: flex;
+    justify-content: right;
+    align-items: center;
+
+    .btn {
+      font-size: 0.9em;
+    }
+
+    .btn-text {
+      display: inline-block;
+
+      @media (max-width: 500px) {
+        & {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+ul.comments {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+
+  li span {
+    display: block;
+  }
+
+  .commentAuthor {
+    font-style: italic;
+    font-weight: bold;
+    font-size: 0.8em;
+  }
+
+  .commentText {
+    font-size: 0.9em;
+  }
+}
+
+.copyHome {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+#topLogo {
+  font-family: "tjjf";
+  font-size: 7vw;
+  text-transform: uppercase;
+  text-align: center;
+  border: 5px solid #ddd;
+  display: inline-block;
+  line-height: 1em;
+  padding: 0.2em 0.2em 0.1em;
+  margin-bottom: 50px;
+}
+
+ul#portalLinks {
+  list-style-type: none;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+  margin: 0 auto;
+  max-width: 100%;
+
+  li {
+    display: block;
+    text-align: center;
+
+    i {
+      font-size: 4em;
+      line-height: 1.2em;
+      display: block;
+
+      span {
+        display: block;
+      }
+    }
+
+    a {
+      display: block;
+      padding: 0 0.8em;
+      color: inherit;
+      text-decoration: none;
+      border-radius: 3px;
+
+      &:hover {
+        background-color: $light;
+        color: $dark;
+      }
+    }
+  }
+}
+
+@media (min-width: 600px) {
+  ul#portalLinks {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  ul#portalLinks {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.nav.nav-tabs {
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+
+  .nav-link {
+    color: $gray-600;
+  }
+
+  .nav-link.active,
+  .nav-item.show .nav-link {
+    border-color: transparent;
+    border-bottom-width: 3px;
+    border-bottom-color: $nav-tabs-link-active-color;
+    background-color: transparent !important;
+  }
+
+  .nav-link:hover {
+    border-left-color: transparent;
+    border-right-color: transparent;
+    color: $nav-tabs-link-active-color;
+  }
+}
+
+.report-link-container {
+  position: relative;
+}
+
+.report-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+
+  > div {
+    width: 100%;
+  }
+
+  span {
+    display: block;
+  }
+
+  .title {
+    font-weight: bold;
+  }
+
+  .btn-icon {
+    font-size: 2em;
+  }
+
+  &:hover {
+    background-color: $gray-500 !important;
+  }
+}
+
+.report-button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2em;
+  text-decoration: none;
+  color: $dark;
+
+  &:hover {
+    color: $gray-600;
+  }
+}

@@ -2,6 +2,7 @@ import os
 import urllib
 
 from fastapi import FastAPI, Response
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
@@ -20,11 +21,23 @@ CERT_PATH = os.path.join(os.path.dirname(
 
 app = FastAPI()
 
-sa_engine = create_engine(db_url(os.getenv('PGHOST'), urllib.parse.quote_plus(os.getenv('PGPASS'))))
+sa_engine = create_engine(
+    db_url(os.getenv('PGHOST'), urllib.parse.quote_plus(os.getenv('PGPASS'))))
 session = Session(sa_engine)
 
 app.add_middleware(JWTAuthorisation, config=JWTConfig(
     cert_path=CERT_PATH, algorithms=['RS256']))
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        'http://localhost:8080',
+        'https://admin.southcoastjiujitsu.com',
+    ],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 
 @app.post('/attendance/query')
@@ -40,6 +53,11 @@ async def post_attendance(post: AttendancePost) -> AttendanceRead:
     create = Attendance(student_uuid=post.student_uuid,
                         course_uuid=post.course_uuid,
                         date=post.date)
+
+    await delete_by_query(AttendanceQuery(student_uuids=[post.student_uuid],
+                                          course_uuid=post.course_uuid,
+                                          date_earliest=post.date,
+                                          date_latest=post.date))
 
     match (post.resolution):
         case 'paid':

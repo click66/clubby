@@ -31,25 +31,33 @@ ALLOWED_HOSTS = [
     'app',
     'localhost',
     'admin.southamptonjiujitsu.local',
+    'auth.southamptonjiujitsu.local',
     'members.southamptonjiujitsu.local',
+    'monolith.southamptonjiujitsu.local',
     # 'api.southamptonjiujitsu.local',
     'admin.southamptonjiujitsu.com',
     'members.southamptonjiujitsu.com',
+    'auth.southamptonjiujitsu.com',
+    'monolith.southamptonjiujitsu.com',
     # 'api.southamptonjiujitsu.com',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8080',
     'http://admin.southamptonjiujitsu.local:8000',
     'http://members.southamptonjiujitsu.local:8000',
+    'http://monolith.southamptonjiujitsu.local:8000',
     # 'http://api.southamptonjiujitsu.local:8000',
     'https://admin.southamptonjiujitsu.com',
     'https://members.southamptonjiujitsu.com',
+    'https://monolith.southamptonjiujitsu.com',
     # 'https://api.southamptonjiujitsu.com',
 ]
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'dbbackup',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -69,12 +77,20 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'silk.middleware.SilkyMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_hosts.middleware.HostsResponseMiddleware',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+    "http://admin.southamptonjiujitsu.local:8080",
+    "http://admin.southamptonjiujitsu.local:8000",
+    "https://admin.southamptonjiujitsu.com",
 ]
 
 ROOT_URLCONF = 'sjcadmin.sjcadmin.urls'
