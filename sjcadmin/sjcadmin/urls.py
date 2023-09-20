@@ -39,6 +39,8 @@ urlpatterns = [
     path('api/members/<uuid:pk>/payments/add',
          api_members.post_add_member_payment),
 
+    path('api/payments/query', api_members.post_query_member_payments),
+
     path('api/attendance', api_attendance.get_attendance),
     path('api/attendance/log', api_attendance.post_log_attendance),
     path('api/attendance/clear', api_attendance.post_clear_attendance),

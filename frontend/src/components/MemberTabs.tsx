@@ -30,7 +30,7 @@ function MemberTabs({ selected }: { selected: string }) {
                 <button className={"nav-link " + (selected == "notes" ? "active" : "")} id="tabNotes" data-bs-toggle="tab" data-bs-target="#tabCopyNotes" type="button" role="tab" aria-controls="tabCopyNotes" aria-selected="false" data-tabkey="notes">Notes</button>
             </li> */}
             <li className="nav-item" role="presentation">
-                <button onClick={() => replacePath('licence')} className={"nav-link " + (selected == "payments" ? "active" : "")} id="tabPayments" data-bs-toggle="tab" data-bs-target="#tabCopyPayments" type="button" role="tab" aria-controls="tabCopyPayments" aria-selected="false" data-tabkey="payments">Payments</button>
+                <button onClick={() => replacePath('payments')} className={"nav-link " + (selected == "payments" ? "active" : "")} id="tabPayments" data-bs-toggle="tab" data-bs-target="#tabCopyPayments" type="button" role="tab" aria-controls="tabCopyPayments" aria-selected="false" data-tabkey="payments">Payments</button>
             </li>
         </ul>
     )

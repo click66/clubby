@@ -201,6 +201,7 @@ def post_add_member_note(request, pk):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
+@csrf_exempt
 def post_add_member_payment(request, pk):
     s = Student.fetch_by_uuid(pk)
     data = json.loads(request.body)
@@ -211,3 +212,22 @@ def post_add_member_payment(request, pk):
     s.save()
 
     return JsonResponse({'success': None})
+
+
+@login_required_401
+@require_http_methods(['POST'])
+@handle_error
+@csrf_exempt
+def post_query_member_payments(request):
+    data = json.loads(request.body)
+    memberUuid = data.get('memberUuid')
+    s = Student.fetch_by_uuid(memberUuid)
+
+    last_30_used_payments = s.get_last_payments(30)
+    unused_payments = s.get_unused_payments()
+
+    return JsonResponse({'success': list(map(lambda p: {
+        'datetime': p.time,
+        'courseUuid': p.course.uuid if p.course else None,
+        'used': p.used, 
+    }, last_30_used_payments + unused_payments))})

@@ -1,4 +1,4 @@
-import Course from "../../src/models/Course"
+import { Course } from "../../src/models/Course"
 
 describe('Course model', () => {
     test('UUID can be retrieved', () => {

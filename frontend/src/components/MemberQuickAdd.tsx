@@ -1,6 +1,6 @@
 import { Field, Form, Formik } from "formik"
 import { Button, OverlayTrigger, Popover } from "react-bootstrap"
-import Course from "../models/Course"
+import { Course } from "../models/Course"
 import { addMember } from "../services/members"
 import { notifyError, notifySuccess } from "../utils/notifications"
 

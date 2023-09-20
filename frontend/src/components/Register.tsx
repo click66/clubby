@@ -1,6 +1,6 @@
 import { RowData, SortingState, createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import '../assets/Register.component.scss'
-import Course from '../models/Course';
+import { Course } from '../models/Course';
 import Member from '../models/Member';
 import { fetchMembersByCourses } from '../services/members';
 import { notifyError, notifySuccess } from '../utils/notifications';

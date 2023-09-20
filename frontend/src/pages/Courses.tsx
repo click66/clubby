@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { useEffect, useState } from 'react'
 import Modal from 'react-bootstrap/Modal'
-import Course from "../models/Course"
+import { Course, CourseCollection } from "../models/Course"
 import { XCircleFill } from "react-bootstrap-icons"
 import { Form, Formik, Field } from "formik"
 import confirmModal from "../components/ConfirmModal"
@@ -10,7 +10,7 @@ import { notifyError, notifySuccess } from "../utils/notifications"
 
 
 function Courses() {
-    const [courses, setCourses] = useState<Course[]>([])
+    const [courses, setCourses] = useState<CourseCollection>(new Map())
     const [addFormOpen, setAddFormOpen] = useState(false)
 
     const openAddForm = () => {
@@ -131,7 +131,7 @@ function Courses() {
         <>
             <h1>Courses</h1>
             <div className="container-lg">
-                {courses.map(SingleCourse)}
+                {[...courses.values()].map(SingleCourse)}
                 <div className="row mt-3">
                     <div className="col-sm-12 col-md-12 col-lg-12">
                         <a onClick={openAddForm} className="rounded-3 text-dark bg-white p-3 report-link">

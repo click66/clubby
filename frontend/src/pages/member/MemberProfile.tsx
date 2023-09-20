@@ -10,6 +10,7 @@ import { notifyError, notifySuccess } from "../../utils/notifications"
 import Member from "../../models/Member"
 import { useContext } from "react"
 import { MemberContext } from "../../contexts/MemberContext"
+import { Course } from "../../models/Course"
 
 function MemberProfile() {
     const navigate = useNavigate()
@@ -87,9 +88,9 @@ function MemberProfile() {
                                         <div className="col-lg-3 col-sm-12 mb-3">
                                             <h2>Signed Up For</h2>
                                             <ul>
-                                                {courses.filter((c) => c.uuid != undefined && member.courseUuids.includes(c.uuid)).map((c) => (
+                                                {member.courseUuids.map((uuid) => courses.get(uuid)).map((c: Course | undefined) => c ? (
                                                     <li key={c.uuid}><Link to={`/attendance/${c.uuid}`}>{c.label}</Link></li>
-                                                ))}
+                                                ) : '')}
                                             </ul>
                                         </div>
 
