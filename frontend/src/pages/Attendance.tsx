@@ -19,15 +19,10 @@ function Attendance() {
             fetchCourseByUuid(courseUuid).then((course: Course) => {
                 setSelectedCourse(course)
                 setLoaded(true)
+            }).catch(() => {
+                navigate('/404')
             })
             return
-            // setSelectedCourse(allCourses.get(courseUuid))
-            // if (!course) {
-            //     return navigate('/404')
-            // }
-            // if (course) 
-            // setSelectedCourse(course)
-            // return
         }
 
         setLoaded(true)
