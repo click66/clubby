@@ -1,13 +1,15 @@
 from django.conf import settings
 from django.urls import include, path
 
-from .controllers.api import attendance as api_attendance, courses as api_courses, members as api_members
+from .controllers.api import attendance as api_attendance, auth as api_auth, courses as api_courses, members as api_members
 
 from .controllers import attendance, auth, courses, home, members, reports
 
 urlpatterns = [
     path('auth/login', auth.login),
     path('auth/logout', auth.logout),
+    path('api/auth/jwt', api_auth.get_jwt),
+    path('api/auth/login', api_auth.login),
 
     path('', home.home, name='home'),
 
@@ -24,7 +26,9 @@ urlpatterns = [
     path('reports/attendance/download', reports.attendance_download),
 
     path('api/members', api_members.get_members),
+    path('api/members/<uuid:pk>', api_members.get_member),
     path('api/members/add', api_members.post_add_member),
+    path('api/members/query', api_members.get_members_by_courses),
     path('api/members/<uuid:pk>/profile',
          api_members.post_update_member_profile),
     path('api/members/delete/<uuid:pk>', api_members.post_delete_member),
@@ -39,6 +43,8 @@ urlpatterns = [
     path('api/attendance/log', api_attendance.post_log_attendance),
     path('api/attendance/clear', api_attendance.post_clear_attendance),
 
+    path('api/courses', api_courses.get_courses),
+    path('api/courses/<uuid:pk>', api_courses.get_course),
     path('api/courses/add', api_courses.post_add_course),
     path('api/courses/delete/<uuid:pk>', api_courses.post_delete_course),
 ]

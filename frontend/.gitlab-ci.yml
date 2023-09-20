@@ -1,0 +1,15 @@
+deploy-frontend:
+  stage: deploy
+  image: node:latest
+  before_script:
+    - apt update -y && apt install -y awscli
+  script:
+    - cd frontend
+    - npm ci --production
+    - npm run build
+    - aws s3 sync --delete dist s3://sjcadmin-frontend
+  only:
+    - main
+  variables:
+    AWS_ACCESS_KEY_ID: $DEPLOY_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $DEPLOY_AWS_SECRET_ACCESS_KEY

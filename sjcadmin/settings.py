@@ -31,25 +31,32 @@ ALLOWED_HOSTS = [
     'app',
     'localhost',
     'admin.southamptonjiujitsu.local',
+    'auth.southamptonjiujitsu.local',
     'members.southamptonjiujitsu.local',
-    # 'api.southamptonjiujitsu.local',
+    'monolith.southamptonjiujitsu.local',
     'admin.southamptonjiujitsu.com',
     'members.southamptonjiujitsu.com',
-    # 'api.southamptonjiujitsu.com',
+    'auth.southamptonjiujitsu.com',
+    'auth.southcoastjiujitsu.com',
+    'monolith.southamptonjiujitsu.com',
+    'monolith.southcoastjiujitsu.com',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8080',
     'http://admin.southamptonjiujitsu.local:8000',
     'http://members.southamptonjiujitsu.local:8000',
-    # 'http://api.southamptonjiujitsu.local:8000',
+    'http://monolith.southamptonjiujitsu.local:8000',
     'https://admin.southamptonjiujitsu.com',
     'https://members.southamptonjiujitsu.com',
-    # 'https://api.southamptonjiujitsu.com',
+    'https://monolith.southamptonjiujitsu.com',
+    'https://admin.southcoastjiujitsu.com',
 ]
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'dbbackup',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,7 +67,6 @@ INSTALLED_APPS = [
     'sjcadmin.sjcadmin',
     'sjcadmin.sjcmembers',
     'sjcadmin.sjcauth',
-    'sjcadmin.sjcattendance',
     'silk',
 ]
 
@@ -69,12 +75,21 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'silk.middleware.SilkyMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_hosts.middleware.HostsResponseMiddleware',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+    "http://admin.southamptonjiujitsu.local:8080",
+    "http://admin.southamptonjiujitsu.local:8000",
+    "https://admin.southamptonjiujitsu.com",
+    "https://admin.southcoastjiujitsu.com",
 ]
 
 ROOT_URLCONF = 'sjcadmin.sjcadmin.urls'
@@ -132,17 +147,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('PGPASS'),
         'PORT': 5432,
     },
-    'attendance': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'HOST': os.environ.get('PGHOST'),
-        'NAME': 'sjcattendance',
-        'USER': 'sjcattendance',
-        'PASSWORD': os.environ.get('PGPASS'),
-        'PORT': 5432,
-    },
 }
-
-DATABASE_ROUTERS = ['sjcadmin.sjcattendance.router.AttendanceRouter']
 
 DBBACKUP_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 DBBACKUP_STORAGE_OPTIONS = {

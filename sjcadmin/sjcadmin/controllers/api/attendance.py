@@ -6,6 +6,7 @@ from collections import defaultdict
 from datetime import date, timedelta
 from django.http import JsonResponse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from ._middleware import handle_error, login_required_401
@@ -144,6 +145,7 @@ def get_attendance(request):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
+@csrf_exempt
 def post_log_attendance(request):
     data = json.loads(request.body)
 
@@ -165,6 +167,8 @@ def post_log_attendance(request):
 
     match payment:
         case 'complementary':
+            a.mark_as_complementary()
+        case 'comp':
             a.mark_as_complementary()
         case 'paid':
             if payment_option == 'now':
@@ -190,12 +194,6 @@ def post_log_attendance(request):
     #         'resolution': None if payment is None else payment[:4],
     #     }
     # })
-    requests.post(f'{API_ROOT}/attendance/create', json={
-        'date': sess_date.isoformat(),
-        'student_uuid': student_uuid,
-        'course_uuid': product_uuid,
-        'resolution': None if payment is None else payment[:4],
-    }, headers={'Authorization': f'Bearer {API_KEY}'}).json()
 
     return JsonResponse({'success': serialize_attendance_local(
         Attendance.objects.filter(
@@ -205,6 +203,7 @@ def post_log_attendance(request):
 
 @login_required_401
 @require_http_methods(['POST'])
+@csrf_exempt
 def post_clear_attendance(request):
     data = json.loads(request.body)
 
@@ -227,12 +226,6 @@ def post_clear_attendance(request):
     #         'course_uuid': product_uuid,
     #     }
     # })
-    requests.post(f'{API_ROOT}/attendance/delete', json={
-        'date_earliest': sess_date,
-        'date_latest': sess_date,
-        'student_uuids': [student_uuid],
-        'course_uuid': product_uuid,
-    }, headers={'Authorization': f'Bearer {API_KEY}'})
 
     today = date.today()
     range_end = today - timedelta(days=365)

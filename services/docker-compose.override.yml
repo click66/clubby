@@ -6,13 +6,6 @@ services:
       - ./attendance:/app
 
   api-gateway:
-    image: nginx:latest
-    depends_on:
-      - attendance-service
-    networks:
-      default:
-        aliases:
-          - api.southamptonjiujitsu.local
     ports:
       - 9000:9000
     volumes:

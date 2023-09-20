@@ -33,6 +33,10 @@
             {
                 "name": "API_KEY",
                 "valueFrom": "sjcadmin_API_KEY"
+            },
+            {
+                "name": "PRIV_KEY",
+                "valueFrom": "sjcadmin_PRIV_KEY"
             }
         ],
         "logConfiguration": {
@@ -46,23 +50,11 @@
         }
     },
     {
-        "name": "static",
-        "image": "082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static:latest",
-        "cpu": 0,
-        "links": [],
-        "portMappings": [],
-        "essential": true,
-        "environment": [],
-        "mountPoints": [],
-        "volumesFrom": []
-    },
-    {
         "name": "nginx",
         "image": "082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx:latest",
         "cpu": 0,
         "links": [
-            "app",
-            "static"
+            "app"
         ],
         "portMappings": [
             {

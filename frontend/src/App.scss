@@ -1,0 +1,21 @@
+$bootstrap-icons-font: "bootstrap-icons" !default;
+$bootstrap-icons-font-dir: "./fonts" !default;
+$bootstrap-icons-font-file: "#{$bootstrap-icons-font-dir}/#{$bootstrap-icons-font}" !default;
+
+@import "./assets/_common/fonts.scss";
+
+@import "./assets/variables";
+@import "bootstrap/scss/bootstrap.scss";
+// @import "bootstrap-icons/font/bootstrap-icons.scss";
+// @import "~datatables.net-bs5/css/dataTables.bootstrap5.css";
+
+@import "./assets/legacy.scss";
+
+.table tr th:first-of-type,
+.table tr td:first-of-type {
+  border-left-width: 0px!important;
+}
+
+.table-hover tr {
+  cursor: pointer;
+}

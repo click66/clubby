@@ -3,12 +3,15 @@ include:
   - workers/docker-compose.override.yml
 
 services:
+  frontend:
+    ports:
+      - 8080:5173
+    volumes:
+      - ./frontend:/app
   app:
     build:
       context: .
       target: dev-runtime
-    depends_on:
-      - api-gateway
     environment:
       - API_ROOT=http://api.southamptonjiujitsu.local:9000
       - API_KEY=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZiB5b3UgYXJlIHJlYWRpbmcgdGhpcyI6InlvdSBoYXZlIHRvbyBtdWNoIHRpbWUgb24geW91ciBoYW5kcyJ9.a2Vm6eY2cbWIhwteh1lK3zn8sb6gH7rk38SNtnm_6XKvz2vnNqajXx2uxYtF7Cwl9n-f1Vn7FVg8y2OwWknkqDg3OY2leNN6GbDvdZpDiafYipVssOqo3Lq361vQCzSHtHnBlMu_Gf_EIwSqT1gsAtRwJlZ2oOD_otIVlpap7bU
@@ -30,32 +33,18 @@ services:
           - admin.southamptonjiujitsu.local
           - members.southamptonjiujitsu.local
     volumes:
-      - .:/app
-
-  static:
-    build:
-      target: dev-runtime
-    volumes:
-      - .:/app
+      - ./sjcadmin:/app/sjcadmin
+      - ./static:/app/static
+      - ./templates:/app/templates
+      - ./poetry.lock:/app/poetry.lock
+      - ./poetry.toml:/app/poetry.toml
+      - ./pyproject.toml:/app/pyproject.toml
 
   gateway:
     ports:
       - 8000:8000
     volumes:
       - ./config/nginx:/etc/nginx/conf.d
-
-  base:
-    build:
-      context: .
-      target: base
-    environment:
-      - DJANGO_SETTINGS_MODULE=sjcadmin.settings
-      - DJANGO_SECRET_KEY="*(%z)+p^f+*&!zdv$j_ipce+)ru+f+g91udo2i&=1l1r6deyet"
-      - ENVIRONMENT_NAME=local
-      - PGPASS=Rand0m!
-    working_dir: /app
-    volumes:
-      - .:/app
 
   database:
     ports:

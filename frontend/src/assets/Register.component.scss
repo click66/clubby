@@ -1,0 +1,118 @@
+.registerActions {
+  display: flex;
+  justify-content: right;
+  align-items: center;
+  margin-bottom: 5px;
+
+  button {
+    font-size: 0.9em;
+  }
+}
+
+.tblRegister {
+  position: relative;
+
+  .tblRegisterInner {
+    overflow: scroll;
+    margin-left: 200px;
+  }
+}
+
+.tblRegister {
+  text-wrap: nowrap;
+
+  thead th:first-child,
+  tbody th {
+    position: absolute;
+    left: 0;
+    z-index: 10;
+    width: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    border-left-width: 0px;
+    border-right-width: 2px;
+  }
+
+  thead th.sortableHeader {
+    cursor: pointer;
+    padding: 0;
+
+    &.sorting:before,
+    &.sorting:after {
+      position: absolute;
+      display: block;
+      right: 20px;
+      top: 35%;
+      line-height: 9px;
+    }
+
+    &.sort-asc:before {
+      content: "▲";
+    }
+
+    &.sort-desc:before {
+      content: "▼";
+    }
+
+    > div {
+      padding: 7px;
+    }
+  }
+
+  th,
+  td {
+    font-size: 0.85em;
+    padding: 7px;
+    border-left-width: 1px;
+    border-color: #ddd;
+  }
+
+  tbody {
+    th {
+      font-weight: 400;
+      display: flex;
+      border-top-width: 1px;
+      cursor: pointer;
+
+      > .memberName {
+        flex: 1;
+      }
+
+      > .memberLicence {
+        margin-right: 20px;
+      }
+    }
+
+    td.registerCell {
+      cursor: pointer;
+      border-top-width: 1px;
+
+      &:hover {
+        background-color: #adb5bd;
+      }
+
+      &.disabled {
+        background-color: #dee2e6;
+      }
+    }
+
+    td.expanded {
+      height: 80px;
+      vertical-align: top;
+      border-left: 0px;
+      padding: 0;
+
+      > div {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        border-top: 1px solid #ddd;
+
+        > ul.details {
+          list-style-type: none;
+          margin-top: 10px;
+        }
+      }
+    }
+  }
+}

@@ -3,21 +3,27 @@ include:
   - workers/docker-compose.yml
 
 services:
+  frontend:
+    image: node:latest
+    command: ["npm", "run", "dev"]
+    depends_on:
+      - gateway
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+
   app:
     build:
       context: .
       target: prod-runtime
     image: 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app
+    depends_on:
+      - api-gateway
+      - database
+    environment:
+      - PRIV_KEY=LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUNkUUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQWw4d2dnSmJBZ0VBQW9HQkFPUU9oeEhFaU1wdjBEdnYKZVZlcUxRTjROR3RxOHRKZU0wZ3BRVkgzekUyNGx2a2dwOG80V3JEU3hnb3FJRmdDUjJPZzl1eXhqNmt2alhleAorS3QzeFN1Z1RFaXoreGt2WUFKWHNkc3BMS1ZTTVFYT0NGODErUTFRVFZxV1ZUeWQ1YzloWHNtblYzQ1ZSRTJlCit4WlFoVDhZMkZqdm5DVmhXQml3WUNpQXBPd2xBZ01CQUFFQ2dZQURKeGhDN0o2ZmZkQTVJK1JmaStDM2JZLzcKOUN5TEwvWXhoekI1KzV6OWJoSFlPOVZWL0ZWMG9GVlFpcWlMenV4QnVsWHZpN3phcitlYXdnRVlEYjNTQitUcwo4V1QvQXUzYmVyY2lzRXB4cGNrYmJNWC85blkrN21ISS96SmNMUFVEOUFOSFVYbUVHY1BrZDF4Ym5NRTNURGlvCmtIc1dsR09nZFdpSk1Sd1NPUUpCQVBRNVQ2Q2NyOVZCZ3JkeVp6Z2Z5bTBBZkZ5cmxyZ0FBMzZUTWxsWWtYN3AKTUF5dm9Kc3JjaXM2c3ppdGpESzBhRUV0RmNmYmRTblpXRytaZ3hTR0l2Y0NRUUR2RGFaNlBQUmtuR2U2b29SKwpBck5GbkxLNi9hSi9tL2IrSzF0akNDWHlBWE9Hb2NsVVJZdFZJVVhYcU5CeE9EM2FnY2xWRDRGMW1hTWpySHNqCmJZYkRBa0EzcUxnVkNxQ29JWDRCQVBtMU9NbVJmZ0xadStGbG5kc3VCYTM3M3N1SitPc1NlUlJKU09XRUpLU2oKemltZGhMQWQ2b0NFUStlMzJlamx4ajZ4ZHNDUkFrQlZEU0UrK25MbFhQUlc1YjJINjhRR3IyS3p2c3ZTNVJXeQpocENFSW9FRm9saU0vUURaZDhqRDZBdW1XQXlaUzY1T0VNRWwvMWRMRlBlREdMblMrQVByQWtCT3dQMDQ4c2Q4ClB0QTJkaWVJTVdLSlhHMGdiL0ZpVTVxVDBQZU1kdHEvakNPVDZuN1kxd3RQK2hXV05nVHJaTHZCeklDUzdCZ1cKQWxWZ0Izd0xTL3Z6Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0=
     volumes:
       - app:/var/www/html
-
-  static:
-    build:
-      context: .
-      dockerfile: Dockerfile.static
-      target: prod-runtime
-    image: 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static
-    hostname: static
 
   gateway:
     build:
@@ -25,11 +31,13 @@ services:
       dockerfile: Dockerfile.nginx
     image: 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx
     hostname: nginx
-    ports:
-      - 8000:8000
     depends_on:
       - app
-      - static
+    networks:
+      default:
+        aliases:
+          - auth.southamptonjiujitsu.local
+          - monolith.southamptonjiujitsu.local
 
   terraform:
     build:

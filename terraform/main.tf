@@ -10,10 +10,6 @@ resource "aws_ecr_repository" "nginx" {
     name = "sjcadmin/nginx"
 }
 
-resource "aws_ecr_repository" "static" {
-    name = "sjcadmin/static"
-}
-
 data "template_file" "container_definitions" {
     template = "${file("${path.module}/data/container_definitions.json")}"
 }

@@ -4,17 +4,17 @@ stages:
   - deploy
 
 include:
+  - "frontend/.gitlab-ci.yml"
   - "services/attendance/.gitlab-ci.yml"
   # - "workers/attendance/.gitlab-ci.yml"
 
-test:
+test-frontend:
   stage: test
-  image: docker
-  services:
-    - docker:dind
+  image: node:latest
   script:
-    - docker compose -f docker-compose.yml -f docker-compose.ci.yml build app
-    - docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm app poetry run pytest tests/unit
+    - cd frontend
+    - npm ci
+    - npm run test
 
 terraform:
   stage: infra
@@ -48,7 +48,7 @@ terraform:
 #     AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
 #     AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
 
-deploy:
+deploy-monolith:
   stage: deploy
   image: docker:latest
   services:
@@ -63,10 +63,8 @@ deploy:
   script:
     - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app -f Dockerfile --target prod-runtime .
     - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx -f Dockerfile.nginx .
-    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static -f Dockerfile.static .
     - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app
     - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx
-    - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/static
     - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
   only:
     - main

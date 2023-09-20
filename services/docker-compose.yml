@@ -9,3 +9,12 @@ services:
       - ENVIRONMENT_NAME=local
       - PGHOST=database
       - PGPASS=Rand0m!
+
+  api-gateway:
+    image: nginx:latest
+    depends_on:
+      - attendance-service
+    networks:
+      default:
+        aliases:
+          - api.southamptonjiujitsu.local
