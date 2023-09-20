@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react"
 import { fetchCourses } from "../services/courses"
-import Course from "../models/Course"
+import { CourseCollection}  from "../models/Course"
 import { useLocation } from "react-router"
 
 function useCourses() {
     const location = useLocation()
-    const [courses, setCourses] = useState<Course[]>([])
+    const [courses, setCourses] = useState<CourseCollection>(new Map())
 
     useEffect(() => {
         if (location.state?.courses) {
-            setCourses(location.state.courses)//.map((c: Course) => new Course(c)))
+            setCourses(location.state.courses)
             return
         }
         fetchCourses().then(setCourses)

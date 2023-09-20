@@ -1,4 +1,4 @@
-import Course from "../models/Course"
+import { Course, CourseCollection } from "../models/Course"
 import http from "../utils/http"
 
 const API_URL = import.meta.env.VITE_LEGACY_API_URL
@@ -15,9 +15,9 @@ export type DtoNewCourse = {
     days: number[]
 }
 
-export function fetchCourses(): Promise<Course[]> {
+export function fetchCourses(): Promise<CourseCollection> {
     return http.get(API_URL + '/courses')
-        .then((d: DtoCourse[]) => d.map((d: DtoCourse) => new Course(d)))
+        .then((d: DtoCourse[]) => new Map(d.map((d: DtoCourse) => [d.uuid, new Course(d)])))
 }
 
 export function fetchCourseByUuid(uuid: string): Promise<Course> {

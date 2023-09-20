@@ -1,4 +1,6 @@
-export default class Course {
+export type CourseCollection = Map<string, Course>
+
+export class Course {
     uuid?: string
     label: string
     _days!: number[]

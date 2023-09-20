@@ -85,7 +85,6 @@ function MemberLicence() {
                             setMember(new Member({ ...member, membership: { ...member.membership, licence: { idNumber: values.licenceNo, expires: new Date(values.expiryDate) } } }))
                             setSubmitting(false)
                             notifySuccess('Member licence updated')
-
                         }).catch(notifyError)
                         setLicenceFormOpen(false)
                     }}

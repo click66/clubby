@@ -1,5 +1,5 @@
 import '../assets/Register.component.scss'
-import Course from '../models/Course';
+import { Course } from '../models/Course';
 import Member from '../models/Member';
 import { Button, Modal } from 'react-bootstrap';
 import { Field, Form, Formik } from 'formik';

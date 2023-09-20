@@ -15,7 +15,7 @@ import axios from 'axios';
 import { Button } from 'react-bootstrap';
 import { Flip, ToastContainer } from 'react-toastify';
 import MemberProfile from './pages/member/MemberProfile';
-import MemberPayments from './pages/member/MemberPayments';
+import Payments from './pages/member/MemberPayments';
 import MemberNotes from './pages/member/MemberNotes';
 import MemberLicence from './pages/member/MemberLicence';
 import { MemberProvider } from './contexts/MemberContext';
@@ -71,10 +71,10 @@ function App() {
                   <Route path="/members/:memberUuid/profile" element={<MemberProfile />} />
                   <Route path="/members/:memberUuid/licence" element={<MemberLicence />} />
                   <Route path="/members/:memberUuid/notes" element={<MemberNotes />} />
-                  <Route path="/members/:memberUuid/payments" element={<MemberPayments />} />
+                  <Route path="/members/:memberUuid/payments" element={<Payments />} />
                 </Route>
                 <Route path="/attendance" element={<Attendance />} />
-                <Route path="/attendance/:course_uuid" element={<Attendance />} />
+                <Route path="/attendance/:courseUuid" element={<Attendance />} />
                 <Route path="/reporting" element={<Reporting />} />
               </Route>
             </Route>

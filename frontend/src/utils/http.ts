@@ -1,6 +1,5 @@
 import axios, { AxiosResponse } from "axios"
 
-
 function successOrError(r: AxiosResponse) {
     let data = r.data;
     if (data.hasOwnProperty('error')) {
