@@ -43,6 +43,7 @@ class User(AbstractUser):
     email = models.EmailField('email address', unique=True)
     _uuid = models.UUIDField(
         db_column='uuid', unique=True, default=uuid4, editable=False)
+    tenant_uuid = models.UUIDField()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

@@ -122,7 +122,7 @@ def get_attendance(request):
     today = date.today()
     range_end = today - timedelta(days=365)
 
-    students = Student.fetch_signed_up_for_multiple(course_uuids)
+    students = Student.fetch_signed_up_for_multiple(course_uuids, tenant_uuid=request.user.tenant_uuid)
 
     attendances = []
 
@@ -158,8 +158,8 @@ def post_log_attendance(request):
     if not product_uuid:
         raise ValueError('No valid product/course found for this submission')
 
-    s = Student.fetch_by_uuid(student_uuid)
-    c = Course.objects.get(_uuid=product_uuid)
+    s = Student.fetch_by_uuid(student_uuid, tenant_uuid=request.user.tenant_uuid)
+    c = Course.objects.get(_uuid=product_uuid, tenant_uuid=request.user.tenant_uuid)
     Attendance.clear(s, sess_date)
 
     a = Attendance.register_student(
@@ -210,7 +210,7 @@ def post_clear_attendance(request):
     student_uuid = data.get('student_uuid')
     sess_date = data.get('sess_date')
     product_uuid = data.get('product')
-    s = Student.fetch_by_uuid(student_uuid)
+    s = Student.fetch_by_uuid(student_uuid, tenant_uuid=request.user.tenant_uuid)
 
     Attendance.clear(s, date=date.fromisoformat(sess_date))
 

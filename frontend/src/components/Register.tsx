@@ -1,7 +1,7 @@
 import { RowData, SortingState, createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import '../assets/Register.component.scss'
 import { Course } from '../models/Course';
-import Member from '../models/Member';
+import { Member } from '../models/Member';
 import { fetchMembersByCourses } from '../services/members';
 import { notifyError, notifySuccess } from '../utils/notifications';
 import { MemberQuickAddButton } from './MemberQuickAdd'
@@ -13,7 +13,7 @@ import { BoxArrowUpRight, Cash } from 'react-bootstrap-icons';
 import MemberBadge from './MemberBadge';
 import { DomainError } from '../errors';
 import LogAttendanceModal from './LogAttendanceModal';
-import { BarLoader } from 'react-spinners';
+import Spinner from './Spinner';
 
 interface RegisterProps {
     courses: Course[]
@@ -140,7 +140,6 @@ function Register({ courses = [], squashDates }: RegisterProps) {
             fetchMembersByCourses(courses).then((members) => {
                 const dates = generatePrevious30Dates(courses, squashDates)
                 setDates(dates)
-                // setMembers(members)
 
                 // Might be more efficient to have the attendance API read by course, then these can be performed in unison
                 const studentUuids = members.map((m) => m.uuid).filter(Boolean) as string[]
@@ -222,11 +221,13 @@ function Register({ courses = [], squashDates }: RegisterProps) {
             ))}
         </>
     )
-
+    
     return loaded ? (
         <>
             <div className="registerActions">
-                <MemberQuickAddButton courses={courses} />
+                <MemberQuickAddButton courses={courses} onChange={() => {
+                    fetchMembersByCourses(courses).then(setMembers)
+                }}/>
             </div>
             <div className="tblRegister">
                 <div className="tblRegisterInner">
@@ -357,7 +358,7 @@ function Register({ courses = [], squashDates }: RegisterProps) {
                 /> : ''
             }
         </>
-    ) : <BarLoader />
+    ) : <Spinner />
 }
 
 export default Register

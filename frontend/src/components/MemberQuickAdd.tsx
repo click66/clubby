@@ -6,6 +6,7 @@ import { notifyError, notifySuccess } from "../utils/notifications"
 
 interface MemberQuickAddProps {
     courses: Course[]
+    onChange: () => void
 }
 
 interface MemberAndCourse {
@@ -13,9 +14,10 @@ interface MemberAndCourse {
     product: string
 }
 
-function MemberQuickAddAndAssign({ courses }: MemberQuickAddProps) {
+function MemberQuickAddAndAssign({ courses, onChange }: MemberQuickAddProps) {
     const submitNewMember = (data: MemberAndCourse) => {
         addMember({ name: data.studentName }, { uuid: data.product }).then(() => {
+            onChange()
             notifySuccess('New member added')
         }).catch(notifyError)
         document.body.click()

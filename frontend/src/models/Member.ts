@@ -36,7 +36,7 @@ interface MemberProps {
     unusedPayments?: Payment[]
 }
 
-export default class Member {
+export class Member {
     uuid?: string
     name: string
     profile: Profile | null
@@ -113,7 +113,7 @@ export default class Member {
     }
 
     public hasLicence() {
-        return this.membership.licence != null
+        return this.membership.licence !== null
     }
 
     public expired(now: Date) {
@@ -148,4 +148,8 @@ export default class Member {
     public hasUsablePaymentForCourse({ uuid }: { uuid: string }) {
         return this.unusedPayments.some((p) => p.courseUuid === uuid)
     }
+}
+
+export class PersistedMember extends Member {
+    declare uuid: string
 }

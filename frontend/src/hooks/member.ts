@@ -1,17 +1,17 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react"
 import { useLocation, useNavigate, useParams } from "react-router"
-import Member from "../models/Member"
+import { PersistedMember } from "../models/Member"
 import { fetchMemberByUuid } from "../services/members"
 
-function useMember(): [Member | undefined, Dispatch<SetStateAction<Member | undefined>>] {
+function useMember(): [PersistedMember | undefined, Dispatch<SetStateAction<PersistedMember | undefined>>] {
     const location = useLocation()
     const navigate = useNavigate()
     let { memberUuid } = useParams()
-    const [member, setMember] = useState<Member | undefined>(undefined)
+    const [member, setMember] = useState<PersistedMember | undefined>(undefined)
 
     useEffect(() => {
         if (location.state?.member) {
-            setMember(new Member(location.state.member))
+            setMember(new PersistedMember(location.state.member))
             return
         }
         if (memberUuid && member === undefined) {

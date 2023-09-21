@@ -23,7 +23,7 @@ def _username(uuid) -> str:
 @login_required_401
 @require_http_methods(['GET'])
 def get_members(request):
-    students = Student.fetch_all()
+    students = Student.fetch_all(tenant_uuid=request.user.tenant_uuid)
     students_data = []
     for s in students:
         student_data = {
@@ -54,7 +54,7 @@ def get_members(request):
 @require_http_methods(['GET'])
 @csrf_exempt
 def get_member(request, pk):
-    s = Student.fetch_by_uuid(pk)
+    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
     r = {
         'uuid': str(s.uuid),
         'name': s.name,
@@ -85,7 +85,8 @@ def get_members_by_courses(request):
     data = json.loads(request.body)
     course_uuids = data.get('courses')
 
-    students = Student.fetch_signed_up_for_multiple(course_uuids)
+    students = Student.fetch_signed_up_for_multiple(
+        course_uuids, tenant_uuid=request.user.tenant_uuid)
 
     return JsonResponse(list(map(lambda s: {
         'uuid': str(s.uuid),
@@ -114,7 +115,7 @@ def get_members_by_courses(request):
 @login_required_401
 @require_http_methods(['GET'])
 def get_member_licences(request, pk):
-    s = Student.fetch_by_uuid(pk)
+    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
     return JsonResponse(s.licences)
 
 
@@ -125,15 +126,32 @@ def get_member_licences(request, pk):
 def post_add_member(request):
     data = json.loads(request.body)
     s = Student.make(name=data.get('studentName'), creator=request.user.uuid)
+    s.tenant_uuid = request.user.tenant_uuid
     s.save()
 
     product_uuid = data.get('product')
     if product_uuid:
-        c = Course.objects.get(_uuid=product_uuid)
+        c = Course.objects.get(
+            _uuid=product_uuid, tenant_uuid=request.user.tenant_uuid)
         s.sign_up(c)
         s.save()
 
-    return JsonResponse({'success': {'uuid': s.uuid, 'name': s.name}})
+    r = {
+        'uuid': str(s.uuid),
+        'name': s.name,
+        'dob': s.dob,
+        'address': s.address,
+        'phone': s.phone,
+        'email': s.email,
+        'membership': 'trial' if not s.has_licence() else 'licenced',
+        'rem_trial_sessions': s.remaining_trial_sessions,
+        'signed_up_for': list(map(lambda c: str(c.uuid), s.courses)),
+        'member_since': s.join_date,
+        'added_by': _username(s.added_by),
+        'unused_payments': list(map(lambda p: {'course_uuid': p.course.uuid}, s.get_unused_payments()))
+    }
+
+    return JsonResponse({'success': r})
 
 
 @login_required_401
@@ -141,7 +159,7 @@ def post_add_member(request):
 @handle_error
 @csrf_exempt
 def post_update_member_profile(request, pk):
-    s = Student.fetch_by_uuid(pk)
+    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
 
     json_data = json.loads(request.body)
     s.set_profile(Profile(**{key: json_data[key] for key in [
@@ -161,7 +179,7 @@ def post_update_member_profile(request, pk):
 @handle_error
 @csrf_exempt
 def post_delete_member(request, pk):
-    s = Student.fetch_by_uuid(pk)
+    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
     if s:
         Attendance.objects.filter(student=s).delete()
     s.delete()
@@ -175,7 +193,7 @@ def post_delete_member(request, pk):
 @csrf_exempt
 def post_add_member_licence(request, pk):
     data = json.loads(request.body)
-    s = Student.fetch_by_uuid(pk)
+    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
     number = data.get('number')
     expire_date = date.fromisoformat(data.get('expire_date'))
     s.add_licence(Licence(number=number, expires=expire_date))
@@ -189,7 +207,7 @@ def post_add_member_licence(request, pk):
 @handle_error
 def post_add_member_note(request, pk):
     data = json.loads(request.body)
-    s = Student.fetch_by_uuid(pk)
+    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
     text = data.get('text')
 
     s.add_note(Note.make(text, author=request.user.uuid, datetime=timezone.now()))
@@ -202,8 +220,40 @@ def post_add_member_note(request, pk):
 @require_http_methods(['POST'])
 @handle_error
 @csrf_exempt
+def post_add_member_to_course(request, pk):
+    data = json.loads(request.body)
+    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
+    course = Course.fetch_by_uuid(
+        data.get('uuid'), tenant_uuid=request.user.tenant_uuid)
+    s._courses.add(course)
+    s.save()
+
+    return JsonResponse({'success': None})
+
+
+@login_required_401
+@require_http_methods(['POST'])
+@handle_error
+@csrf_exempt
+def post_remove_member_from_course(request, pk):
+    data = json.loads(request.body)
+    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
+    course = Course.fetch_by_uuid(
+        data.get('uuid'), tenant_uuid=request.user.tenant_uuid)
+    s._courses.remove(course)
+    s.save()
+
+    return JsonResponse({'success': None})
+
+
+# Payments API
+
+@login_required_401
+@require_http_methods(['POST'])
+@handle_error
+@csrf_exempt
 def post_add_member_payment(request, pk):
-    s = Student.fetch_by_uuid(pk)
+    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
     data = json.loads(request.body)
     product_id = data.get('product')
     c = Course.objects.get(_uuid=product_id)
@@ -221,7 +271,7 @@ def post_add_member_payment(request, pk):
 def post_query_member_payments(request):
     data = json.loads(request.body)
     memberUuid = data.get('memberUuid')
-    s = Student.fetch_by_uuid(memberUuid)
+    s = Student.fetch_by_uuid(memberUuid, tenant_uuid=request.user.tenant_uuid)
 
     last_30_used_payments = s.get_last_payments(30)
     unused_payments = s.get_unused_payments()
@@ -229,5 +279,5 @@ def post_query_member_payments(request):
     return JsonResponse({'success': list(map(lambda p: {
         'datetime': p.time,
         'courseUuid': p.course.uuid if p.course else None,
-        'used': p.used, 
+        'used': p.used,
     }, last_30_used_payments + unused_payments))})

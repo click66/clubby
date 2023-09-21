@@ -19,13 +19,13 @@ from ...models.session import Session
 def post_add_course(request):
     data = json.loads(request.body)
     c = Course.make(label=data.get('courseName'), days=data.get('courseDay'))
+    c.tenant_uuid = request.user.tenant_uuid
     c.save()
 
     return JsonResponse({'success': {
         'uuid': c.uuid,
         'label': c.label,
         'days': c.days,
-        # Session.gen_next(date.today(), c).date, # Not sure why this isn't working
         'next_session_date': 'Unknown',
     }})
 
@@ -35,7 +35,7 @@ def post_add_course(request):
 @csrf_exempt
 @handle_error
 def post_delete_course(request, pk):
-    c = Course.fetch_by_uuid(pk)
+    c = Course.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
 
     if c:
         Attendance.objects.filter(_course=c).delete()
@@ -55,7 +55,7 @@ def get_courses(request):
         'label': c.label,
         'days': c.days,
         'next_session_date': Session.gen_next(date.today(), c).date,
-    }, Course.objects.all())), safe=False)
+    }, Course.objects.filter(tenant_uuid=request.user.tenant_uuid))), safe=False)
 
 
 @login_required_401
@@ -63,7 +63,7 @@ def get_courses(request):
 @csrf_exempt
 @handle_error
 def get_course(request, pk):
-    c = Course.fetch_by_uuid(pk)
+    c = Course.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
 
     if not c:
         return JsonResponse({

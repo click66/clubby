@@ -1,5 +1,5 @@
 import { DomainError } from "../../src/errors"
-import Member from "../../src/models/Member"
+import { Member } from "../../src/models/Member"
 
 describe('Member model', () => {
     test('Has active trial if no licence but remaining trial sessions', () => {

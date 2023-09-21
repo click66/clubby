@@ -1,6 +1,6 @@
 import { Button, Modal } from "react-bootstrap"
 import MemberHeader from "../../components/MemberHeader"
-import Member from "../../models/Member"
+import { Member, PersistedMember } from "../../models/Member"
 import MemberTabs from "../../components/MemberTabs"
 import { useContext, useState } from "react"
 import { Field, Form, Formik } from "formik"
@@ -23,7 +23,7 @@ function MemberLicenceAlert({ member, openForm }: { member: Member, openForm: ()
     )
 
     const TrialLicenceAlert = () => (
-        <div className="alert alert-warning" role="alert">
+        <div className={`alert alert-${member.remainingTrialSessions === 0 ? 'danger' : 'warning'}`} role="alert">
             <p>Student is not licenced.</p>
             <p>Student has {member.remainingTrialSessions} trial session(s) remaining.</p>
             <div className="pt-2">
@@ -39,7 +39,7 @@ function MemberLicenceAlert({ member, openForm }: { member: Member, openForm: ()
             </div>
         </div>
     )
-    console.log(member)
+
     if (member.hasLicence()) {
         if (!member.expired(new Date())) {
             return <ActiveLicenceAlert />;
@@ -49,7 +49,7 @@ function MemberLicenceAlert({ member, openForm }: { member: Member, openForm: ()
     } else if (member.activeTrial()) {
         return <TrialLicenceAlert />;
     }
-    return <ExpiredLicenceAlert />;
+    return <TrialLicenceAlert />;
 }
 
 function MemberLicence() {
@@ -82,7 +82,7 @@ function MemberLicence() {
                     }}
                     onSubmit={(values, { setSubmitting }) => {
                         addMemberLicence(member.uuid!, { ...values, expiryDate: new Date(values.expiryDate) }).then(() => {
-                            setMember(new Member({ ...member, membership: { ...member.membership, licence: { idNumber: values.licenceNo, expires: new Date(values.expiryDate) } } }))
+                            setMember(new PersistedMember({ ...member, membership: { ...member.membership, licence: { idNumber: values.licenceNo, expires: new Date(values.expiryDate) } } }))
                             setSubmitting(false)
                             notifySuccess('Member licence updated')
                         }).catch(notifyError)

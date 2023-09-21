@@ -1,9 +1,10 @@
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table"
 import { MemberQuickAddButton } from "../components/MemberQuickAdd"
-import Member from "../models/Member"
+import { Member } from "../models/Member"
 import { useEffect, useState } from "react"
 import { fetchMembers } from "../services/members"
 import { useNavigate } from "react-router"
+import Spinner from "../components/Spinner"
 
 const columnHelper = createColumnHelper<Member>()
 
@@ -18,6 +19,7 @@ const columns = [
 function Members() {
     const navigate = useNavigate()
     const [data, setData] = useState<Member[]>([])
+    const [loaded, setLoaded] = useState(false)
 
     const table = useReactTable({
         data,
@@ -26,42 +28,47 @@ function Members() {
     })
 
     useEffect(() => {
-        fetchMembers().then(setData)
+        fetchMembers().then((d) => {
+            setData(d)
+            setLoaded(true)
+        })
     }, [])
 
     return (
         <>
             <h1>Members</h1>
             <div className="rounded-3 bg-white p-3 text-dark" id="copy">
-                <div className="registerActions">
-                    <MemberQuickAddButton courses={[]} />
-                </div>
-                <div id="tblStudents">
-                    <table className="table table-hover">
-                        <thead>
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <tr key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => (
-                                        <th key={header.id}>
-                                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                        </th>
-                                    ))}
-                                </tr>
-                            ))}
-                        </thead>
-                        <tbody>
-                            {table.getRowModel().rows.map((row) => (
-                                <tr key={row.id} onClick={() => navigate(`/members/${row.original.uuid}/profile`, { state: { member: row.original } })}>
-                                    {row.getVisibleCells().map((cell) => (
-                                        <td key={cell.id}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                {!loaded ? <Spinner /> : <>
+                    <div className="registerActions">
+                        <MemberQuickAddButton courses={[]} onChange={() => fetchMembers().then(setData)}/>
+                    </div>
+                    <div id="tblStudents">
+                        <table className="table table-hover">
+                            <thead>
+                                {table.getHeaderGroups().map((headerGroup) => (
+                                    <tr key={headerGroup.id}>
+                                        {headerGroup.headers.map((header) => (
+                                            <th key={header.id}>
+                                                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </thead>
+                            <tbody>
+                                {table.getRowModel().rows.map((row) => (
+                                    <tr key={row.id} onClick={() => navigate(`/members/${row.original.uuid}/profile`, { state: { member: row.original } })}>
+                                        {row.getVisibleCells().map((cell) => (
+                                            <td key={cell.id}>
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>}
             </div>
         </>
     )

@@ -14,7 +14,6 @@ function Attendance() {
     const [loaded, setLoaded] = useState<boolean>(false)
 
     useEffect(() => {
-        console.log(courseUuid)
         if (courseUuid) {
             fetchCourseByUuid(courseUuid).then((course: Course) => {
                 setSelectedCourse(course)

@@ -13,9 +13,43 @@ $bootstrap-icons-font-file: "#{$bootstrap-icons-font-dir}/#{$bootstrap-icons-fon
 
 .table tr th:first-of-type,
 .table tr td:first-of-type {
-  border-left-width: 0px!important;
+  border-left-width: 0px !important;
 }
 
 .table-hover tr {
   cursor: pointer;
+}
+
+.spinnerWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.memberSubHeading .text-secondary {
+  text-wrap: nowrap;
+}
+
+.inlineForm {
+  display: flex;
+  flex-direction: row;
+
+  .field {
+    flex: 1;
+    margin-right: 5px;
+  }
+
+  .controls {
+    display: flex;
+    gap: 5px;
+  }
+}
+
+li.signedUpCourse {
+  position: relative;
+
+  button.remove {
+    position: absolute;
+    right: 0;
+    padding: 0 5px;
+  }
 }

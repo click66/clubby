@@ -24,6 +24,7 @@ def get_jwt(request):
 
     data = {
         'user_uuid': str(request.user.uuid),
+        'tenant_uuid': str(request.user.tenant_uuid),
         'expires': expires,
     }
 

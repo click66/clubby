@@ -87,6 +87,7 @@ class Payment(models.Model):
 class Student(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     _creator = models.UUIDField(null=True, db_column='creator_id')
+    tenant_uuid = models.UUIDField(null=True, blank=True)
 
     profile_name = models.CharField(null=True, max_length=120)
     profile_dob = models.DateField(null=True)
@@ -106,6 +107,7 @@ class Student(models.Model):
 
     _existing_courses = []
     _new_courses = []
+    _removed_courses = []
 
     _notes = []
     _new_notes = []
@@ -116,14 +118,14 @@ class Student(models.Model):
     _unused_and_new_payments = []
 
     @classmethod
-    def fetch_all(cls):
+    def fetch_all(cls, tenant_uuid: str):
         objects = cls.objects\
             .select_related('licence')\
             .prefetch_related('note_set')\
             .prefetch_related('payment_set')\
             .prefetch_related('attendance_set')\
             .prefetch_related('_courses')\
-            .all()
+            .filter(tenant_uuid=tenant_uuid)
 
         for o in objects:
             payments = o.payment_set.all().order_by('-_datetime')
@@ -139,12 +141,13 @@ class Student(models.Model):
 
             o._existing_courses = list(o._courses.all())
             o._new_courses = []
+            o._removed_courses = []
 
         return objects
     
     @classmethod
-    def fetch_by_uuid(cls, uuid: str):
-        o = cls.objects.get(pk=uuid)
+    def fetch_by_uuid(cls, uuid: str, tenant_uuid: str):
+        o = cls.objects.get(pk=uuid, tenant_uuid=tenant_uuid)
 
         o._unused_payments = list(o.payment_set.filter(_used=False).order_by('-_datetime'))
         o._used_payments = list(o.payment_set.filter(_used=True).order_by('-_datetime'))
@@ -158,16 +161,17 @@ class Student(models.Model):
 
         o._existing_courses = list(o._courses.all())
         o._new_courses = []
+        o._removed_courses = []
 
         return o
     
 
     @classmethod
-    def fetch_signed_up_for(cls, course: Course):
+    def fetch_signed_up_for(cls, course: Course, tenant_uuid: str):
         return course.student_set.all()
     
     @classmethod
-    def fetch_signed_up_for_multiple(cls, course_uuids: list[str]):
+    def fetch_signed_up_for_multiple(cls, course_uuids: list[str], tenant_uuid: str):
         objects = cls.objects\
             .select_related('licence')\
             .prefetch_related('note_set')\
@@ -188,6 +192,7 @@ class Student(models.Model):
 
             o._existing_courses = list(o._courses.all())
             o._new_courses = []
+            o._removed_courses = []
 
         return objects
 
@@ -217,6 +222,7 @@ class Student(models.Model):
         student._notes = []
         student._new_notes = []
         student._new_courses = []
+        student._removed_courses = []
 
         return student
     
@@ -236,6 +242,8 @@ class Student(models.Model):
             self.licence.save()
 
         self._courses.add(*self._new_courses)
+        # for c in self._removed_courses:
+        #     self._courses.remove(c)
 
         super().save(*args, **kwargs)
 
@@ -331,6 +339,9 @@ class Student(models.Model):
 
     def sign_up(self, course):
         self._new_courses.append(course)
+
+    def unsign_up(self, course):
+        self._removed_courses.append(course)
     
     def increment_attendance(self):
         self._sessions_attended += 1
