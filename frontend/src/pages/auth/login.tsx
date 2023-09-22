@@ -18,7 +18,7 @@ function successOrError(r: AxiosResponse) {
     return r
 }
 
-function Login() {
+function Login({ loggedIn, setLoggedIn }: { loggedIn: boolean, setLoggedIn: (val: boolean) => void }) {
     const navigate = useNavigate()
 
     const [email, setEmail] = useState('')
@@ -30,7 +30,10 @@ function Login() {
             expires: new Date(expireTs * 1000),
             path: '/',
         })
-        cookies.set('jwt_refreshtoken', refreshToken, { path: '/' })
+        cookies.set('jwt_refreshtoken', refreshToken, {
+            expires: new Date(Date.now() + (2592000 * 1000)),
+            path: '/',
+        })
     }
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -39,14 +42,14 @@ function Login() {
         http.post(`${API_URL}/auth/login`, { email, password })
             .then(successOrError)
             .then(({ data }) => {
-                console.log(data)
                 login(data.token, data.expires, data.refresh_token)
+                setLoggedIn(true)
                 navigate('/')
             }).catch(notifyError)
     }
 
     useEffect(() => {
-        if (cookies.get('jwt_authorisation')) {
+        if (loggedIn) {
             navigate('/')
         }
     }, [])

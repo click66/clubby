@@ -46,6 +46,8 @@ function App() {
         <div className="topBar">
           <Button variant="light" onClick={() => {
             cookies.remove('jwt_authorisation', { path: '/' })
+            cookies.remove('jwt_refreshtoken', { path: '/' })
+            setLoggedIn(false)
             navigate('/auth/login')
           }}>Sign Out</Button>
         </div>
@@ -61,7 +63,7 @@ function App() {
           <Routes>
             <Route element={<PortalLayout />}>
               <Route path="*" element={<_404 />} />
-              <Route path="/auth/login" element={<Login />} />
+              <Route path="/auth/login" element={<Login loggedIn={loggedIn} setLoggedIn={setLoggedIn}/>} />
               <Route element={<LoggedInLayout />}>
                 <Route path="/" element={<Portal />} />
               </Route>
