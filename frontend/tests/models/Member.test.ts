@@ -5,6 +5,7 @@ describe('Member model', () => {
     test('Has active trial if no licence but remaining trial sessions', () => {
         const sut = new Member({
             name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
             membership: {
                 remainingTrialSessions: 1,
                 licence: null,
@@ -17,6 +18,7 @@ describe('Member model', () => {
     test('Trial not active if no licence and no remaining trial sessions', () => {
         const sut = new Member({
             name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
             membership: {
                 remainingTrialSessions: 0,
                 licence: null,
@@ -29,6 +31,7 @@ describe('Member model', () => {
     test('Trial not active if no licence and negative remaining trial sessions', () => {
         const sut = new Member({
             name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
             membership: {
                 remainingTrialSessions: -3,
                 licence: null,
@@ -45,6 +48,8 @@ describe('Member model', () => {
         // And a member's licence expired on the 12th
         const sut = new Member({
             name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
+
             membership: {
                 remainingTrialSessions: 0,
                 licence: {
@@ -66,6 +71,7 @@ describe('Member model', () => {
         // And a member's licence expired on the 15th
         const sut = new Member({
             name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
             membership: {
                 remainingTrialSessions: 0,
                 licence: {
@@ -84,6 +90,7 @@ describe('Member model', () => {
         // Given a member has 2 remaining trial sessions
         const sut = new Member({
             name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
             membership: {
                 remainingTrialSessions: 2,
                 licence: null,
@@ -102,6 +109,7 @@ describe('Member model', () => {
         // Given a member has 1 remaining trial session
         const sut = new Member({
             name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
             membership: {
                 remainingTrialSessions: 1,
                 licence: null,
@@ -120,6 +128,7 @@ describe('Member model', () => {
         // Given a member has no remaining trial sessions and is unlicenced
         const sut = new Member({
             name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
             membership: {
                 remainingTrialSessions: 0,
                 licence: null,
@@ -138,6 +147,7 @@ describe('Member model', () => {
         // Given a member licence is expired
         const sut = new Member({
             name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
             membership: {
                 remainingTrialSessions: 0,
                 licence: {
@@ -159,6 +169,7 @@ describe('Member model', () => {
         // Given a member has two unused payments for one course
         const sut = new Member({
             name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
             membership: {
                 remainingTrialSessions: 0,
                 licence: {
@@ -199,6 +210,7 @@ describe('Member model', () => {
         const course = { uuid: '20cfcac8-d2c8-437e-a770-d4902207d780' }
         const member = new Member({
             name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
             origin: { joinDate: new Date(), addedBy: 'John' },
             course_uuids: ['20cfcac8-d2c8-437e-a770-d4902207d780'],
             membership: { remainingTrialSessions: 0, licence: null }
@@ -216,6 +228,7 @@ describe('Member model', () => {
         const course = { uuid: '30cfcac8-e2c8-537e-b770-e4902207d780' }
         const member = new Member({
             name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
             origin: { joinDate: new Date(), addedBy: 'John' },
             course_uuids: ['20cfcac8-d2c8-437e-a770-d4902207d780'],
             membership: { remainingTrialSessions: 0, licence: null }
