@@ -87,8 +87,7 @@ function ManagePayments({ member }: { member: Member }) {
     const courses = useCourses()
     const [formOpen, setFormOpen] = useState<boolean>(false)
     const [newPayments, setNewPayments] = useState<Payment[]>([])
-
-    const memberCourses = member.courseUuids.map((uuid: string): Course | undefined => courses.get(uuid))
+    const memberCourses = courses.size === 0 ? [] : member.courseUuids.map((uuid: string): Course | undefined => courses.get(uuid))
 
     return member ? (
         <>

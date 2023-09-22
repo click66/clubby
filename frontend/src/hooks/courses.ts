@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react"
-import { fetchCourses } from "../services/courses"
-import { CourseCollection}  from "../models/Course"
-import { useLocation } from "react-router"
+import { useEffect, useState } from 'react'
+import { fetchCourses } from '../services/courses'
+import { CourseCollection}  from '../models/Course'
+import { useLocation } from 'react-router'
 
 function useCourses() {
     const location = useLocation()

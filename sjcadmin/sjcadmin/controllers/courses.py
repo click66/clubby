@@ -16,6 +16,6 @@ def courses(request):
             'uuid': c.uuid,
             'label': c.label,
             'days': render_days(c.days),
-            "next_session_date": Session.gen_next(date.today(), c).date,
+            'next_session_date': Session.gen_next(date.today(), c).date,
         }, Course.objects.all()),
     })
