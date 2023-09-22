@@ -15,11 +15,11 @@ from jose import jwt
 
 def authorise_request(request):
     auth_header = request.headers.get('Authorization', None)
-    private_key = base64.b64decode(os.getenv('PRIV_KEY'))
+    public_key = base64.b64decode(os.getenv('PRIV_KEY'))
 
     if auth_header is not None:
         token = auth_header.replace('Bearer ', '')
-        data = jwt.decode(token, private_key)
+        data = jwt.decode(token, public_key)
 
         if 'expires' in data and data['expires'] <= time():
             return False

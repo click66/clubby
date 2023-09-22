@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 
 interface TokenContainer {
     get(tokenName: string): any
@@ -7,6 +7,10 @@ interface TokenContainer {
 function appendAuthorisation(tokens: TokenContainer) {
     return (r: InternalAxiosRequestConfig) => {
         const token = tokens.get('jwt_authorisation')
+
+        if (!token) {
+            throw Error('Authorization error')
+        }
 
         r.headers = r.headers ?? {}
         r.headers.Authorization = `Bearer ${token}`
@@ -24,18 +28,10 @@ function successOrError(r: AxiosResponse) {
     return r
 }
 
-function handleFail(e: AxiosError) {
-    if (e.response && e.response.status === 401) {
-        // TODO - Token refresh flow
-    }
-}
-
-axios.interceptors.response.use(successOrError, handleFail)
-
 export const http = axios
 
 export function withInterceptors(axiosInstance: AxiosInstance, tokens: TokenContainer): AxiosInstance {
     axiosInstance.interceptors.request.use(appendAuthorisation(tokens), (error) => Promise.reject(error))
-    axiosInstance.interceptors.response.use(successOrError, handleFail)
+    axiosInstance.interceptors.response.use(successOrError)
     return axiosInstance
 }

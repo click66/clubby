@@ -14,18 +14,19 @@ function Login() {
     const [password, setPassword] = useState('')
     const cookies = new Cookies()
 
-    const login = (token: string, expire_ts: number) => {
+    const login = (token: string, expireTs: number, refreshToken: string) => {
         cookies.set('jwt_authorisation', token, {
-            expires: new Date(expire_ts * 1000),
+            expires: new Date(expireTs * 1000),
             path: '/',
         })
+        cookies.set('jwt_refreshtoken', refreshToken, { path: '/' })
     }
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
         http.post(`${API_URL}/auth/login`, { email, password }).then(({ data }) => {
-            login(data.token, data.expires)
+            login(data.token, data.expires, data.refresh_token)
             navigate('/')
         }).catch(notifyError)
     }

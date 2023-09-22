@@ -3,7 +3,7 @@ import './App.scss'
 
 import _404 from './pages/404'
 import Login from './pages/auth/login'
-import { BrowserRouter, Routes, Route, Outlet, Navigate, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Outlet, useNavigate } from 'react-router-dom'
 import Portal from './pages/Portal'
 import Courses from './pages/Courses'
 import Members from './pages/Members'
@@ -18,8 +18,12 @@ import Payments from './pages/member/MemberPayments'
 import MemberNotes from './pages/member/MemberNotes'
 import MemberLicence from './pages/member/MemberLicence'
 import { MemberProvider } from './contexts/MemberContext'
+import { useState } from 'react'
+import LoginGuard from './components/LoginGuard'
 
 function App() {
+  const [loggedIn, setLoggedIn] = useState(false)
+
   const PortalLayout = () => (
     <div className="copyHome">
       <div id="topLogo">South Coast Jiu Jitsu</div>
@@ -34,24 +38,20 @@ function App() {
     </div>
   )
 
-  const LoginGuard = () => {
-    const cookies = new Cookies()
+  const LoggedInLayout = () => {
     const navigate = useNavigate()
-    const token = cookies.get('jwt_authorisation')
-
-    if (!token) {
-      return <Navigate to="/auth/login" />
-    }
-
-    return <>
-      <div className="topBar">
-        <Button variant="light" onClick={() => {
-          cookies.remove('jwt_authorisation', { path: '/' })
-          navigate('/auth/login')
-        }}>Sign Out</Button>
-      </div>
-      <Outlet />
-    </>
+    const cookies = new Cookies()
+    return (
+      <LoginGuard loggedIn={loggedIn} setLoggedIn={setLoggedIn}>
+        <div className="topBar">
+          <Button variant="light" onClick={() => {
+            cookies.remove('jwt_authorisation', { path: '/' })
+            navigate('/auth/login')
+          }}>Sign Out</Button>
+        </div>
+        <Outlet />
+      </LoginGuard>
+    )
   }
 
   return (
@@ -62,11 +62,11 @@ function App() {
             <Route element={<PortalLayout />}>
               <Route path="*" element={<_404 />} />
               <Route path="/auth/login" element={<Login />} />
-              <Route element={<LoginGuard />}>
+              <Route element={<LoggedInLayout />}>
                 <Route path="/" element={<Portal />} />
               </Route>
             </Route>
-            <Route element={<LoginGuard />}>
+            <Route element={<LoggedInLayout />}>
               <Route element={<StandardLayout />}>
                 <Route path="/courses" element={<Courses />} />
                 <Route path="/members" element={<Members />} />
