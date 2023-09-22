@@ -1,8 +1,8 @@
-import { Dispatch, ReactNode, SetStateAction, createContext } from "react";
-import useMember from "../hooks/member";
-import { PersistedMember } from "../models/Member";
+import { Dispatch, ReactNode, SetStateAction, createContext } from 'react'
+import useMember from '../hooks/member'
+import { Member } from '../models/Member'
 
-export const MemberContext = createContext<[PersistedMember | undefined, Dispatch<SetStateAction<PersistedMember | undefined>>]>([undefined, () => { }])
+export const MemberContext = createContext<[Member | undefined, Dispatch<SetStateAction<Member | undefined>>]>([undefined, () => { }])
 
 export function MemberProvider({ children }: { children: ReactNode }) {
     const member = useMember()

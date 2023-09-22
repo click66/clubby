@@ -1,14 +1,14 @@
-import { useContext, useEffect, useState } from "react"
-import MemberHeader from "../../components/MemberHeader"
-import { MemberContext } from "../../contexts/MemberContext"
-import { addPayment, fetchPaymentsByMember } from "../../services/payments"
-import useCourses from "../../hooks/courses"
-import MemberTabs from "../../components/MemberTabs"
-import { Course } from "../../models/Course"
-import { Button, Modal } from "react-bootstrap"
-import { Field, Form, Formik } from "formik"
-import { notifyError, notifySuccess } from "../../utils/notifications"
-import Spinner from "../../components/Spinner"
+import { useContext, useEffect, useState } from 'react'
+import MemberHeader from '../../components/MemberHeader'
+import { MemberContext } from '../../contexts/MemberContext'
+import { addPayment, fetchPaymentsByMember } from '../../services/payments'
+import useCourses from '../../hooks/courses'
+import MemberTabs from '../../components/MemberTabs'
+import { Course } from '../../models/Course'
+import { Button, Modal } from 'react-bootstrap'
+import { Field, Form, Formik } from 'formik'
+import { notifyError, notifySuccess } from '../../utils/notifications'
+import Spinner from '../../components/Spinner'
 
 type Payment = {
     datetime: Date
@@ -23,7 +23,7 @@ type Member = {
 
 function PaymentTable({ payments, showNextSession = false }: { payments: Payment[], showNextSession?: boolean }) {
     const courses = useCourses()
-    console.log(courses)
+
     return (
         <>
             <table className="table">
@@ -46,7 +46,7 @@ function PaymentTable({ payments, showNextSession = false }: { payments: Payment
                                 second: '2-digit',
                             })}</td>
                             <td>{c ? c.label : 'Any'}</td>
-                            {showNextSession && c ? <td>{c.nextSession?.toLocaleDateString()}</td> : ''}
+                            {showNextSession ? <td>{c ? c.nextSession?.toLocaleDateString() : ''}</td> : ''}
                         </tr>
                     ))}
                 </tbody>
@@ -83,11 +83,12 @@ function Payments({ member, newPayments }: { member: Member, newPayments: Paymen
     )
 }
 
-function ManagePayments({ member }: { member: Member }) {
+function MemberPayments() {
     const courses = useCourses()
+    const [member] = useContext(MemberContext)
     const [formOpen, setFormOpen] = useState<boolean>(false)
     const [newPayments, setNewPayments] = useState<Payment[]>([])
-    const memberCourses = courses.size === 0 ? [] : member.courseUuids.map((uuid: string): Course | undefined => courses.get(uuid))
+    const memberCourses = courses.size === 0 || member === undefined ? [] : member.courseUuids.map((uuid: string): Course | undefined => courses.get(uuid))
 
     return member ? (
         <>
@@ -156,12 +157,6 @@ function ManagePayments({ member }: { member: Member }) {
             </Modal>
         </>
     ) : 'Loading'
-}
-
-function MemberPayments() {
-    const [member] = useContext(MemberContext)
-
-    return member && member.uuid !== undefined ? <ManagePayments member={member as Member} /> : 'Loading'
 }
 
 export default MemberPayments

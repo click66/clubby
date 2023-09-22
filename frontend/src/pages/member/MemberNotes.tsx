@@ -1,6 +1,6 @@
-import { useContext } from "react"
-import MemberHeader from "../../components/MemberHeader"
-import { MemberContext } from "../../contexts/MemberContext"
+import { useContext } from 'react'
+import MemberHeader from '../../components/MemberHeader'
+import { MemberContext } from '../../contexts/MemberContext'
 
 function MemberNotes() {
     const [member] = useContext(MemberContext)

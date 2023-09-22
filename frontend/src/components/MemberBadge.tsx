@@ -1,5 +1,5 @@
-import { Badge } from "react-bootstrap"
-import { Member } from "../models/Member"
+import { Badge } from 'react-bootstrap'
+import { Member } from '../models/Member'
 
 function MemberBadge({ member }: { member: Member }) {
     if (member.expired(new Date())) {

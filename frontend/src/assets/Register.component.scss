@@ -99,23 +99,24 @@
       font-weight: 400;
       cursor: pointer;
 
-      > .memberRowHeader {
+      .memberRowHeader {
         display: flex;
+        width: 100%;
 
         > .memberName {
           flex: 1;
         }
-
-        > .memberLicence {
-          margin-right: 20px;
-        }
+      }
+      
+      > .memberLicence {
+        margin-right: 20px;
       }
     }
 
     td.registerCell {
       cursor: pointer;
 
-      &:hover {
+      &:hover, &.selected {
         background-color: #adb5bd;
       }
 

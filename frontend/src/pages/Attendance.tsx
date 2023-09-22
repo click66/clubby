@@ -1,9 +1,9 @@
-import Register from "../components/Register"
-import { useNavigate, useParams } from "react-router"
-import useCourses from "../hooks/courses"
-import { useEffect, useState } from "react"
-import { Course } from "../models/Course"
-import { fetchCourseByUuid } from "../services/courses"
+import Register from '../components/Register'
+import { useNavigate, useParams } from 'react-router'
+import useCourses from '../hooks/courses'
+import { useEffect, useState } from 'react'
+import { Course } from '../models/Course'
+import { fetchCourseByUuid } from '../services/courses'
 
 function Attendance() {
     const navigate = useNavigate()

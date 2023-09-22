@@ -1,12 +1,12 @@
-import { Link } from "react-router-dom"
+import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Modal from 'react-bootstrap/Modal'
-import { Course, CourseCollection } from "../models/Course"
-import { XCircleFill } from "react-bootstrap-icons"
-import { Form, Formik, Field } from "formik"
-import confirmModal from "../components/ConfirmModal"
-import { DtoNewCourse, addCourse, deleteCourse, fetchCourses } from "../services/courses"
-import { notifyError, notifySuccess } from "../utils/notifications"
+import { CourseCollection, Course } from '../models/Course'
+import { XCircleFill } from 'react-bootstrap-icons'
+import { Form, Formik, Field } from 'formik'
+import confirmModal from '../components/ConfirmModal'
+import { DtoNewCourse, addCourse, deleteCourse, fetchCourses } from '../services/courses'
+import { notifyError, notifySuccess } from '../utils/notifications'
 
 
 function Courses() {
@@ -52,12 +52,12 @@ function Courses() {
     }
 
     const formatDate = (date: Date): string => {
-        const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: '2-digit' };
-        return new Intl.DateTimeFormat('en-US', options).format(date);
+        const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: '2-digit' }
+        return new Intl.DateTimeFormat('en-US', options).format(date)
     }
 
     useEffect(() => {
-        fetchAndSetCourses();
+        fetchAndSetCourses()
     }, [])
 
     const SingleCourse = (course: Course) => (

@@ -26,8 +26,12 @@ type Payment = {
     courseUuid: string
 }
 
+interface Course {
+    uuid: string,
+}
+
 interface MemberProps {
-    uuid?: string,
+    uuid: string,
     name: string,
     profile?: Profile | null,
     course_uuids?: string[]
@@ -37,7 +41,7 @@ interface MemberProps {
 }
 
 export class Member {
-    uuid?: string
+    uuid: string
     name: string
     profile: Profile | null
     course_uuids: string[] = []
@@ -46,7 +50,7 @@ export class Member {
     unusedPayments: Payment[] = []
 
     constructor({
-        uuid = undefined,
+        uuid,
         name = '',
         profile = null,
         course_uuids = [],
@@ -130,12 +134,12 @@ export class Member {
         }
 
         if (payment) {
-            const index = this.unusedPayments.findIndex(p => p.courseUuid === payment.courseUuid);
+            const index = this.unusedPayments.findIndex(p => p.courseUuid === payment.courseUuid)
 
             if (index === -1) {
                 throw new DomainError('Member has no usable advance payment')
             }
-            this.unusedPayments.splice(index, 1);
+            this.unusedPayments.splice(index, 1)
         }
 
         this.membership.remainingTrialSessions--
@@ -145,11 +149,11 @@ export class Member {
         this.membership.remainingTrialSessions++
     }
 
-    public hasUsablePaymentForCourse({ uuid }: { uuid: string }) {
+    public hasUsablePaymentForCourse({ uuid }: Course) {
         return this.unusedPayments.some((p) => p.courseUuid === uuid)
     }
-}
 
-export class PersistedMember extends Member {
-    declare uuid: string
+    public isInCourse({ uuid }: Course) {
+        return this.courseUuids.filter((cuuid: string) => cuuid === uuid).length > 0
+    }
 }

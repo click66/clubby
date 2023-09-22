@@ -1,17 +1,17 @@
-import { Field, Form, Formik } from "formik"
-import MemberHeader from "../../components/MemberHeader"
-import MemberTabs from "../../components/MemberTabs"
-import { Button } from "react-bootstrap"
-import confirmModal from "../../components/ConfirmModal"
-import { Link, useNavigate } from "react-router-dom"
-import { addMemberToCourse, deleteMember, removeMemberFromCourse, updateMemberProfile } from "../../services/members"
-import useCourses from "../../hooks/courses"
-import { notifyError, notifySuccess } from "../../utils/notifications"
-import { Member, PersistedMember } from "../../models/Member"
-import { useContext, useState } from "react"
-import { MemberContext } from "../../contexts/MemberContext"
-import { Course, CourseCollection } from "../../models/Course"
-import { Check, Plus, X } from "react-bootstrap-icons"
+import { Field, Form, Formik } from 'formik'
+import MemberHeader from '../../components/MemberHeader'
+import MemberTabs from '../../components/MemberTabs'
+import { Button } from 'react-bootstrap'
+import confirmModal from '../../components/ConfirmModal'
+import { Link, useNavigate } from 'react-router-dom'
+import { addMemberToCourse, deleteMember, removeMemberFromCourse, updateMemberProfile } from '../../services/members'
+import useCourses from '../../hooks/courses'
+import { notifyError, notifySuccess } from '../../utils/notifications'
+import { Member } from '../../models/Member'
+import { useContext, useState } from 'react'
+import { MemberContext } from '../../contexts/MemberContext'
+import { Course, CourseCollection } from '../../models/Course'
+import { Check, Plus, X } from 'react-bootstrap-icons'
 
 function SignUpForm({ close, courses, onSubmit }: { close: () => void, courses: Course[], onSubmit: (courseUuid: string) => void }) {
     return (
@@ -85,7 +85,7 @@ function MemberProfile() {
 
     const doSignUp = (courseUuid: string) => {
         if (member) {
-            setMember(new PersistedMember({ ...member, course_uuids: member.courseUuids.concat([courseUuid]) }))
+            setMember(new Member({ ...member, course_uuids: member.courseUuids.concat([courseUuid]) }))
             addMemberToCourse(member, { uuid: courseUuid }).then(() => {
                 notifySuccess('Member has been signed up')
             }).catch(notifyError)
@@ -94,7 +94,7 @@ function MemberProfile() {
 
     const undoSignUp = (courseUuid: string) => {
         if (member) {
-            setMember(new PersistedMember({ ...member, course_uuids: member.courseUuids.filter((uuid) => uuid !== courseUuid)}))
+            setMember(new Member({ ...member, course_uuids: member.courseUuids.filter((uuid) => uuid !== courseUuid)}))
             removeMemberFromCourse(member, { uuid: courseUuid }).then(() => {
                 notifySuccess('Member has been removed from course')
             }).catch(notifyError)
@@ -125,7 +125,7 @@ function MemberProfile() {
                                                 break
                                             }
                                             updateMemberProfile(member.uuid!, values).then(() => {
-                                                setMember(new PersistedMember({ ...member, profile: { ...values, dateOfBirth: new Date(values.dob) } }))
+                                                setMember(new Member({ ...member, profile: { ...values, dateOfBirth: new Date(values.dob) } }))
                                                 notifySuccess("Member profile saved")
                                             })
                                             break

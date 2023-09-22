@@ -193,4 +193,38 @@ describe('Member model', () => {
             sut.attend({ date: new Date(), payment: { courseUuid: '2cb87084-adf0-4cd9-a67d-34e9f45e46a2' } })
         }).toThrowError(DomainError)
     })
+
+    test('Can tell if member is in course', () => {
+        // Given a course that a member is in
+        const course = { uuid: '20cfcac8-d2c8-437e-a770-d4902207d780' }
+        const member = new Member({
+            name: 'Joe Bloggs',
+            origin: { joinDate: new Date(), addedBy: 'John' },
+            course_uuids: ['20cfcac8-d2c8-437e-a770-d4902207d780'],
+            membership: { remainingTrialSessions: 0, licence: null }
+        })
+
+        // When I check if a member is in that course
+        const result = member.isInCourse(course)
+
+        // Then the result is true
+        expect(result).toBeTruthy()
+    })
+
+    test('Can tell if member is not in course', () => {
+        // Given a course that a member is not in
+        const course = { uuid: '30cfcac8-e2c8-537e-b770-e4902207d780' }
+        const member = new Member({
+            name: 'Joe Bloggs',
+            origin: { joinDate: new Date(), addedBy: 'John' },
+            course_uuids: ['20cfcac8-d2c8-437e-a770-d4902207d780'],
+            membership: { remainingTrialSessions: 0, licence: null }
+        })
+
+        // When I check if a member is in that course
+        const result = member.isInCourse(course)
+
+        // Then the result is false
+        expect(result).toBeFalsy()
+    })
 })

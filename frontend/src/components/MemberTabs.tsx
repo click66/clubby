@@ -1,7 +1,7 @@
-import { useLocation, useNavigate } from "react-router"
-import useCourses from "../hooks/courses";
-import { useContext } from "react";
-import { MemberContext } from "../contexts/MemberContext";
+import { useLocation, useNavigate } from 'react-router'
+import useCourses from '../hooks/courses'
+import { useContext } from 'react'
+import { MemberContext } from '../contexts/MemberContext'
 
 function MemberTabs({ selected }: { selected: string }) {
     const navigate = useNavigate()
@@ -10,13 +10,13 @@ function MemberTabs({ selected }: { selected: string }) {
     const [member] = useContext(MemberContext)
 
     const replacePath = (newWord: string) => {
-        const currentPath = location.pathname;
-        const lastIndex = currentPath.lastIndexOf('/');
+        const currentPath = location.pathname
+        const lastIndex = currentPath.lastIndexOf('/')
         if (lastIndex !== -1) {
-            const newPath = currentPath.substring(0, lastIndex + 1) + newWord;
+            const newPath = currentPath.substring(0, lastIndex + 1) + newWord
             navigate(newPath, { state: { courses, member } })
         }
-    };
+    }
 
     return (
         <ul className="nav nav-tabs" id="tabsMember" role="tablist">

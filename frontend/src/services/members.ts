@@ -1,5 +1,5 @@
 import { http, withInterceptors } from '../utils/http'
-import { Member, PersistedMember } from '../models/Member'
+import { Member } from '../models/Member'
 import Cookies from 'universal-cookie'
 
 const API_URL = import.meta.env.VITE_LEGACY_API_URL
@@ -48,8 +48,8 @@ export type DtoMemberLicence = {
     expiryDate: Date
 }
 
-const member = (dto: DtoMember): PersistedMember => {
-    return new PersistedMember({
+const member = (dto: DtoMember): Member => {
+    return new Member({
         uuid: dto.uuid,
         name: dto.name,
         course_uuids: dto.signed_up_for,
@@ -74,7 +74,7 @@ const member = (dto: DtoMember): PersistedMember => {
     })
 }
 
-export function addMember(m: DtoNewMember, c?: DtoCourse): Promise<PersistedMember> {
+export function addMember(m: DtoNewMember, c?: DtoCourse): Promise<Member> {
     return api.post('/members/add', {
         ...{
             studentName: m.name,
@@ -95,16 +95,16 @@ export function updateMemberProfile(uuid: string, profile: DtoMemberProfile): Pr
     return api.post(`/members/${uuid}/profile`, profile)
 }
 
-export function fetchMemberByUuid(uuid: string): Promise<PersistedMember> {
+export function fetchMemberByUuid(uuid: string): Promise<Member> {
     return api.get(`/members/${uuid}`).then(({ data }) => member(data))
 }
 
-export function fetchMembers(): Promise<PersistedMember[]> {
+export function fetchMembers(): Promise<Member[]> {
     return api.get('/members')
         .then(({ data }) => data.map(member))
 }
 
-export function fetchMembersByCourses(courses: DtoCourse[]): Promise<PersistedMember[]> {
+export function fetchMembersByCourses(courses: DtoCourse[]): Promise<Member[]> {
     return api.post('/members/query', {
         'courses': courses.map((c) => c.uuid),
     })
@@ -116,10 +116,10 @@ export function deleteMember(member: Member): Promise<void> {
     return api.post('/members/delete/' + member.uuid)
 }
 
-export function addMemberToCourse(member: PersistedMember, course: DtoCourse): Promise<void> {
+export function addMemberToCourse(member: Member, course: DtoCourse): Promise<void> {
     return api.post(`/members/${member.uuid}/courses/add`, course)
 }
 
-export function removeMemberFromCourse(member: PersistedMember, course: DtoCourse): Promise<void> {
+export function removeMemberFromCourse(member: Member, course: DtoCourse): Promise<void> {
     return api.post(`/members/${member.uuid}/courses/remove`, course)
 }

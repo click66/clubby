@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { fetchCourses } from '../services/courses'
-import { CourseCollection}  from '../models/Course'
+import { CourseCollection } from '../models/Course'
 import { useLocation } from 'react-router'
 
-function useCourses() {
+function useCourses(): CourseCollection {
     const location = useLocation()
     const [courses, setCourses] = useState<CourseCollection>(new Map())
 

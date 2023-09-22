@@ -1,6 +1,6 @@
-import { useContext } from "react";
-import MemberBadge from "./MemberBadge";
-import { MemberContext } from "../contexts/MemberContext";
+import { useContext } from 'react'
+import MemberBadge from './MemberBadge'
+import { MemberContext } from '../contexts/MemberContext'
 
 function MemberHeader() {
     const [member] = useContext(MemberContext)

@@ -1,8 +1,12 @@
 import '../assets/Register.component.scss'
-import { Course } from '../models/Course'
 import { Member } from '../models/Member'
 import { Button, Modal } from 'react-bootstrap'
 import { Field, Form, Formik } from 'formik'
+
+interface Course {
+    uuid: string
+    label: string
+}
 
 type Session = {
     courses: Course[],
@@ -29,7 +33,7 @@ function LogAttendanceModal({ member, session, allowClearAttendance, show, close
                 initialValues={{
                     action: '',
                     resolution: 'attending',
-                    paymentOption: session.courses.map((c) => member.hasUsablePaymentForCourse(c as { uuid: string })).includes(true) ? 'advance' : 'now',
+                    paymentOption: session.courses.map((c) => member.hasUsablePaymentForCourse(c)).includes(true) ? 'advance' : 'now',
                 }}
                 onSubmit={(values, { setSubmitting }) => {
                     if (member && session) {

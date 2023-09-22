@@ -1,6 +1,6 @@
-import { useState } from "react"
-import { Button, Modal } from "react-bootstrap"
-import { createRoot } from "react-dom/client"
+import { useState } from 'react'
+import { Button, Modal } from 'react-bootstrap'
+import { createRoot } from 'react-dom/client'
 
 interface ConfirmModalProps {
     title: string

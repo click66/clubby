@@ -67,7 +67,7 @@ def get_member(request, pk):
         'signed_up_for': list(map(lambda c: str(c.uuid), s.courses)),
         'member_since': s.join_date,
         'added_by': _username(s.added_by),
-        'unused_payments': list(map(lambda p: {'course_uuid': p.course.uuid}, s.get_unused_payments()))
+        'unused_payments': list(map(lambda p: {'course_uuid': p.course.uuid if p.course else None}, s.get_unused_payments()))
     }
     if s.has_licence():
         r.update({'licence': {
@@ -102,7 +102,7 @@ def get_members_by_courses(request):
         'prepayments': {},
         'member_since': s.join_date,
         'added_by': _username(s.added_by),
-        'unused_payments': list(map(lambda p: {'course_uuid': p.course.uuid}, s.get_unused_payments()))
+        'unused_payments': list(map(lambda p: {'course_uuid': p.course.uuid if p.course else None}, s.get_unused_payments()))
     } | (
         {'licence': {
             'no': s.licence_no,
@@ -148,7 +148,7 @@ def post_add_member(request):
         'signed_up_for': list(map(lambda c: str(c.uuid), s.courses)),
         'member_since': s.join_date,
         'added_by': _username(s.added_by),
-        'unused_payments': list(map(lambda p: {'course_uuid': p.course.uuid}, s.get_unused_payments()))
+        'unused_payments': list(map(lambda p: {'course_uuid': p.course.uuid if p.course else None}, s.get_unused_payments()))
     }
 
     return JsonResponse({'success': r})

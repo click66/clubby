@@ -1,12 +1,12 @@
 export type CourseCollection = Map<string, Course>
 
 export class Course {
-    uuid?: string
+    uuid: string
     label: string
     _days!: number[]
     nextSession?: Date
 
-    constructor(props: { uuid?: string, label: string, days: number[], next_session_date?: string }) {
+    constructor(props: { uuid: string, label: string, days: number[], next_session_date?: string }) {
         this.uuid = props.uuid
         this.label = props.label
         this.days = props.days
@@ -26,5 +26,9 @@ export class Course {
         }
 
         this._days = indexes
+    }
+
+    happensOnDay(dayNo: number) {
+        return this.days.includes(dayNo)
     }
 }

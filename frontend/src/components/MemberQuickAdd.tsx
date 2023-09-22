@@ -1,8 +1,12 @@
-import { Field, Form, Formik } from "formik"
-import { Button, OverlayTrigger, Popover } from "react-bootstrap"
-import { Course } from "../models/Course"
-import { addMember } from "../services/members"
-import { notifyError, notifySuccess } from "../utils/notifications"
+import { Field, Form, Formik } from 'formik'
+import { Button, OverlayTrigger, Popover } from 'react-bootstrap'
+import { addMember } from '../services/members'
+import { notifyError, notifySuccess } from '../utils/notifications'
+
+interface Course {
+    uuid: string
+    label: string
+}
 
 interface MemberQuickAddProps {
     courses: Course[]
@@ -64,7 +68,7 @@ function MemberQuickAddAndAssign({ courses, onChange }: MemberQuickAddProps) {
 
 function MemberQuickAddButton(props: MemberQuickAddProps) {
     return (
-        <OverlayTrigger trigger="click" placement="left" overlay={MemberQuickAddAndAssign(props)} rootClose>
+        <OverlayTrigger trigger="click" placement="bottom" overlay={MemberQuickAddAndAssign(props)} rootClose>
             <Button variant="primary"><span className="btn-text">New Member</span> +</Button>
         </OverlayTrigger>
     )
