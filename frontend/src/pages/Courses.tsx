@@ -68,7 +68,7 @@ function Courses() {
                         <div>
                             <span className="ps-3 title">{course.label}</span>
                             <span className="ps-3 description">{render_days(course.days).join(', ')}</span>
-                            <span className="ps-3 description">{course.next_session ? `(Next session ${formatDate(course.next_session)})` : ''}</span>
+                            <span className="ps-3 description">{course.nextSession ? `(Next session ${formatDate(course.nextSession)})` : ''}</span>
                         </div>
                     </Link>
                     <>

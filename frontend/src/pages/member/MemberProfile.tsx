@@ -54,7 +54,7 @@ function SignedUpFor({ courses, doSignUp, member, undoSignUp }: { courses: Cours
             {
                 member.courseUuids.length == 0 && !signUpFormOpen ? <p>Nothing (yet!)</p> : <ul>
                     {member.courseUuids.map((uuid) => courses.get(uuid)).map((c: Course | undefined) => c ? (
-                        <li className="signedUpCourse" key={c.uuid}>
+                        <li className="signedUpCourse pb-1" key={c.uuid}>
                             <Link to={`/attendance/${c.uuid}`}>{c.label}</Link>
                             <Button variant="danger" className="remove text-light" onClick={() => undoSignUp(c.uuid!)}><X /></Button>
                         </li>

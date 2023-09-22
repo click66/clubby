@@ -66,7 +66,12 @@ async def post_attendance(post: AttendancePost) -> AttendanceRead:
             create.resolution = Resolution(complementary=True)
 
     session.add(create)
-    session.commit()
+
+    try:
+        session.commit()
+    except:
+        session.rollback()
+        raise
 
     return create
 
@@ -77,5 +82,10 @@ async def delete_by_query(query: AttendanceQuery) -> Response:
                                      Attendance.course_uuid == query.course_uuid,
                                      Attendance.date >= query.date_earliest,
                                      Attendance.date <= query.date_latest).delete()
-    session.commit()
+    try:
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    
     return Response(status_code=204)

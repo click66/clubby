@@ -1,7 +1,11 @@
-import http from "../utils/http"
+import Cookies from 'universal-cookie'
+import { http, withInterceptors } from '../utils/http'
 
+const cookies = new Cookies()
 const API_URL = import.meta.env.VITE_API_URL
 const LEGACY_API_URL = import.meta.env.VITE_LEGACY_API_URL
+const api = withInterceptors(http.create({ baseURL: API_URL }), cookies)
+const legacyApi = withInterceptors(http.create({ baseURL: LEGACY_API_URL }), cookies)
 
 type DtoAttendanceQuery = {
     student_uuids: string[]
@@ -34,11 +38,11 @@ type DtoAttendance = {
 const isoDate = (date: Date) => date.toISOString().split('T')[0]
 
 export function fetchAttendances(query: DtoAttendanceQuery) {
-    return http.post(API_URL + '/attendance/query', {
+    return api.post('/attendance/query', {
         ...query,
         date_earliest: isoDate(query.date_earliest),
         date_latest: isoDate(query.date_latest),
-    }).then((data) => data.map((d: DtoAttendance) => {
+    }).then(({ data }) => data.map((d: DtoAttendance) => {
         return {
             studentUuid: d.student_uuid,
             courseUuid: d.course_uuid,
@@ -49,10 +53,10 @@ export function fetchAttendances(query: DtoAttendanceQuery) {
 }
 
 export function logAttendance(data: DtoNewAttendance) {
-    const attendanceService = http.post(API_URL + '/attendance/create', { ...data, date: isoDate(data.date) })
+    const attendanceService = api.post('/attendance/create', { ...data, date: isoDate(data.date) })
 
     // TODO Should only use a single request and leverage an asynchronous worker
-    const studentService = http.post(`${LEGACY_API_URL}/attendance/log`, {
+    const studentService = legacyApi.post('/attendance/log', {
         student_uuid: data.student_uuid,
         sess_date: isoDate(data.date),
         product: data.course_uuid,
@@ -61,18 +65,18 @@ export function logAttendance(data: DtoNewAttendance) {
     })
 
     return Promise.all([attendanceService, studentService])
-        .then(([d, _]) => { return { ...d, date: new Date(d.date) } })
+        .then(([{ data }, _]) => { return { ...data, date: new Date(data.date) } })
 }
 
 export function deleteAttendance(query: DtoAttendanceQuerySingle) {
-    const attendanceService = http.post(API_URL + '/attendance/delete', {
+    const attendanceService = api.post('/attendance/delete', {
         ...query,
         student_uuids: [query.student_uuid],
         date_earliest: isoDate(query.date),
         date_latest: isoDate(query.date),
     })
 
-    const studentService = http.post(`${LEGACY_API_URL}/attendance/clear`, {
+    const studentService = legacyApi.post('/attendance/clear', {
         student_uuid: query.student_uuid,
         sess_date: isoDate(query.date),
         product: query.course_uuid,

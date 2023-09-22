@@ -48,19 +48,20 @@ function LogAttendanceModal({ member, session, allowClearAttendance, show, close
                 {({ isSubmitting, setFieldValue, handleSubmit, values }) => (
                     <Form onSubmit={(e) => { e.preventDefault() }}>
                         <Modal.Header>
-                            <Modal.Title>Log Attendance: <span className="text-secondary">{session?.courses[0].label}</span></Modal.Title>
+                            {/* TODO This should show the names of all applicable courses */}
+                            <Modal.Title>Log Attendance: <span className="text-secondary">{session.courses[0].label}</span></Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             <div className="mb-3 row">
                                 <label className="col-sm-4 col-form-label">Student name</label>
                                 <div className="col-sm-8">
-                                    <input type="text" readOnly={true} className="form-control-plaintext" value={member?.name} />
+                                    <input type="text" readOnly={true} className="form-control-plaintext" value={member.name} />
                                 </div>
                             </div>
                             <div className="mb-3 row">
                                 <label className="col-sm-4 col-form-label">Session date</label>
                                 <div className="col-sm-8">
-                                    <input type="text" readOnly={true} className="form-control-plaintext" value={session?.date.toISOString().split('T')[0]} />
+                                    <input type="text" readOnly={true} className="form-control-plaintext" value={session.date.toISOString().split('T')[0]} />
                                 </div>
                             </div>
                             <div className="mb-3">

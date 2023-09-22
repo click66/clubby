@@ -1,10 +1,11 @@
-import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table"
+import { SortingState, createColumnHelper, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table"
 import { MemberQuickAddButton } from "../components/MemberQuickAdd"
 import { Member } from "../models/Member"
 import { useEffect, useState } from "react"
 import { fetchMembers } from "../services/members"
 import { useNavigate } from "react-router"
 import Spinner from "../components/Spinner"
+import MemberBadge from '../components/MemberBadge'
 
 const columnHelper = createColumnHelper<Member>()
 
@@ -14,17 +15,40 @@ const columns = [
         header: 'Name',
         cell: info => info.getValue(),
     }),
+    columnHelper.accessor(r => r.email, {
+        'id': 'email',
+        header: 'Email',
+        cell: info => info.getValue(),
+    }),
+    columnHelper.accessor('membership', {
+        header: 'Type',
+        cell: ({ row }) =>
+            <div className="memberRowHeader">
+                <span className="memberLicence"><MemberBadge member={row.original} /></span>
+            </div>
+        ,
+    })
 ]
 
 function Members() {
     const navigate = useNavigate()
     const [data, setData] = useState<Member[]>([])
     const [loaded, setLoaded] = useState(false)
+    const [sorting, setSorting] = useState<SortingState>([{ id: 'name', desc: false }])
+    const [globalFilter, setGlobalFilter] = useState('')
 
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        state: {
+            globalFilter,
+            sorting,
+        },
+        onGlobalFilterChange: setGlobalFilter,
+        onSortingChange: setSorting,
     })
 
     useEffect(() => {
@@ -40,7 +64,10 @@ function Members() {
             <div className="rounded-3 bg-white p-3 text-dark" id="copy">
                 {!loaded ? <Spinner /> : <>
                     <div className="registerActions">
-                        <MemberQuickAddButton courses={[]} onChange={() => fetchMembers().then(setData)}/>
+                        <MemberQuickAddButton courses={[]} onChange={() => fetchMembers().then(setData)} />
+                        <div className='ps-2'>
+                            <input type="text" className="form-control" placeholder="Search" onChange={(e) => setGlobalFilter(String(e.target.value))} />
+                        </div>
                     </div>
                     <div id="tblStudents">
                         <table className="table table-hover">
@@ -48,8 +75,12 @@ function Members() {
                                 {table.getHeaderGroups().map((headerGroup) => (
                                     <tr key={headerGroup.id}>
                                         {headerGroup.headers.map((header) => (
-                                            <th key={header.id}>
-                                                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                            <th className={`sortableHeader ${header.column.getIsSorted() === false ? '' : `sorting sort-${header.column.getIsSorted() as string}`}`} key={header.id}>
+                                                {header.isPlaceholder ? null : (
+                                                    <div onClick={header.column.getToggleSortingHandler()}>
+                                                        {flexRender(header.column.columnDef.header, header.getContext())}
+                                                    </div>
+                                                )}
                                             </th>
                                         ))}
                                     </tr>

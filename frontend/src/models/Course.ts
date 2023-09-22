@@ -4,7 +4,7 @@ export class Course {
     uuid?: string
     label: string
     _days!: number[]
-    next_session?: Date
+    nextSession?: Date
 
     constructor(props: { uuid?: string, label: string, days: number[], next_session_date?: string }) {
         this.uuid = props.uuid
@@ -12,7 +12,7 @@ export class Course {
         this.days = props.days
 
         if (props.next_session_date) {
-            this.next_session = new Date(props.next_session_date)
+            this.nextSession = new Date(props.next_session_date)
         }
     }
 

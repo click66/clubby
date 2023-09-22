@@ -38,7 +38,7 @@ def get_members(request):
             'signed_up_for': list(map(lambda c: str(c.uuid), s.courses)),
             'member_since': s.join_date,
             'added_by': _username(s.added_by),
-            'unused_payments': list(map(lambda p: {'course_uuid': p.course.uuid}, s.get_unused_payments()))
+            'unused_payments': list(map(lambda p: {'course_uuid': None if p.course is None else p.course.uuid}, s.get_unused_payments()))
         }
         if s.has_licence():
             student_data.update({'licence': {

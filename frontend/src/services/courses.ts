@@ -1,7 +1,9 @@
-import { Course, CourseCollection } from "../models/Course"
-import http from "../utils/http"
+import Cookies from 'universal-cookie'
+import { Course, CourseCollection } from '../models/Course'
+import { http, withInterceptors } from '../utils/http'
 
 const API_URL = import.meta.env.VITE_LEGACY_API_URL
+const api = withInterceptors(http.create({ baseURL: API_URL }), new Cookies())
 
 export type DtoCourse = {
     uuid: string
@@ -16,25 +18,25 @@ export type DtoNewCourse = {
 }
 
 export function fetchCourses(): Promise<CourseCollection> {
-    return http.get(API_URL + '/courses')
-        .then((d: DtoCourse[]) => new Map(d.map((d: DtoCourse) => [d.uuid, new Course(d)])))
+    return api.get('/courses')
+        .then(({ data }) => new Map(data.map((d: DtoCourse) => [d.uuid, new Course(d)])))
 }
 
 export function fetchCourseByUuid(uuid: string): Promise<Course> {
-    return http.get(API_URL + '/courses/' + uuid)
-        .then((d: DtoCourse) => new Course(d))
+    return api.get(`/courses/${uuid}`)
+        .then(({ data }) => new Course(data))
 }
 
 export function addCourse(c: DtoNewCourse): Promise<Course> {
-    return http.post(API_URL + '/courses/add', {
+    return api.post('/courses/add', {
         courseName: c.label,
         courseDay: c.days,
-    }).then((d: DtoCourse) => new Course(d))
+    }).then(({ data }) => new Course(data))
 }
 
 export function deleteCourse(c: Course): Promise<void> {
     if (c.uuid) {
-        return http.post(API_URL + '/courses/delete/' + c.uuid)
+        return api.post(`/courses/delete/${c.uuid}`)
     }
 
     return Promise.resolve()

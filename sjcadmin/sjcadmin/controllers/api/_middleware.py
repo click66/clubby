@@ -1,11 +1,11 @@
 import base64
-import json
 import os
 
 import django.contrib.auth as auth
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from functools import wraps
+from time import time
 
 from ...errors import DomainError
 from ....sjcauth.models import User
@@ -20,6 +20,10 @@ def authorise_request(request):
     if auth_header is not None:
         token = auth_header.replace('Bearer ', '')
         data = jwt.decode(token, private_key)
+
+        if 'expires' in data and data['expires'] <= time():
+            return False
+        
         if data.get('user_uuid', None) is not None:
             u = User.fetch_by_uuid(data.get('user_uuid'))
             if not u: return False

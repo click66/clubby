@@ -23,7 +23,7 @@ type Member = {
 
 function PaymentTable({ payments, showNextSession = false }: { payments: Payment[], showNextSession?: boolean }) {
     const courses = useCourses()
-
+    console.log(courses)
     return (
         <>
             <table className="table">
@@ -46,7 +46,7 @@ function PaymentTable({ payments, showNextSession = false }: { payments: Payment
                                 second: '2-digit',
                             })}</td>
                             <td>{c ? c.label : 'Any'}</td>
-                            {showNextSession ? <td></td> : ''}
+                            {showNextSession && c ? <td>{c.nextSession?.toLocaleDateString()}</td> : ''}
                         </tr>
                     ))}
                 </tbody>
@@ -76,7 +76,9 @@ function Payments({ member, newPayments }: { member: Member, newPayments: Paymen
         <>
             <h2>Unused Payments</h2>
             {newAndUnusedPayments.length === 0 ? <p className="text-center">No unused payments</p> : <PaymentTable payments={newAndUnusedPayments} showNextSession={true} />}
+            <h2>Historical Payments</h2>
             {historicalPayments.length === 0 ? <p className="text-center">No historical payments</p> : <PaymentTable payments={historicalPayments} />}
+            <p className="fst-italic">Showing maximum last 30 payments.</p>
         </>
     )
 }
@@ -85,6 +87,8 @@ function ManagePayments({ member }: { member: Member }) {
     const courses = useCourses()
     const [formOpen, setFormOpen] = useState<boolean>(false)
     const [newPayments, setNewPayments] = useState<Payment[]>([])
+
+    const memberCourses = member.courseUuids.map((uuid: string): Course | undefined => courses.get(uuid))
 
     return member ? (
         <>
@@ -95,7 +99,7 @@ function ManagePayments({ member }: { member: Member }) {
                     <div className="row justify-content-center">
                         <div className="col-sm-12 col-md-10 col-lg-8">
                             <div className="mb-3 text-end">
-                                <Button variant="primary" onClick={() => { setFormOpen(true) }}>Add Payment</Button>
+                                <Button variant="primary" onClick={() => { setFormOpen(true) }} disabled={member.courseUuids.length === 0}>Add Payment</Button>
                             </div>
                             <Payments member={member} newPayments={newPayments} />
                         </div>
@@ -105,7 +109,7 @@ function ManagePayments({ member }: { member: Member }) {
             <Modal show={formOpen} onHide={() => setFormOpen(false)}>
                 <Formik
                     initialValues={{
-                        courseUuid: '',
+                        courseUuid: memberCourses.length === 1 ? memberCourses[0]!.uuid : '',
                     }}
                     onSubmit={(values, { setSubmitting }) => {
                         if (!values.courseUuid) {
@@ -137,7 +141,7 @@ function ManagePayments({ member }: { member: Member }) {
                                     <div className="col-sm-12">
                                         <Field as="select" className="form-select" name="courseUuid">
                                             <option>Select course</option>
-                                            {member.courseUuids.map((uuid: string): Course | undefined => courses.get(uuid)).map((c) => (
+                                            {memberCourses.map((c) => (
                                                 c ? <option key={c.uuid} value={c.uuid}>{c.label}</option> : ''
                                             ))}
                                         </Field>

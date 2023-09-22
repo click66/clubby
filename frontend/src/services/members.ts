@@ -1,7 +1,9 @@
-import http from "../utils/http"
-import { Member, PersistedMember } from "../models/Member"
+import { http, withInterceptors } from '../utils/http'
+import { Member, PersistedMember } from '../models/Member'
+import Cookies from 'universal-cookie'
 
 const API_URL = import.meta.env.VITE_LEGACY_API_URL
+const api = withInterceptors(http.create({ baseURL: API_URL }), new Cookies())
 
 export type DtoMember = {
     uuid: string
@@ -73,51 +75,51 @@ const member = (dto: DtoMember): PersistedMember => {
 }
 
 export function addMember(m: DtoNewMember, c?: DtoCourse): Promise<PersistedMember> {
-    return http.post(API_URL + '/members/add', {
+    return api.post('/members/add', {
         ...{
             studentName: m.name,
         },
         ...(c ? { product: c.uuid } : {}),
     })
-        .then(member)
+        .then(({ data }) => member(data))
 }
 
 export function addMemberLicence(uuid: string, licence: DtoMemberLicence): Promise<void> {
-    return http.post(API_URL + '/members/' + uuid + '/licences/add', {
+    return api.post(`/members/${uuid}/licences/add`, {
         number: licence.licenceNo,
         expire_date: licence.expiryDate.toISOString().split('T')[0],
     })
 }
 
 export function updateMemberProfile(uuid: string, profile: DtoMemberProfile): Promise<void> {
-    return http.post(API_URL + '/members/' + uuid + '/profile', profile)
+    return api.post(`/members/${uuid}/profile`, profile)
 }
 
 export function fetchMemberByUuid(uuid: string): Promise<PersistedMember> {
-    return http.get(API_URL + '/members/' + uuid).then(member)
+    return api.get(`/members/${uuid}`).then(({ data }) => member(data))
 }
 
 export function fetchMembers(): Promise<PersistedMember[]> {
-    return http.get(API_URL + '/members')
-        .then((ds: DtoMember[]) => ds.map(member))
+    return api.get('/members')
+        .then(({ data }) => data.map(member))
 }
 
 export function fetchMembersByCourses(courses: DtoCourse[]): Promise<PersistedMember[]> {
-    return http.post(API_URL + '/members/query', {
+    return api.post('/members/query', {
         'courses': courses.map((c) => c.uuid),
     })
-        .then((ds) => ds.map((d: any) => { return { ...d, course_uuids: d['signed_up_for'] } }))
-        .then((ds: DtoMember[]) => ds.map(member))
+        .then(({ data }) => data.map((d: any) => { return { ...d, course_uuids: d['signed_up_for'] } }))
+        .then((data) => data.map(member))
 }
 
 export function deleteMember(member: Member): Promise<void> {
-    return http.post(API_URL + '/members/delete/' + member.uuid)
+    return api.post('/members/delete/' + member.uuid)
 }
 
 export function addMemberToCourse(member: PersistedMember, course: DtoCourse): Promise<void> {
-    return http.post(`${API_URL}/members/${member.uuid}/courses/add`, course)
+    return api.post(`/members/${member.uuid}/courses/add`, course)
 }
 
 export function removeMemberFromCourse(member: PersistedMember, course: DtoCourse): Promise<void> {
-    return http.post(`${API_URL}/members/${member.uuid}/courses/remove`, course)
+    return api.post(`/members/${member.uuid}/courses/remove`, course)
 }

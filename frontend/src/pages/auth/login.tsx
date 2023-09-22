@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router'
 import { useState, useEffect } from 'react'
 
 import Cookies from 'universal-cookie'
-import http from '../../utils/http'
+import { http } from '../../utils/http'
 import { notifyError } from '../../utils/notifications'
 
 const API_URL = import.meta.env.VITE_AUTH_API_URL
@@ -24,7 +24,7 @@ function Login() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        http.post(`${API_URL}/auth/login`, { email, password }).then((data) => {
+        http.post(`${API_URL}/auth/login`, { email, password }).then(({ data }) => {
             login(data.token, data.expires)
             navigate('/')
         }).catch(notifyError)

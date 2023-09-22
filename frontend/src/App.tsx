@@ -1,24 +1,23 @@
-import 'react-toastify/dist/ReactToastify.css';
+import 'react-toastify/dist/ReactToastify.css'
 import './App.scss'
 
-import _404 from './pages/404';
+import _404 from './pages/404'
 import Login from './pages/auth/login'
-import { BrowserRouter, Routes, Route, Outlet, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, Navigate, useNavigate } from 'react-router-dom'
 import Portal from './pages/Portal'
 import Courses from './pages/Courses'
 import Members from './pages/Members'
 import Attendance from './pages/Attendance'
 import Reporting from './pages/Reporting'
 import Breadcrumb from './components/Breadcrumb'
-import Cookies from 'universal-cookie';
-import axios from 'axios';
-import { Button } from 'react-bootstrap';
-import { Flip, ToastContainer } from 'react-toastify';
-import MemberProfile from './pages/member/MemberProfile';
-import Payments from './pages/member/MemberPayments';
-import MemberNotes from './pages/member/MemberNotes';
-import MemberLicence from './pages/member/MemberLicence';
-import { MemberProvider } from './contexts/MemberContext';
+import Cookies from 'universal-cookie'
+import { Button } from 'react-bootstrap'
+import { Flip, ToastContainer } from 'react-toastify'
+import MemberProfile from './pages/member/MemberProfile'
+import Payments from './pages/member/MemberPayments'
+import MemberNotes from './pages/member/MemberNotes'
+import MemberLicence from './pages/member/MemberLicence'
+import { MemberProvider } from './contexts/MemberContext'
 
 function App() {
   const PortalLayout = () => (
@@ -44,11 +43,15 @@ function App() {
       return <Navigate to="/auth/login" />
     }
 
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    return <><div className="topBar"><Button variant="light" onClick={() => {
-      cookies.remove('jwt_authorisation')
-      navigate('/auth/login')
-    }}>Sign Out</Button></div><Outlet /></>
+    return <>
+      <div className="topBar">
+        <Button variant="light" onClick={() => {
+          cookies.remove('jwt_authorisation', { path: '/' })
+          navigate('/auth/login')
+        }}>Sign Out</Button>
+      </div>
+      <Outlet />
+    </>
   }
 
   return (

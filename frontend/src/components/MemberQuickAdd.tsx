@@ -65,7 +65,7 @@ function MemberQuickAddAndAssign({ courses, onChange }: MemberQuickAddProps) {
 function MemberQuickAddButton(props: MemberQuickAddProps) {
     return (
         <OverlayTrigger trigger="click" placement="left" overlay={MemberQuickAddAndAssign(props)} rootClose>
-            <Button variant="primary">New Member +</Button>
+            <Button variant="primary"><span className="btn-text">New Member</span> +</Button>
         </OverlayTrigger>
     )
 }

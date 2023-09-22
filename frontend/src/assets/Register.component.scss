@@ -19,10 +19,52 @@
 }
 
 .tblRegister {
+  table,
+  caption,
+  tbody,
+  tfoot,
+  thead,
+  tr,
+  th,
+  td {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    font-size: 100%;
+    vertical-align: baseline;
+    background: transparent;
+  }
+}
+
+.tblRegister {
   text-wrap: nowrap;
 
-  thead th:first-child,
+  thead th {
+    border-bottom: 1px solid #ddd;
+    &:nth-child(1),
+    &:nth-child(2) {
+      overflow: hidden;
+      position: absolute;
+      z-index: 10;
+      width: 100px;
+      min-width: 100px;
+      max-width: 100px;
+      border-left-width: 0px;
+      border-right-width: 2px;
+    }
+
+    &:nth-child(1) {
+      left: 0;
+    }
+
+    &:nth-child(2) {
+      left: 100px;
+    }
+  }
+
   tbody th {
+    overflow: hidden;
     position: absolute;
     left: 0;
     z-index: 10;
@@ -31,31 +73,10 @@
     max-width: 200px;
     border-left-width: 0px;
     border-right-width: 2px;
-  }
+    display: flex;
 
-  thead th.sortableHeader {
-    cursor: pointer;
-    padding: 0;
-
-    &.sorting:before,
-    &.sorting:after {
-      position: absolute;
-      display: block;
-      right: 20px;
-      top: 35%;
-      line-height: 9px;
-    }
-
-    &.sort-asc:before {
-      content: "▲";
-    }
-
-    &.sort-desc:before {
-      content: "▼";
-    }
-
-    > div {
-      padding: 7px;
+    &:nth-of-type(2) {
+      justify-content: flex-end;
     }
   }
 
@@ -63,29 +84,36 @@
   td {
     font-size: 0.85em;
     padding: 7px;
+    border-style: solid;
     border-left-width: 1px;
     border-color: #ddd;
   }
 
   tbody {
+    th,
+    td.registerCell {
+      border-top-width: 1px;
+    }
+
     th {
       font-weight: 400;
-      display: flex;
-      border-top-width: 1px;
       cursor: pointer;
 
-      > .memberName {
-        flex: 1;
-      }
+      > .memberRowHeader {
+        display: flex;
 
-      > .memberLicence {
-        margin-right: 20px;
+        > .memberName {
+          flex: 1;
+        }
+
+        > .memberLicence {
+          margin-right: 20px;
+        }
       }
     }
 
     td.registerCell {
       cursor: pointer;
-      border-top-width: 1px;
 
       &:hover {
         background-color: #adb5bd;

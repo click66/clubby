@@ -1,19 +1,19 @@
-import { RowData, SortingState, createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
+import { RowData, SortingState, createColumnHelper, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table'
 import '../assets/Register.component.scss'
-import { Course } from '../models/Course';
-import { Member } from '../models/Member';
-import { fetchMembersByCourses } from '../services/members';
-import { notifyError, notifySuccess } from '../utils/notifications';
+import { Course } from '../models/Course'
+import { Member } from '../models/Member'
+import { fetchMembersByCourses } from '../services/members'
+import { notifyError, notifySuccess } from '../utils/notifications'
 import { MemberQuickAddButton } from './MemberQuickAdd'
-import { Fragment, useEffect, useState } from 'react';
-import { deleteAttendance, fetchAttendances, logAttendance } from '../services/attendance';
-import { Badge } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import { BoxArrowUpRight, Cash } from 'react-bootstrap-icons';
-import MemberBadge from './MemberBadge';
-import { DomainError } from '../errors';
-import LogAttendanceModal from './LogAttendanceModal';
-import Spinner from './Spinner';
+import { Fragment, useEffect, useState } from 'react'
+import { deleteAttendance, fetchAttendances, logAttendance } from '../services/attendance'
+import { Badge } from 'react-bootstrap'
+import { Link } from 'react-router-dom'
+import { BoxArrowUpRight, Cash } from 'react-bootstrap-icons'
+import MemberBadge from './MemberBadge'
+import { DomainError } from '../errors'
+import LogAttendanceModal from './LogAttendanceModal'
+import Spinner from './Spinner'
 
 interface RegisterProps {
     courses: Course[]
@@ -43,14 +43,14 @@ declare module '@tanstack/table-core' {
 }
 
 function generatePrevious30Dates(courses: Course[], squash: boolean): Session[] {
-    const result: Session[] = [];
-    const currentDate = new Date();
-    let daysCount = 0;
+    const result: Session[] = []
+    const currentDate = new Date()
+    let daysCount = 0
 
     courses = courses.filter((c) => c.uuid != undefined)
 
     while (result.length < 30 && daysCount < 365) {
-        const matchingCourses = courses.filter(obj => obj.days.includes((currentDate.getDay() + 6) % 7));    // For some reason I didn't index Sunday as 0
+        const matchingCourses = courses.filter(obj => obj.days.includes((currentDate.getDay() + 6) % 7))    // For some reason I didn't index Sunday as 0
 
         if (matchingCourses.length > 0) {
             if (squash) {
@@ -59,15 +59,15 @@ function generatePrevious30Dates(courses: Course[], squash: boolean): Session[] 
                 matchingCourses.forEach((course) => result.push({
                     courses: [course],
                     date: new Date(currentDate)
-                }));
+                }))
             }
         }
 
-        currentDate.setDate(currentDate.getDate() - 1);
-        daysCount++;
+        currentDate.setDate(currentDate.getDate() - 1)
+        daysCount++
     }
 
-    return result;
+    return result
 }
 
 const columnHelper = createColumnHelper<Member>()
@@ -75,14 +75,22 @@ const columns = [
     columnHelper.accessor(r => r.name, {
         id: 'name',
         header: 'Member',
-        cell: ({ getValue, row, table }) => <>
-            <span className="memberName">{getValue()}</span>
-            <span className="memberLicence"><MemberBadge member={row.original} /></span>
-            <span className="memberIcons">{table.options.meta?.courses
-                .map((c: Course) => row.original.hasUsablePaymentForCourse(c as { uuid: string }))
-                .includes(true) ? <Cash /> : ''}</span>
-        </>,
+        cell: ({ getValue, row, table }) =>
+            <div className="memberHeader">
+                <span className="memberName">{getValue()}</span>
+                <span className="memberIcons">{table.options.meta?.courses
+                    .map((c: Course) => row.original.hasUsablePaymentForCourse(c as { uuid: string }))
+                    .includes(true) ? <Cash /> : ''}</span>
+            </div>,
     }),
+    columnHelper.accessor('membership', {
+        header: 'Type',
+        cell: ({ row }) =>
+            <div className="memberRowHeader">
+                <span className="memberLicence"><MemberBadge member={row.original} /></span>
+            </div>
+        ,
+    })
 ]
 
 function Register({ courses = [], squashDates }: RegisterProps) {
@@ -97,16 +105,20 @@ function Register({ courses = [], squashDates }: RegisterProps) {
     const [allowClearAttendance, setAllowClearAttendance] = useState<boolean>(false)
 
     const [sorting, setSorting] = useState<SortingState>([{ id: 'name', desc: false }])
+    const [globalFilter, setGlobalFilter] = useState('')
 
     const table = useReactTable({
         data: members,
         columns,
         getCoreRowModel: getCoreRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
         getSortedRowModel: getSortedRowModel(),
         meta: { courses, registerData },
         state: {
+            globalFilter,
             sorting,
         },
+        onGlobalFilterChange: setGlobalFilter,
         onSortingChange: setSorting,
     })
 
@@ -129,9 +141,9 @@ function Register({ courses = [], squashDates }: RegisterProps) {
     const storeAttendance = (data: CourseRegisterData[]) =>
         setRegisterData((map: RegisterMap) => data.reduce((acc: RegisterMap, d: CourseRegisterData) => {
             const { studentUuid, courseUuid, date } = d
-            acc.set(studentUuid, acc.get(studentUuid) || new Map());
-            acc.get(studentUuid)!.set(courseUuid, acc.get(studentUuid)!.get(courseUuid) || new Map());
-            acc.get(studentUuid)!.get(courseUuid)!.set(isoDate(date), d);
+            acc.set(studentUuid, acc.get(studentUuid) || new Map())
+            acc.get(studentUuid)!.set(courseUuid, acc.get(studentUuid)!.get(courseUuid) || new Map())
+            acc.get(studentUuid)!.get(courseUuid)!.set(isoDate(date), d)
             return acc
         }, map))
 
@@ -221,13 +233,16 @@ function Register({ courses = [], squashDates }: RegisterProps) {
             ))}
         </>
     )
-    
+
     return loaded ? (
         <>
             <div className="registerActions">
                 <MemberQuickAddButton courses={courses} onChange={() => {
                     fetchMembersByCourses(courses).then(setMembers)
-                }}/>
+                }} />
+                <div className='ps-2'>
+                    <input type="text" className="form-control" placeholder="Search" onChange={(e) => setGlobalFilter(String(e.target.value))} />
+                </div>
             </div>
             <div className="tblRegister">
                 <div className="tblRegisterInner">
@@ -287,10 +302,14 @@ function Register({ courses = [], squashDates }: RegisterProps) {
                         const newAttendances = [] as CourseRegisterData[]
                         try {
                             // TODO Just handling first course payment rn
-                            member.attend({ ...session, payment: resolution === 'paid' && paymentOption === 'advance' ? { courseUuid: session.courses[0].uuid! } : null })
+                            const courses = session.courses.filter((c) => c.uuid != undefined && member.courseUuids.includes(c.uuid))
+                            courses.forEach((c) => {
+                                const payment = (resolution === 'paid' && paymentOption === 'advance' ? { courseUuid: c.uuid! } : null)
+                                member.attend({ ...session, payment })
+                            })
                             setMembers(members)
 
-                            Promise.all(session.courses.filter((c) => c.uuid != undefined && member.courseUuids.includes(c.uuid)).reduce((acc: Promise<any>[], c: Course) => {
+                            Promise.all(courses.reduce((acc: Promise<any>[], c: Course) => {
                                 let memberUuid = member.uuid!,
                                     courseUuid = c.uuid!
 
