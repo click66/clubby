@@ -4,8 +4,19 @@ import { useState, useEffect } from 'react'
 import Cookies from 'universal-cookie'
 import { http } from '../../utils/http'
 import { notifyError } from '../../utils/notifications'
+import { AxiosResponse } from 'axios'
 
 const API_URL = import.meta.env.VITE_AUTH_API_URL
+
+function successOrError(r: AxiosResponse) {
+    let data = r.data
+    if (data.hasOwnProperty('error')) {
+        return Promise.reject(new Error(data.error))
+    }
+
+    r.data = data.success ?? data
+    return r
+}
 
 function Login() {
     const navigate = useNavigate()
@@ -25,10 +36,13 @@ function Login() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        http.post(`${API_URL}/auth/login`, { email, password }).then(({ data }) => {
-            login(data.token, data.expires, data.refresh_token)
-            navigate('/')
-        }).catch(notifyError)
+        http.post(`${API_URL}/auth/login`, { email, password })
+            .then(successOrError)
+            .then(({ data }) => {
+                console.log(data)
+                login(data.token, data.expires, data.refresh_token)
+                navigate('/')
+            }).catch(notifyError)
     }
 
     useEffect(() => {
