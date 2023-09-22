@@ -25,10 +25,8 @@ function successOrError(r: AxiosResponse) {
 }
 
 function handleFail(e: AxiosError) {
-    const request = e.config
-
     if (e.response && e.response.status === 401) {
-
+        // TODO - Token refresh flow
     }
 }
 
