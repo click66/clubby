@@ -5,7 +5,7 @@ import { Member } from '../models/Member'
 import { fetchMembersByCourses } from '../services/members'
 import { notifyError, notifySuccess } from '../utils/notifications'
 import { MemberQuickAddButton } from './MemberQuickAdd'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, memo, useCallback, useEffect, useRef, useState } from 'react'
 import { deleteAttendance, fetchAttendances, logAttendance } from '../services/attendance'
 import { Badge } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
@@ -48,18 +48,38 @@ type Session = {
 type MemberCourseAttendance = Map<string, Map<string, CourseRegisterData>>
 type RegisterMap = Map<string, MemberCourseAttendance>
 
-interface RegisterCellProps {
-    attendance: MemberCourseAttendance,
-    session: Session,
+interface AddAttendanceArgs {
     member: Member,
-    addAttendance: (member: Member, session: Session, { resolution, paymentOption }: { resolution: string, paymentOption: string }) => boolean,
-    removeAttendance: (member: Member, session: Session) => boolean,
+    session: Session,
+    resolution: string,
+    paymentOption: string,
+}
+
+interface RemoveAttendanceArgs {
+    member: Member,
+    session: Session
+}
+
+interface RegisterCellProps {
+    attendance: CourseRegisterData | null,
+    member: Member,
+    session: Session,
+    addAttendance: (props: AddAttendanceArgs) => boolean,
+    removeAttendance: (props: RemoveAttendanceArgs) => boolean,
+}
+
+interface RegisterRowProps {
+    attendance: MemberCourseAttendance | null,
+    member: Member
+    sessions: Session[],
+    addAttendance: (props: AddAttendanceArgs) => boolean,
+    removeAttendance: (props: RemoveAttendanceArgs) => boolean,
 }
 
 declare module '@tanstack/table-core' {
     interface TableMeta<TData extends RowData> {
         courses: Course[],
-        registerData: RegisterMap,
+        updateData: (member: Member) => void
     }
 }
 
@@ -135,9 +155,37 @@ const columns = [
     })
 ]
 
+const MemberDetails = ({ member }: { member: Member }) => (
+    <div>
+        <ul className="details">
+            {
+                member.activeTrial() ?
+                    <>
+                        <li>
+                            <label>Remaining Trial Sessions:</label>&nbsp;{member.remainingTrialSessions}
+                        </li>
+                        <li>&nbsp;</li>
+                    </> : ''
+            }
+            {
+                member.hasLicence() ?
+                    <>
+                        <li>
+                            <label>Licence No.:</label>&nbsp;{member.licenceNo}
+                        </li>
+                        <li>
+                            <label>Licence Expires:</label>&nbsp;{member.licenceExpiry?.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        </li>
+                    </> : ''
+            }
+            <li><Link to={`/members/${member.uuid}/profile`} state={{ member }}><BoxArrowUpRight />&nbsp;Manage</Link></li>
+        </ul>
+    </div>
+)
+
 const isoDate = (date: Date) => date.toISOString().split('T')[0]
 
-function AttendanceBadge({ attendance }: { attendance: CourseRegisterData | null }) {
+const AttendanceBadge = ({ attendance }: { attendance: CourseRegisterData | null }) => {
     if (!attendance) {
         return (<span>&nbsp;</span>)
     }
@@ -152,21 +200,15 @@ function AttendanceBadge({ attendance }: { attendance: CourseRegisterData | null
     }
 }
 
-function RegisterCell({
+const RegisterCell = memo(({
     attendance,
     session,
     member,
     addAttendance,
     removeAttendance,
-}: RegisterCellProps) {
+}: RegisterCellProps) => {
     const [selected, setSelected] = useState(false)
-
     const courses = session.courses.filter((c) => member.isInCourse(c))
-    const [sessionAttendance, setSessionAttendance] = useState(courses.reduce(
-        (acc, course: SessionCourse) => acc ?? (attendance.get(course.uuid)?.get(isoDate(session.date)) ?? null),
-        null as CourseRegisterData | null,
-    ))
-
     const disabled = courses.length === 0
 
     return (
@@ -176,39 +218,90 @@ function RegisterCell({
                 setSelected(false)
             }, 2000)
             renderLogAttendanceModal(e.target as Node, {
-                allowClearAttendance: sessionAttendance !== null,
+                allowClearAttendance: attendance !== null,
                 member: member,
                 session: session,
-                addAttendance: (member, session, { resolution, paymentOption }) => {
-                    if (addAttendance(member, session, { resolution, paymentOption })) {
-                        setSessionAttendance({
-                            id: 0,
-                            courseUuid: session.courses[0].uuid,
-                            resolution,
-                            studentUuid: member.uuid,
-                            date: session.date,
-                        })
-                    }
-                },
-                removeAttendance: (member, session) => {
-                    if (removeAttendance(member, session)) {
-                        setSessionAttendance(null)
-                    }
-                },
+                addAttendance,
+                removeAttendance,
             })
         }} className={'registerCell ' + (disabled ? 'disabled ' : ' ') + (selected ? 'selected ' : ' ')}>
-            <AttendanceBadge attendance={sessionAttendance} />
+            <AttendanceBadge attendance={attendance} />
         </td>
     )
+})
+
+const RegisterRow = ({ sessions = [], attendance, member, addAttendance, removeAttendance }: RegisterRowProps) => (
+    <>
+        {sessions.map((s, i) => (
+            <RegisterCell
+                key={i}
+                attendance={s.courses.reduce(
+                    (acc, course: SessionCourse) => acc ?? (attendance?.get(course.uuid)?.get(isoDate(s.date)) ?? null),
+                    null as CourseRegisterData | null,
+                )}
+                member={member}
+                session={s}
+                addAttendance={addAttendance}
+                removeAttendance={removeAttendance}
+            />
+        ))}
+    </>
+)
+
+const addAttendance = ({ member, session, resolution, paymentOption }: AddAttendanceArgs) => {
+    const courses = session.courses.filter((c) => member.isInCourse(c))
+
+    courses.forEach((c) => {
+        const payment = (resolution === 'paid' && paymentOption === 'advance' ? { courseUuid: c.uuid! } : null)
+        member.attend({ ...session, payment })
+    })
+
+    Promise.all(courses.reduce((acc: Promise<any>[], c: SessionCourse) => {
+        let memberUuid = member.uuid!,
+            courseUuid = c.uuid
+
+        acc.push(logAttendance({
+            student_uuid: memberUuid,
+            course_uuid: courseUuid,
+            date: session.date,
+            resolution: resolution === 'attending' ? null : resolution,
+            paymentOption: paymentOption,
+        }))
+
+        return acc
+    }, [] as Promise<any>[])).then((_) => {
+        notifySuccess('Attendance recorded')
+    }).catch(notifyError)
+
+    return member
 }
 
-function Register({ courses = [], squashDates }: RegisterProps) {
+const removeAttendance = ({ member, session }: RemoveAttendanceArgs) => {
+    member.unattend(session)
+
+    Promise.all(session.courses.filter((c) => member.isInCourse(c)).reduce((acc: Promise<any>[], c: SessionCourse) => {
+        let memberUuid = member.uuid,
+            courseUuid = c.uuid
+
+        acc.push(deleteAttendance({
+            student_uuid: memberUuid,
+            course_uuid: courseUuid,
+            date: session.date,
+        }))
+        return acc
+    }, [] as Promise<any>[])).then(() => {
+        notifySuccess('Attendance cleared')
+    }).catch(notifyError)
+
+    return member
+}
+
+const Register = ({ courses = [], squashDates }: RegisterProps) => {
+    const registerData = useRef<RegisterMap>(new Map())
+
     const [dates, setDates] = useState<Session[]>([])
     const [members, setMembers] = useState<Member[]>([])
-
     const [loaded, setLoaded] = useState(false)
-    const [registerData, setRegisterData] = useState<RegisterMap>(new Map())
-
     const [sorting, setSorting] = useState<SortingState>([{ id: 'name', desc: false }])
     const [globalFilter, setGlobalFilter] = useState('')
 
@@ -218,7 +311,12 @@ function Register({ courses = [], squashDates }: RegisterProps) {
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getSortedRowModel: getSortedRowModel(),
-        meta: { courses, registerData },
+        meta: {
+            courses,
+            updateData: (member: Member) => {
+                setMembers((old) => old.map((row) => row.uuid == member.uuid ? member : row))
+            }
+        },
         state: {
             globalFilter,
             sorting,
@@ -227,16 +325,52 @@ function Register({ courses = [], squashDates }: RegisterProps) {
         onSortingChange: setSorting,
     })
 
-    const lookupMemberAttendance = (member: Member) => registerData.get(member.uuid) ?? new Map()
+    const lookupMemberAttendance = (member: Member) => registerData.current.get(member.uuid) ?? null
 
-    const storeAttendance = (data: CourseRegisterData[]) =>
-        setRegisterData((map: RegisterMap) => data.reduce((acc: RegisterMap, d: CourseRegisterData) => {
-            const { studentUuid, courseUuid, date } = d
-            acc.set(studentUuid, acc.get(studentUuid) || new Map())
-            acc.get(studentUuid)!.set(courseUuid, acc.get(studentUuid)!.get(courseUuid) || new Map())
-            acc.get(studentUuid)!.get(courseUuid)!.set(isoDate(date), d)
-            return acc
-        }, map))
+    const storeAttendance = (data: CourseRegisterData[]) => data.reduce((acc: RegisterMap, d: CourseRegisterData) => {
+        const { studentUuid, courseUuid, date } = d
+        acc.set(studentUuid, acc.get(studentUuid) || new Map())
+        acc.get(studentUuid)!.set(courseUuid, acc.get(studentUuid)!.get(courseUuid) || new Map())
+        acc.get(studentUuid)!.get(courseUuid)!.set(isoDate(date), d)
+        return acc
+    }, registerData.current)
+
+    const purgeAttendance = (member: Member, session: Session) => session.courses.reduce((acc: RegisterMap, c: SessionCourse) => {
+        acc.get(member.uuid)?.get(c.uuid)?.delete(isoDate(session.date))
+        return acc
+    }, registerData.current)
+
+    const addAttendanceAndPropagate = useCallback((props: AddAttendanceArgs) => {
+        try {
+            storeAttendance([{
+                id: 0,
+                courseUuid: props.session.courses[0].uuid,
+                resolution: props.resolution,
+                studentUuid: props.member.uuid,
+                date: props.session.date,
+            }])
+            table.options.meta?.updateData(addAttendance(props))
+            return true
+        } catch (e) {
+            if (e instanceof DomainError) {
+                notifyError(e.message)
+            }
+            return false
+        }
+    }, [])
+
+    const removeAttendanceAndPropagate = useCallback((props: RemoveAttendanceArgs) => {
+        try {
+            purgeAttendance(props.member, props.session)
+            table.options.meta?.updateData(removeAttendance(props))
+            return true
+        } catch (e) {
+            if (e instanceof DomainError) {
+                notifyError(e.message)
+            }
+            return false
+        }
+    }, [])
 
     useEffect(() => {
         if (courses.length) {
@@ -260,120 +394,10 @@ function Register({ courses = [], squashDates }: RegisterProps) {
         }
     }, [courses])
 
-    const addAttendance = (member: Member, session: Session, { resolution, paymentOption }: { resolution: string, paymentOption: string }) => {
-        try {
-            const courses = session.courses.filter((c) => member.isInCourse(c))
-
-            courses.forEach((c) => {
-                const payment = (resolution === 'paid' && paymentOption === 'advance' ? { courseUuid: c.uuid! } : null)
-                member.attend({ ...session, payment })
-            })
-            setMembers(members)
-
-            Promise.all(courses.reduce((acc: Promise<any>[], c: SessionCourse) => {
-                let memberUuid = member.uuid!,
-                    courseUuid = c.uuid
-
-                acc.push(logAttendance({
-                    student_uuid: memberUuid,
-                    course_uuid: courseUuid,
-                    date: session.date,
-                    resolution: resolution === 'attending' ? null : resolution,
-                    paymentOption: paymentOption,
-                }))
-
-                return acc
-            }, [] as Promise<any>[])).then((_) => {
-                notifySuccess('Attendance recorded')
-            }).catch(notifyError)
-
-            return true
-        } catch (e: any) {
-            if (e instanceof DomainError) {
-                notifyError(e.message)
-            }
-
-            return false
-        }
-    }
-    const removeAttendance = (member: Member, session: Session) => {
-        try {
-            member.unattend(session)
-            setMembers(members)
-
-            Promise.all(session.courses.filter((c) => member.isInCourse(c)).reduce((acc: Promise<any>[], c: SessionCourse) => {
-                let memberUuid = member.uuid,
-                    courseUuid = c.uuid
-
-                acc.push(deleteAttendance({
-                    student_uuid: memberUuid,
-                    course_uuid: courseUuid,
-                    date: session.date,
-                }))
-                return acc
-            }, [] as Promise<any>[])).then(() => {
-                notifySuccess('Attendance cleared')
-            }).catch(notifyError)
-
-            return true
-        } catch (e: any) {
-            if (e instanceof DomainError) {
-                notifyError(e.message)
-            }
-
-            return false
-        }
-    }
-
-    const MemberDetails = ({ member }: { member: Member }) => (
-        <div>
-            <ul className="details">
-                {
-                    member.activeTrial() ?
-                        <>
-                            <li>
-                                <label>Remaining Trial Sessions:</label>&nbsp;{member.remainingTrialSessions}
-                            </li>
-                            <li>&nbsp;</li>
-                        </> : ''
-                }
-                {
-                    member.hasLicence() ?
-                        <>
-                            <li>
-                                <label>Licence No.:</label>&nbsp;{member.licenceNo}
-                            </li>
-                            <li>
-                                <label>Licence Expires:</label>&nbsp;{member.licenceExpiry?.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                            </li>
-                        </> : ''
-                }
-                <li><Link to={`/members/${member.uuid}/profile`} state={{ member }}><BoxArrowUpRight />&nbsp;Manage</Link></li>
-            </ul>
-        </div>
-    )
-
-    const RegisterRow = ({ sessions = [], attendance, member }: { sessions: Session[], attendance: MemberCourseAttendance, member: Member }) => (
-        <>
-            {sessions.map((s, i) => (
-                <RegisterCell
-                    key={i}
-                    attendance={attendance}
-                    member={member}
-                    session={s}
-                    addAttendance={addAttendance}
-                    removeAttendance={removeAttendance}
-                />
-            ))}
-        </>
-    )
-
     return loaded ? (
         <>
             <div className="registerActions">
-                <MemberQuickAddButton courses={courses} onChange={() => {
-                    fetchMembersByCourses(courses).then(setMembers)
-                }} />
+                <MemberQuickAddButton courses={courses} onChange={() => fetchMembersByCourses(courses).then(setMembers)} />
                 <div className='ps-2'>
                     <input type="text" className="form-control" placeholder="Search" onChange={(e) => setGlobalFilter(String(e.target.value))} />
                 </div>
@@ -410,7 +434,12 @@ function Register({ courses = [], squashDates }: RegisterProps) {
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </th>
                                         ))}
-                                        <RegisterRow member={row.original} sessions={dates} attendance={lookupMemberAttendance(row.original)} />
+                                        <RegisterRow
+                                            member={row.original}
+                                            sessions={dates}
+                                            attendance={lookupMemberAttendance(row.original)}
+                                            addAttendance={addAttendanceAndPropagate}
+                                            removeAttendance={removeAttendanceAndPropagate} />
                                     </tr>
                                     {row.getIsExpanded() && (
                                         <tr>

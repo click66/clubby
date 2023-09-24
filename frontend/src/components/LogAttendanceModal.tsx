@@ -19,8 +19,8 @@ interface LogAttendanceModalProps {
     allowClearAttendance: boolean
     member: Member
     session: Session
-    addAttendance: (member: Member, session: Session, { resolution, paymentOption }: { resolution: string, paymentOption: string }) => void
-    removeAttendance: (member: Member, session: Session) => void,
+    addAttendance: ({ member, session, resolution, paymentOption }: { member: Member, session: Session, resolution: string, paymentOption: string }) => void
+    removeAttendance: ({ member, session }: { member: Member, session: Session }) => void,
 }
 
 function LogAttendanceModal({ member, session, allowClearAttendance, removeAttendance, addAttendance }: LogAttendanceModalProps) {
@@ -45,10 +45,10 @@ function LogAttendanceModal({ member, session, allowClearAttendance, removeAtten
                     if (member && session) {
                         switch (values.action) {
                             case 'confirm':
-                                addAttendance(member, session, { resolution: values.resolution, paymentOption: values.paymentOption })
+                                addAttendance({ member, session, resolution: values.resolution, paymentOption: values.paymentOption })
                                 break
                             case 'clear':
-                                removeAttendance(member, session)
+                                removeAttendance({ member, session })
                                 break
                         }
                     }
