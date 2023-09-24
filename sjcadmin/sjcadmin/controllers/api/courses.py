@@ -55,7 +55,7 @@ def get_courses(request):
         'label': c.label,
         'days': c.days,
         'next_session_date': Session.gen_next(date.today(), c).date,
-    }, Course.objects.filter(tenant_uuid=request.user.tenant_uuid))), safe=False)
+    }, Course.objects.filter(_days__len__gt=0, tenant_uuid=request.user.tenant_uuid))), safe=False)
 
 
 @login_required_401
@@ -70,7 +70,7 @@ def get_course(request, pk):
             'status_code': 404,
             'error': 'Course not found'
         })
-    
+
     return JsonResponse({
         'uuid': c.uuid,
         'label': c.label,
