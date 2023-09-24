@@ -52,8 +52,8 @@ interface RegisterCellProps {
     attendance: MemberCourseAttendance,
     session: Session,
     member: Member,
-    addAttendance: (member: Member, session: Session, { resolution, paymentOption }: { resolution: string, paymentOption: string }) => void,
-    removeAttendance: (member: Member, session: Session) => void,
+    addAttendance: (member: Member, session: Session, { resolution, paymentOption }: { resolution: string, paymentOption: string }) => boolean,
+    removeAttendance: (member: Member, session: Session) => boolean,
 }
 
 declare module '@tanstack/table-core' {
@@ -180,18 +180,20 @@ function RegisterCell({
                 member: member,
                 session: session,
                 addAttendance: (member, session, { resolution, paymentOption }) => {
-                    setSessionAttendance({
-                        id: 0,
-                        courseUuid: session.courses[0].uuid,
-                        resolution,
-                        studentUuid: member.uuid,
-                        date: session.date,
-                    })
-                    addAttendance(member, session, { resolution, paymentOption })
+                    if (addAttendance(member, session, { resolution, paymentOption })) {
+                        setSessionAttendance({
+                            id: 0,
+                            courseUuid: session.courses[0].uuid,
+                            resolution,
+                            studentUuid: member.uuid,
+                            date: session.date,
+                        })
+                    }
                 },
                 removeAttendance: (member, session) => {
-                    setSessionAttendance(null)
-                    removeAttendance(member, session)
+                    if (removeAttendance(member, session)) {
+                        setSessionAttendance(null)
+                    }
                 },
             })
         }} className={'registerCell ' + (disabled ? 'disabled ' : ' ') + (selected ? 'selected ' : ' ')}>
@@ -284,10 +286,14 @@ function Register({ courses = [], squashDates }: RegisterProps) {
             }, [] as Promise<any>[])).then((_) => {
                 notifySuccess('Attendance recorded')
             }).catch(notifyError)
+
+            return true
         } catch (e: any) {
             if (e instanceof DomainError) {
                 notifyError(e.message)
             }
+
+            return false
         }
     }
     const removeAttendance = (member: Member, session: Session) => {
@@ -308,10 +314,14 @@ function Register({ courses = [], squashDates }: RegisterProps) {
             }, [] as Promise<any>[])).then(() => {
                 notifySuccess('Attendance cleared')
             }).catch(notifyError)
+
+            return true
         } catch (e: any) {
             if (e instanceof DomainError) {
                 notifyError(e.message)
             }
+
+            return false
         }
     }
 
