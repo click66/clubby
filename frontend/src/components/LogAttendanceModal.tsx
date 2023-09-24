@@ -2,6 +2,8 @@ import '../assets/Register.component.scss'
 import { Member } from '../models/Member'
 import { Button, Modal } from 'react-bootstrap'
 import { Field, Form, Formik } from 'formik'
+import { createRoot } from 'react-dom/client'
+import { useState } from 'react'
 
 interface Course {
     uuid: string
@@ -17,13 +19,17 @@ interface LogAttendanceModalProps {
     allowClearAttendance: boolean
     member: Member
     session: Session
-    show: boolean
-    close: () => void
     addAttendance: (member: Member, session: Session, { resolution, paymentOption }: { resolution: string, paymentOption: string }) => void
-    removeAttendance: (member: Member, session: Session) => void
+    removeAttendance: (member: Member, session: Session) => void,
 }
 
-function LogAttendanceModal({ member, session, allowClearAttendance, show, close, removeAttendance, addAttendance }: LogAttendanceModalProps) {
+function LogAttendanceModal({ member, session, allowClearAttendance, removeAttendance, addAttendance }: LogAttendanceModalProps) {
+    const [show, setShow] = useState<boolean>(true)
+
+    const close = () => {
+        setShow(false)
+    }
+
     return (
         <Modal
             show={show}
@@ -47,6 +53,7 @@ function LogAttendanceModal({ member, session, allowClearAttendance, show, close
                         }
                     }
                     setSubmitting(false)
+                    close()
                 }}
             >
                 {({ isSubmitting, setFieldValue, handleSubmit, values }) => (
@@ -111,4 +118,12 @@ function LogAttendanceModal({ member, session, allowClearAttendance, show, close
     )
 }
 
-export default LogAttendanceModal
+function renderLogAttendanceModal(target: Node, props: LogAttendanceModalProps) {
+    const rootDiv = document.createElement('div'),
+        root = createRoot(rootDiv)
+
+    target.appendChild(rootDiv)
+    root.render(<LogAttendanceModal {...props} />)
+}
+
+export { LogAttendanceModal, renderLogAttendanceModal }
