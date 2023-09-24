@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 
-import { CollectionFill, PeopleFill, CalendarFill, BarChartFill } from "react-bootstrap-icons"
+import { CollectionFill, PeopleFill, CalendarFill } from "react-bootstrap-icons"
 
 function Portal() {
     return (
