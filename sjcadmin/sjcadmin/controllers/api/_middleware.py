@@ -15,7 +15,7 @@ from jose import jwt
 
 def authorise_request(request):
     auth_header = request.headers.get('Authorization', None)
-    public_key = base64.b64decode(os.getenv('PRIV_KEY'))
+    public_key = base64.b64decode(os.getenv('PUB_KEY'))
 
     if auth_header is not None:
         token = auth_header.replace('Bearer ', '')

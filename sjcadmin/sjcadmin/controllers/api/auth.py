@@ -62,7 +62,7 @@ def refresh_token(request):
     data = json.loads(request.body)
     token = data.get('token', '')
 
-    public_key = base64.b64decode(os.getenv('PRIV_KEY'))
+    public_key = base64.b64decode(os.getenv('PUB_KEY'))
 
     decrypted = jwt.decode(token, public_key)
 

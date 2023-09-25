@@ -37,6 +37,10 @@
             {
                 "name": "PRIV_KEY",
                 "valueFrom": "sjcadmin_PRIV_KEY"
+            },
+            {
+                "name": "PUB_KEY",
+                "valueFrom": "sjcadmin_PUB_KEY"
             }
         ],
         "logConfiguration": {
