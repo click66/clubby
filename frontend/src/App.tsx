@@ -31,9 +31,9 @@ function App() {
     </div>
   )
 
-  const StandardLayout = () => (
+  const StandardLayout = ({ bcParent = null }) => (
     <div className="p-3 containerInner">
-      <Breadcrumb />
+      <Breadcrumb parent={bcParent} />
       <Outlet />
     </div>
   )
@@ -63,7 +63,7 @@ function App() {
           <Routes>
             <Route element={<PortalLayout />}>
               <Route path="*" element={<_404 />} />
-              <Route path="/auth/login" element={<Login loggedIn={loggedIn} setLoggedIn={setLoggedIn}/>} />
+              <Route path="/auth/login" element={<Login loggedIn={loggedIn} setLoggedIn={setLoggedIn} />} />
               <Route element={<LoggedInLayout />}>
                 <Route path="/" element={<Portal />} />
               </Route>
@@ -72,15 +72,17 @@ function App() {
               <Route element={<StandardLayout />}>
                 <Route path="/courses" element={<Courses />} />
                 <Route path="/members" element={<Members />} />
+                <Route path="/attendance" element={<Attendance />} />
+                <Route path="/attendance/:courseUuid" element={<Attendance />} />
+                <Route path="/reporting" element={<Reporting />} />
+              </Route>
+              <Route element={<StandardLayout bcParent={{ 'path': '/members', 'text': 'Members' }} />}>
                 <Route element={<MemberProvider children={<Outlet />} />}>
                   <Route path="/members/:memberUuid/profile" element={<MemberProfile />} />
                   <Route path="/members/:memberUuid/licence" element={<MemberLicence />} />
                   <Route path="/members/:memberUuid/notes" element={<MemberNotes />} />
                   <Route path="/members/:memberUuid/payments" element={<Payments />} />
                 </Route>
-                <Route path="/attendance" element={<Attendance />} />
-                <Route path="/attendance/:courseUuid" element={<Attendance />} />
-                <Route path="/reporting" element={<Reporting />} />
               </Route>
             </Route>
           </Routes>
@@ -90,7 +92,7 @@ function App() {
           />
         </div>
       </div>
-    </BrowserRouter>
+    </BrowserRouter >
   )
 }
 

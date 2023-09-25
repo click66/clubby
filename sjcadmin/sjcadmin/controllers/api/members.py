@@ -13,11 +13,8 @@ from ...models.student import Licence, Note, Student, Payment, Profile
 from ....sjcauth.models import User
 
 
-def _username(uuid) -> str:
-    u = User.fetch_by_uuid(uuid)
-    if u:
-        return u.email
-    return 'Anonymous User'
+def _username(student) -> str:
+    return student._creator_name
 
 
 @login_required_401
@@ -37,7 +34,7 @@ def get_members(request):
             'rem_trial_sessions': s.remaining_trial_sessions,
             'signed_up_for': list(map(lambda c: str(c.uuid), s.courses)),
             'member_since': s.join_date,
-            'added_by': _username(s.added_by),
+            'added_by': _username(s),
             'unused_payments': list(map(lambda p: {'course_uuid': None if p.course is None else p.course.uuid}, s.get_unused_payments()))
         }
         if s.has_licence():
@@ -66,7 +63,7 @@ def get_member(request, pk):
         'rem_trial_sessions': s.remaining_trial_sessions,
         'signed_up_for': list(map(lambda c: str(c.uuid), s.courses)),
         'member_since': s.join_date,
-        'added_by': _username(s.added_by),
+        'added_by': _username(s),
         'unused_payments': list(map(lambda p: {'course_uuid': p.course.uuid if p.course else None}, s.get_unused_payments()))
     }
     if s.has_licence():
@@ -101,7 +98,7 @@ def get_members_by_courses(request):
         'has_notes': s.has_notes,
         'prepayments': {},
         'member_since': s.join_date,
-        'added_by': _username(s.added_by),
+        'added_by': _username(s),
         'unused_payments': list(map(lambda p: {'course_uuid': p.course.uuid if p.course else None}, s.get_unused_payments()))
     } | (
         {'licence': {
@@ -125,7 +122,7 @@ def get_member_licences(request, pk):
 @handle_error
 def post_add_member(request):
     data = json.loads(request.body)
-    s = Student.make(name=data.get('studentName'), creator=request.user.uuid)
+    s = Student.make(name=data.get('studentName'), creator=request.user)
     s.tenant_uuid = request.user.tenant_uuid
     s.save()
 
@@ -147,7 +144,7 @@ def post_add_member(request):
         'rem_trial_sessions': s.remaining_trial_sessions,
         'signed_up_for': list(map(lambda c: str(c.uuid), s.courses)),
         'member_since': s.join_date,
-        'added_by': _username(s.added_by),
+        'added_by': _username(s),
         'unused_payments': list(map(lambda p: {'course_uuid': p.course.uuid if p.course else None}, s.get_unused_payments()))
     }
 

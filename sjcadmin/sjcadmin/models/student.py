@@ -87,6 +87,7 @@ class Payment(models.Model):
 class Student(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     _creator = models.UUIDField(null=True, db_column='creator_id')
+    _creator_name = models.TextField(null=True, max_length=120)
     tenant_uuid = models.UUIDField(null=True, blank=True)
 
     profile_name = models.CharField(null=True, max_length=120)
@@ -202,7 +203,7 @@ class Student(models.Model):
             name: str=None,
             profile=None,
             licence=None,
-            creator: UUID=None,
+            creator: User=None,
     ):
         if not name and (not profile or (profile and not profile.name)):
             raise ValueError('Student name cannot be blank')
@@ -215,7 +216,8 @@ class Student(models.Model):
             profile_email=getattr(profile, 'email', None),
             profile_address=getattr(profile, 'address', None),
             allowed_trial_sessions=(0 if licence else 2),
-            _creator=creator,
+            _creator=creator.uuid,
+            _creator_name=creator.email
         )
 
         student._sessions_attended = 0

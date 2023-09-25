@@ -9,6 +9,23 @@ $bootstrap-icons-font-file: "#{$bootstrap-icons-font-dir}/#{$bootstrap-icons-fon
 
 @import "./assets/legacy.scss";
 
+nav ol.breadcrumb {
+  a,
+  a:hover {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  li:not(:first-of-type) {
+    margin-left: 5px;
+
+    &:before {
+      content: ">";
+      margin-right: 5px;
+    }
+  }
+}
+
 .table tr th:first-of-type,
 .table tr td:first-of-type {
   border-left-width: 0px !important;
