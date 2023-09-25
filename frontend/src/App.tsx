@@ -31,7 +31,7 @@ function App() {
     </div>
   )
 
-  const StandardLayout = ({ bcParent = null }) => (
+  const StandardLayout = ({ bcParent = null }: { bcParent: { path: string, text: string } | null }) => (
     <div className="p-3 containerInner">
       <Breadcrumb parent={bcParent} />
       <Outlet />
