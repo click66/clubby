@@ -342,6 +342,7 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
 
     const addAttendanceAndPropagate = useCallback((props: AddAttendanceArgs) => {
         try {
+            table.options.meta?.updateData(addAttendance(props))
             storeAttendance([{
                 id: 0,
                 courseUuid: props.session.courses[0].uuid,
@@ -349,7 +350,6 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
                 studentUuid: props.member.uuid,
                 date: props.session.date,
             }])
-            table.options.meta?.updateData(addAttendance(props))
             return true
         } catch (e) {
             if (e instanceof DomainError) {
@@ -361,8 +361,8 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
 
     const removeAttendanceAndPropagate = useCallback((props: RemoveAttendanceArgs) => {
         try {
-            purgeAttendance(props.member, props.session)
             table.options.meta?.updateData(removeAttendance(props))
+            purgeAttendance(props.member, props.session)
             return true
         } catch (e) {
             if (e instanceof DomainError) {
