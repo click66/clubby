@@ -129,7 +129,6 @@ export class Member {
         if (this.membership.licence) {
             return this.membership.licence.expires < now
         }
-
         return this.membership.remainingTrialSessions <= 0
     }
 

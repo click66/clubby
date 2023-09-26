@@ -161,7 +161,7 @@ describe('Member model', () => {
             sut.attendMultiple([{ date: new Date() }, { date: new Date() }])
         }).toThrowError(DomainError)
     })
-    
+
     test('Attend multiple allowed if member licenced regardless of remaining trial sessions', () => {
         // Given a member has a licence and 2 remaining trial sessions
         const sut = new Member({
@@ -171,7 +171,7 @@ describe('Member model', () => {
                 remainingTrialSessions: 1,
                 licence: {
                     idNumber: 12345,
-                    expires: new Date(),
+                    expires: new Date(new Date().setMonth(new Date().getMonth() + 1)),
                 },
             },
             origin: { joinDate: new Date(), addedBy: 'John' }
