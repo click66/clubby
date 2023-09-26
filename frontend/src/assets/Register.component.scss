@@ -1,3 +1,5 @@
+@import "./variables";
+
 .registerActions {
   display: flex;
   justify-content: right;
@@ -122,6 +124,30 @@
 
       &.disabled {
         background-color: #dee2e6;
+      }
+      
+      &.loading {
+        background-color: #f0f0f0;
+        position: relative;
+
+        &:before {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 20px; /* Adjust the size of the spinner as needed */
+          height: 20px; /* Adjust the size of the spinner as needed */
+          border: 4px solid rgba(0, 0, 0, 0.3);
+          border-top: 4px solid $dark; /* Color of the spinner */
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+          0% { transform: translate(-50%, -50%) rotate(0deg); }
+          100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
       }
     }
 

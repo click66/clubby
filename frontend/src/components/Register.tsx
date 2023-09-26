@@ -64,16 +64,16 @@ interface RegisterCellProps {
     attendance: CourseRegisterData | null,
     member: Member,
     session: Session,
-    addAttendance: (props: AddAttendanceArgs) => boolean,
-    removeAttendance: (props: RemoveAttendanceArgs) => boolean,
+    addAttendance: (props: AddAttendanceArgs) => Promise<void>,
+    removeAttendance: (props: RemoveAttendanceArgs) => Promise<void>,
 }
 
 interface RegisterRowProps {
     attendance: MemberCourseAttendance | null,
     member: Member
     sessions: Session[],
-    addAttendance: (props: AddAttendanceArgs) => boolean,
-    removeAttendance: (props: RemoveAttendanceArgs) => boolean,
+    addAttendance: (props: AddAttendanceArgs) => Promise<void>,
+    removeAttendance: (props: RemoveAttendanceArgs) => Promise<void>,
 }
 
 declare module '@tanstack/table-core' {
@@ -208,11 +208,13 @@ const RegisterCell = memo(({
     removeAttendance,
 }: RegisterCellProps) => {
     const [selected, setSelected] = useState(false)
+    const [loading, setLoading] = useState(false)
     const courses = session.courses.filter((c) => member.isInCourse(c))
     const disabled = courses.length === 0
 
     return (
         <td onClick={(e) => {
+
             setSelected(true)
             setTimeout(() => {
                 setSelected(false)
@@ -221,10 +223,16 @@ const RegisterCell = memo(({
                 allowClearAttendance: attendance !== null,
                 member: member,
                 session: session,
-                addAttendance,
-                removeAttendance,
+                addAttendance: (props) => {
+                    setLoading(true)
+                    addAttendance(props).finally(() => setLoading(false))
+                },
+                removeAttendance: (props) => {
+                    setLoading(true)
+                    removeAttendance(props).finally(() => setLoading(false))
+                },
             })
-        }} className={'registerCell ' + (disabled ? 'disabled ' : ' ') + (selected ? 'selected ' : ' ')}>
+        }} className={'registerCell ' + (disabled ? 'disabled ' : ' ') + (selected ? 'selected ' : ' ') + (loading ? 'loading ' : ' ')}>
             <AttendanceBadge attendance={attendance} />
         </td>
     )
@@ -248,16 +256,25 @@ const RegisterRow = ({ sessions = [], attendance, member, addAttendance, removeA
     </>
 )
 
-const addAttendance = ({ member, session, resolution, paymentOption }: AddAttendanceArgs) => {
+const addMemberAttendance = ({ member, session, resolution, paymentOption }: AddAttendanceArgs): Promise<Member> => {
     const courses = session.courses.filter((c) => member.isInCourse(c))
-
-    courses.forEach((c) => {
-        const payment = (resolution === 'paid' && paymentOption === 'advance' ? { courseUuid: c.uuid! } : null)
-        member.attend({ ...session, payment })
+    const sessions = courses.map((c) => {
+        return {
+            ...session,
+            payment: (resolution === 'paid' && paymentOption === 'advance' ? { courseUuid: c.uuid } : null),
+        }
     })
 
-    Promise.all(courses.reduce((acc: Promise<any>[], c: SessionCourse) => {
-        let memberUuid = member.uuid!,
+    try {
+        member.attendMultiple(sessions)
+    } catch (e) {
+        if (e instanceof DomainError) {
+            return Promise.reject(e)
+        }
+    }
+
+    return Promise.all(courses.reduce((acc: Promise<any>[], c: SessionCourse) => {
+        let memberUuid = member.uuid,
             courseUuid = c.uuid
 
         acc.push(logAttendance({
@@ -270,31 +287,25 @@ const addAttendance = ({ member, session, resolution, paymentOption }: AddAttend
 
         return acc
     }, [] as Promise<any>[])).then((_) => {
-        notifySuccess('Attendance recorded')
-    }).catch(notifyError)
-
-    return member
+        return member
+    })
 }
 
-const removeAttendance = ({ member, session }: RemoveAttendanceArgs) => {
+const removeMemberAttendance = ({ member, session }: RemoveAttendanceArgs) => Promise.all(session.courses.filter((c) => member.isInCourse(c)).reduce((acc: Promise<any>[], c: SessionCourse) => {
     member.unattend(session)
 
-    Promise.all(session.courses.filter((c) => member.isInCourse(c)).reduce((acc: Promise<any>[], c: SessionCourse) => {
-        let memberUuid = member.uuid,
-            courseUuid = c.uuid
+    let memberUuid = member.uuid,
+        courseUuid = c.uuid
 
-        acc.push(deleteAttendance({
-            student_uuid: memberUuid,
-            course_uuid: courseUuid,
-            date: session.date,
-        }))
-        return acc
-    }, [] as Promise<any>[])).then(() => {
-        notifySuccess('Attendance cleared')
-    }).catch(notifyError)
-
+    acc.push(deleteAttendance({
+        student_uuid: memberUuid,
+        course_uuid: courseUuid,
+        date: session.date,
+    }))
+    return acc
+}, [] as Promise<any>[])).then(() => {
     return member
-}
+})
 
 const Register = ({ courses = [], squashDates }: RegisterProps) => {
     const registerData = useRef<RegisterMap>(new Map())
@@ -340,36 +351,36 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
         return acc
     }, registerData.current)
 
-    const addAttendanceAndPropagate = useCallback((props: AddAttendanceArgs) => {
-        try {
-            table.options.meta?.updateData(addAttendance(props))
+    const addAttendanceAndPropagate = useCallback((props: AddAttendanceArgs): Promise<void> => {
+        return addMemberAttendance(props).then((member: Member) => {
+            table.options.meta?.updateData(member)
             storeAttendance([{
                 id: 0,
                 courseUuid: props.session.courses[0].uuid,
                 resolution: props.resolution,
-                studentUuid: props.member.uuid,
+                studentUuid: member.uuid,
                 date: props.session.date,
             }])
-            return true
-        } catch (e) {
+            notifySuccess('Attendance recorded')
+        }).catch((e) => {
             if (e instanceof DomainError) {
-                notifyError(e.message)
+                return notifyError(e.message)
             }
-            return false
-        }
+            notifyError('Unable to connect to server; check your network connection or try again later')
+        }) as Promise<void>
     }, [])
 
-    const removeAttendanceAndPropagate = useCallback((props: RemoveAttendanceArgs) => {
-        try {
-            table.options.meta?.updateData(removeAttendance(props))
+    const removeAttendanceAndPropagate = useCallback((props: RemoveAttendanceArgs): Promise<void> => {
+        return removeMemberAttendance(props).then((member: Member) => {
+            table.options.meta?.updateData(member)
             purgeAttendance(props.member, props.session)
-            return true
-        } catch (e) {
+            notifySuccess('Attendance cleared')
+        }).catch((e) => {
             if (e instanceof DomainError) {
-                notifyError(e.message)
+                return notifyError(e.message)
             }
-            return false
-        }
+            notifyError('Unable to connect to server; check your network connection or try again later')
+        }) as Promise<void>
     }, [])
 
     useEffect(() => {

@@ -26,6 +26,11 @@ type Payment = {
     courseUuid: string
 }
 
+interface Session {
+    date: Date
+    payment?: Payment | null
+}
+
 interface Course {
     uuid: string,
 }
@@ -128,7 +133,7 @@ export class Member {
         return this.membership.remainingTrialSessions <= 0
     }
 
-    public attend({ date, payment = null }: { date: Date, payment?: Payment | null }) {
+    public attend({ date, payment = null }: Session) {
         if (this.expired(date)) {
             throw new DomainError('Member is not licenced and has no remaining trial sessions')
         }
@@ -147,6 +152,14 @@ export class Member {
 
     public unattend(_: { date: Date }) {
         this.membership.remainingTrialSessions++
+    }
+
+    public attendMultiple(sessions: Session[]) {
+        if (this.membership.remainingTrialSessions - sessions.length < 0) {
+            throw new DomainError('Member does not have enough remaining trial sessions')
+        }
+
+        sessions.forEach((s) => this.attend(s))
     }
 
     public hasUsablePaymentForCourse({ uuid }: Course) {
