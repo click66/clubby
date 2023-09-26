@@ -7,13 +7,6 @@ const LEGACY_API_URL = import.meta.env.VITE_LEGACY_API_URL
 const api = withInterceptors(http.create({ baseURL: API_URL }), cookies)
 const legacyApi = withInterceptors(http.create({ baseURL: LEGACY_API_URL }), cookies)
 
-type DtoAttendanceQuery = {
-    student_uuids: string[]
-    course_uuid: string
-    date_earliest: Date
-    date_latest: Date
-}
-
 type DtoAttendanceQuerySingle = {
     student_uuid: string
     course_uuid: string
@@ -29,27 +22,57 @@ type DtoNewAttendance = {
 }
 
 type DtoAttendance = {
+    id: number
     student_uuid: string
     course_uuid: string
     date: Date
     resolution: string
 }
 
+interface Course {
+    uuid: string
+}
+
+interface Member {
+    uuid: string
+}
+
+interface Attendance {
+    id: number
+    member: Member
+    course: Course
+    date: Date
+    resolution: string
+}
+
+type AttendancesQuery = {
+    members: Member[]
+    courses: Course[]
+    dateEarliest: Date
+    dateLatest: Date
+}
+
 const isoDate = (date: Date) => date.toISOString().split('T')[0]
 
-export function fetchAttendances(query: DtoAttendanceQuery) {
-    return api.post('/attendance/query', {
-        ...query,
-        date_earliest: isoDate(query.date_earliest),
-        date_latest: isoDate(query.date_latest),
-    }).then(({ data }) => data.map((d: DtoAttendance) => {
-        return {
-            studentUuid: d.student_uuid,
-            courseUuid: d.course_uuid,
-            date: new Date(d.date),
-            resolution: d.resolution,
-        }
-    }))
+export function getMemberAttendances({ members, courses, dateEarliest, dateLatest }: AttendancesQuery): Promise<Attendance[]> {
+    const memberUuids = members.map((member) => member.uuid)
+
+    return Promise.all(courses.map((course) => api.post('/attendance/query', {
+        student_uuids: memberUuids,
+        course_uuid: course.uuid,
+        date_earliest: isoDate(dateEarliest),
+        date_latest: isoDate(dateLatest),
+    })))
+        .then((responses) => responses.map((r) => r.data).flat())
+        .then((data) => data.map((d: DtoAttendance): Attendance => {
+            return {
+                id: d.id,
+                member: { uuid: d.student_uuid },
+                course: { uuid: d.course_uuid },
+                date: new Date(d.date),
+                resolution: d.resolution,
+            }
+        }))
 }
 
 export function logAttendance(data: DtoNewAttendance) {

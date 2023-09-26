@@ -155,7 +155,7 @@ export class Member {
     }
 
     public attendMultiple(sessions: Session[]) {
-        if (this.membership.remainingTrialSessions - sessions.length < 0) {
+        if (!this.hasLicence() && (this.membership.remainingTrialSessions - sessions.length) < 0) {
             throw new DomainError('Member does not have enough remaining trial sessions')
         }
 

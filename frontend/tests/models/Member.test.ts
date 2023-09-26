@@ -125,7 +125,7 @@ describe('Member model', () => {
     })
 
     test('Attending multiple sessions decreases remaining trial sessions', () => {
-        // Given a member has 2 remaining trial sessions
+        // Given a member has no licence and 2 remaining trial sessions
         const sut = new Member({
             name: 'Joe Bloggs',
             uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
@@ -144,7 +144,7 @@ describe('Member model', () => {
     })
 
     test('Attend multiple entirely rejected if will reduce beyond allowed sessions', () => {
-        // Given a member has 2 remaining trial sessions
+        // Given a member has no licence and 2 remaining trial sessions
         const sut = new Member({
             name: 'Joe Bloggs',
             uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
@@ -160,6 +160,28 @@ describe('Member model', () => {
             // When that member attends two sessions
             sut.attendMultiple([{ date: new Date() }, { date: new Date() }])
         }).toThrowError(DomainError)
+    })
+    
+    test('Attend multiple allowed if member licenced regardless of remaining trial sessions', () => {
+        // Given a member has a licence and 2 remaining trial sessions
+        const sut = new Member({
+            name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
+            membership: {
+                remainingTrialSessions: 1,
+                licence: {
+                    idNumber: 12345,
+                    expires: new Date(),
+                },
+            },
+            origin: { joinDate: new Date(), addedBy: 'John' }
+        })
+
+        // Not error will be thrown
+        expect(() => {
+            // When that member attends two sessions
+            sut.attendMultiple([{ date: new Date() }, { date: new Date() }])
+        }).not.toThrow()
     })
 
     test('Cannot attend session if no licence and no remaining trial sesson', () => {

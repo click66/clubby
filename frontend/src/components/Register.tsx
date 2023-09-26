@@ -6,7 +6,7 @@ import { fetchMembersByCourses } from '../services/members'
 import { notifyError, notifySuccess } from '../utils/notifications'
 import { MemberQuickAddButton } from './MemberQuickAdd'
 import { Fragment, memo, useCallback, useEffect, useRef, useState } from 'react'
-import { deleteAttendance, fetchAttendances, logAttendance } from '../services/attendance'
+import { deleteAttendance, getMemberAttendances, logAttendance } from '../services/attendance'
 import { Badge } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { BoxArrowUpRight, Cash } from 'react-bootstrap-icons'
@@ -390,17 +390,24 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
                 setDates(dates)
 
                 // Might be more efficient to have the attendance API read by course, then these can be performed in unison
-                const studentUuids = members.map((m) => m.uuid).filter(Boolean) as string[]
-                return Promise.all(courses.map((c) => fetchAttendances({
-                    student_uuids: studentUuids,
-                    course_uuid: c.uuid,
-                    date_earliest: dates[dates.length - 1].date,
-                    date_latest: dates[0].date,
-                }))).then((data: CourseRegisterData[][]) => {
-                    storeAttendance(data.flat())
-                    setMembers(members)
-                    setLoaded(true)
+                return getMemberAttendances({
+                    members,
+                    courses,
+                    dateEarliest: dates[dates.length - 1].date,
+                    dateLatest: dates[0].date,
                 })
+                    .then((data) => data.map((d) => {
+                        return {
+                            ...d,
+                            studentUuid: d.member.uuid,
+                            courseUuid: d.course.uuid,
+                        }
+                    }))
+                    .then(storeAttendance)
+                    .then(() => {
+                        setMembers(members)
+                        setLoaded(true)
+                    })
             })
         }
     }, [courses])
