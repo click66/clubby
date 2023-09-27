@@ -4,6 +4,8 @@ services:
       context: ./attendance
       target: dev-runtime
     depends_on:
+      - gateway
+      - app
       - database
     environment:
       - ENVIRONMENT_NAME=local
