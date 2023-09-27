@@ -125,11 +125,14 @@ const columns = [
                     .includes(true) ? <Cash /> : ''}</span>
             </div>
         ),
+        sortDescFirst: false,
     }),
     columnHelper.accessor('membership', {
         header: 'Type',
         cell: ({ row }) => <span className="memberLicence"><MemberBadge member={row.original} /></span>,
         sortingFn: (a, b) => {
+            const sortName = () => b.original.name.localeCompare(a.original.name)
+
             const memberA = a.original as Member
             const memberB = b.original as Member
             const hasLicenceA = memberA.hasLicence()
@@ -147,12 +150,13 @@ const columns = [
             }
 
             if (hasLicenceA && hasLicenceB) {
-                if (memberA.expired(currentDate)) return memberB.expired(currentDate) ? 0 : -1
-                return 1
+                if (memberA.expired(currentDate) && !memberB.expired(currentDate)) return -1
+                if (memberB.expired(currentDate) && !memberA.expired(currentDate)) return 1
             }
 
-            return 0
-        }
+            return sortName()
+        },
+        sortDescFirst: true,
     })
 ]
 
