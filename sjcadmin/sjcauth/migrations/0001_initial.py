@@ -2,8 +2,27 @@
 
 from django.db import migrations, models
 import django.utils.timezone
+import os
 import sjcadmin.sjcauth.models
 import uuid
+
+
+def create_default_superuser(apps, schema_editor):
+    if os.getenv('ENVIRONMENT_NAME') is not 'local':
+        pass
+
+    User = apps.get_model('sjcauth', 'User')
+
+    u = User(password='pbkdf2_sha256$390000$O6BoDqvX0ctj2NcP2lPCvK$uRJzdZZVNgQJvdRsf5pb/SCmKidL8szWd6yJ6QrBl2s=',
+             email='click66@gmail.com',
+             _uuid='f838b5a3-0190-4ff1-a53a-54b870d1cf6a',
+             )
+
+    u.is_superuser = True
+    u.is_staff = True
+    u.is_active = True
+    u.tenant_uuid = '7fe20f85-c6b0-4c67-8b68-c033367c92a5'
+    u.save()
 
 
 class Migration(migrations.Migration):
@@ -18,19 +37,32 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='User',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('password', models.CharField(max_length=128, verbose_name='password')),
-                ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
-                ('is_superuser', models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')),
-                ('first_name', models.CharField(blank=True, max_length=150, verbose_name='first name')),
-                ('last_name', models.CharField(blank=True, max_length=150, verbose_name='last name')),
-                ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
-                ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
-                ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
-                ('email', models.EmailField(max_length=254, unique=True, verbose_name='email address')),
-                ('_uuid', models.UUIDField(db_column='uuid', default=uuid.uuid4, editable=False, unique=True)),
-                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
-                ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
+                ('password', models.CharField(
+                    max_length=128, verbose_name='password')),
+                ('last_login', models.DateTimeField(
+                    blank=True, null=True, verbose_name='last login')),
+                ('is_superuser', models.BooleanField(default=False,
+                 help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')),
+                ('first_name', models.CharField(blank=True,
+                 max_length=150, verbose_name='first name')),
+                ('last_name', models.CharField(blank=True,
+                 max_length=150, verbose_name='last name')),
+                ('is_staff', models.BooleanField(default=False,
+                 help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
+                ('is_active', models.BooleanField(
+                    default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
+                ('date_joined', models.DateTimeField(
+                    default=django.utils.timezone.now, verbose_name='date joined')),
+                ('email', models.EmailField(max_length=254,
+                 unique=True, verbose_name='email address')),
+                ('_uuid', models.UUIDField(db_column='uuid',
+                 default=uuid.uuid4, editable=False, unique=True)),
+                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+                 related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
+                ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.',
+                 related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
             ],
             options={
                 'verbose_name': 'user',
@@ -41,4 +73,5 @@ class Migration(migrations.Migration):
                 ('objects', sjcadmin.sjcauth.models.UserManager()),
             ],
         ),
+        migrations.RunPython(create_default_superuser),
     ]

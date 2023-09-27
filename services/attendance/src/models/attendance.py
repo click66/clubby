@@ -20,10 +20,11 @@ class Resolution(Base):
 
     attendance: Mapped['Attendance'] = relationship(
         back_populates='resolution')
-    
+
     def __init__(self, paid: bool = False, complementary: bool = False):
         if paid and complementary:
-            raise InvalidResolutionError('Resolution cannot be both paid and complementary')
+            raise InvalidResolutionError(
+                'Resolution cannot be both paid and complementary')
 
         self.paid = paid
         self.complementary = complementary
@@ -49,3 +50,7 @@ class Attendance(Base):
 
     resolution: Mapped[Optional['Resolution']] = relationship(
         back_populates='attendance')
+
+    @property
+    def resolution_type(self):
+        return self.resolution.type if self.resolution else None

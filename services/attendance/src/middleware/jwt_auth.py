@@ -45,4 +45,5 @@ class JWTAuthorisation(BaseHTTPMiddleware):
         if 'expires' in decrypted and decrypted['expires'] <= time():
             return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={'detail': 'JWT expired'})
 
+        request.state.token = credentials
         return await next(request)

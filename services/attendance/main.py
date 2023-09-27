@@ -1,15 +1,18 @@
+import aiohttp
 import os
 import urllib
 
-from fastapi import FastAPI, Response
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from src.database import db_url
+from src.errors import DomainError
 from src.schemas.attendance import AttendancePost, AttendanceQuery, AttendanceRead
 from src.middleware.jwt_auth import JWTAuthorisation, JWTConfig
 from src.models.attendance import Attendance, Resolution
+from src.students import HttpClient, attempt_student_attendance, delete_student_attendance
 
 
 def is_local():
@@ -39,6 +42,14 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
+monolith_client = HttpClient()
+
+
+@app.on_event("startup")
+async def startup():
+    monolith_client.start('http://monolith.southamptonjiujitsu.local:8000' if is_local()
+                          else 'https://monolith.southcoastjiujitsu.com')
+
 
 @app.post('/attendance/query')
 async def get_attendance(query: AttendanceQuery) -> list[AttendanceRead]:
@@ -49,21 +60,25 @@ async def get_attendance(query: AttendanceQuery) -> list[AttendanceRead]:
 
 
 @app.post('/attendance/create')
-async def post_attendance(post: AttendancePost) -> AttendanceRead:
+async def post_attendance(post: AttendancePost, request: Request, http_client: aiohttp.ClientSession = Depends(monolith_client)) -> AttendanceRead:
     create = Attendance(student_uuid=post.student_uuid,
                         course_uuid=post.course_uuid,
                         date=post.date)
-
-    await delete_by_query(AttendanceQuery(student_uuids=[post.student_uuid],
-                                          course_uuid=post.course_uuid,
-                                          date_earliest=post.date,
-                                          date_latest=post.date))
 
     match (post.resolution):
         case 'paid':
             create.resolution = Resolution(paid=True)
         case 'comp':
             create.resolution = Resolution(complementary=True)
+
+    try:
+        await attempt_student_attendance(http_client, request, create, post.use_advanced_payment)
+    except DomainError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    session.query(Attendance).filter(Attendance.student_uuid == post.student_uuid,
+                                     Attendance.course_uuid == post.course_uuid,
+                                     Attendance.date == post.date).delete()
 
     session.add(create)
 
@@ -77,15 +92,20 @@ async def post_attendance(post: AttendancePost) -> AttendanceRead:
 
 
 @app.post('/attendance/delete')
-async def delete_by_query(query: AttendanceQuery) -> Response:
+async def delete_by_query(query: AttendanceQuery, request: Request, http_client: aiohttp.ClientSession = Depends(monolith_client)) -> Response:
     session.query(Attendance).filter(Attendance.student_uuid.in_(query.student_uuids),
                                      Attendance.course_uuid == query.course_uuid,
                                      Attendance.date >= query.date_earliest,
                                      Attendance.date <= query.date_latest).delete()
+
     try:
         session.commit()
     except:
         session.rollback()
         raise
-    
+
+    for student_uuid in query.student_uuids:
+        await delete_student_attendance(
+            http_client, request, student_uuid, query.date_earliest, query.course_uuid)
+
     return Response(status_code=204)

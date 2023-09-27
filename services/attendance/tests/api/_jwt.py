@@ -14,5 +14,5 @@ def make_token(data: dict, key_path: str):
         return jwt.encode(data, privkey, algorithm='RS256')
 
 
-def headers(data: dict = {}, key_path = PRIV_PATH):
+def headers(data: dict = {'user_uuid': 'f838b5a3-0190-4ff1-a53a-54b870d1cf6a'}, key_path = PRIV_PATH):
     return {'Authorization': f'Bearer {make_token(data, key_path)}'}

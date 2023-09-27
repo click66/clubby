@@ -1,7 +1,7 @@
 import requests
 
 from src.models.attendance import Attendance, Resolution
-from ._seeder import seed_database
+from ._seeder import seed_attendances
 from ._jwt import headers
 
 API_ROOT = 'http://localhost:8000'
@@ -10,7 +10,7 @@ API_URL = f'{API_ROOT}/attendance/query'
 
 def test_empty_query():
     # Given the database contains no data
-    seed_database([])
+    seed_attendances([])
 
     # When I query for all attendances in a given timespan
     response = requests.post(API_URL, json={
@@ -29,7 +29,7 @@ def test_empty_query():
 
 def test_expected_attendance_schema_complementary():
     # Given the database contains a single complementary attendance
-    seed_database([Attendance(student_uuid='17f935dd-c1ef-4672-a666-0fccbbdeffa9',
+    seed_attendances([Attendance(student_uuid='17f935dd-c1ef-4672-a666-0fccbbdeffa9',
                                course_uuid='d96ca318-f35e-475e-8015-4418cc13b343',
                                date='2023-10-15',
                                resolution=Resolution(complementary=True))])
@@ -58,7 +58,7 @@ def test_expected_attendance_schema_complementary():
 
 def test_expected_attendance_schema_paid():
     # Given the database contains a single complementary attendance
-    seed_database([Attendance(student_uuid='17f935dd-c1ef-4672-a666-0fccbbdeffa9',
+    seed_attendances([Attendance(student_uuid='17f935dd-c1ef-4672-a666-0fccbbdeffa9',
                                course_uuid='d96ca318-f35e-475e-8015-4418cc13b343',
                                date='2023-10-15',
                                resolution=Resolution(paid=True))])
@@ -87,7 +87,7 @@ def test_expected_attendance_schema_paid():
 
 def test_no_resolution():
     # Given the database contains a single complementary attendance
-    seed_database([Attendance(student_uuid='17f935dd-c1ef-4672-a666-0fccbbdeffa9',
+    seed_attendances([Attendance(student_uuid='17f935dd-c1ef-4672-a666-0fccbbdeffa9',
                                course_uuid='d96ca318-f35e-475e-8015-4418cc13b343',
                                date='2023-10-15')])
 

@@ -53,6 +53,7 @@ interface AddAttendanceArgs {
     session: Session,
     resolution: string,
     paymentOption: string,
+    replace?: boolean,
 }
 
 interface RemoveAttendanceArgs {
@@ -214,7 +215,6 @@ const RegisterCell = memo(({
 
     return (
         <td onClick={(e) => {
-
             setSelected(true)
             setTimeout(() => {
                 setSelected(false)
@@ -225,7 +225,7 @@ const RegisterCell = memo(({
                 session: session,
                 addAttendance: (props) => {
                     setLoading(true)
-                    addAttendance(props).finally(() => setLoading(false))
+                    addAttendance({ ...props, replace: attendance !== null }).finally(() => setLoading(false))
                 },
                 removeAttendance: (props) => {
                     setLoading(true)
@@ -256,7 +256,7 @@ const RegisterRow = ({ sessions = [], attendance, member, addAttendance, removeA
     </>
 )
 
-const addMemberAttendance = ({ member, session, resolution, paymentOption }: AddAttendanceArgs): Promise<Member> => {
+const addMemberAttendance = ({ member, session, resolution, paymentOption, replace = false }: AddAttendanceArgs): Promise<Member> => {
     const courses = session.courses.filter((c) => member.isInCourse(c))
     const sessions = courses.map((c) => {
         return {
@@ -264,8 +264,17 @@ const addMemberAttendance = ({ member, session, resolution, paymentOption }: Add
             payment: (resolution === 'paid' && paymentOption === 'advance' ? { courseUuid: c.uuid } : null),
         }
     })
+    const useAdvancedPayment = paymentOption === 'advance'
+    const date = session.date
 
     try {
+        if (replace) {
+            sessions.reduce((m: Member, s: Session) => {
+                m.unattend(s)
+                return m
+            }, member)
+        }
+
         member.attendMultiple(sessions)
     } catch (e) {
         if (e instanceof DomainError) {
@@ -273,16 +282,13 @@ const addMemberAttendance = ({ member, session, resolution, paymentOption }: Add
         }
     }
 
-    return Promise.all(courses.reduce((acc: Promise<any>[], c: SessionCourse) => {
-        let memberUuid = member.uuid,
-            courseUuid = c.uuid
-
+    return Promise.all(courses.reduce((acc: Promise<any>[], course: SessionCourse) => {
         acc.push(logAttendance({
-            student_uuid: memberUuid,
-            course_uuid: courseUuid,
-            date: session.date,
+            member,
+            course,
+            date,
             resolution: resolution === 'attending' ? null : resolution,
-            paymentOption: paymentOption,
+            useAdvancedPayment,
         }))
 
         return acc
@@ -291,15 +297,12 @@ const addMemberAttendance = ({ member, session, resolution, paymentOption }: Add
     })
 }
 
-const removeMemberAttendance = ({ member, session }: RemoveAttendanceArgs) => Promise.all(session.courses.filter((c) => member.isInCourse(c)).reduce((acc: Promise<any>[], c: SessionCourse) => {
+const removeMemberAttendance = ({ member, session }: RemoveAttendanceArgs) => Promise.all(session.courses.filter((c) => member.isInCourse(c)).reduce((acc: Promise<any>[], course: SessionCourse) => {
     member.unattend(session)
 
-    let memberUuid = member.uuid,
-        courseUuid = c.uuid
-
     acc.push(deleteAttendance({
-        student_uuid: memberUuid,
-        course_uuid: courseUuid,
+        member,
+        course,
         date: session.date,
     }))
     return acc

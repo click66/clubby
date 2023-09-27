@@ -1,7 +1,7 @@
 import requests
 
 from src.models.attendance import Attendance, Resolution
-from ._seeder import seed_database
+from ._seeder import seed_attendances
 from ._jwt import headers
 
 API_ROOT = 'http://localhost:8000'
@@ -10,7 +10,7 @@ API_URL = f'{API_ROOT}/attendance/delete'
 
 def test_delete_single():
     # Given there is a single attendance with a paid resolution
-    seed_database([Attendance(date='2023-10-15',
+    seed_attendances([Attendance(date='2023-10-15',
                                course_uuid='2580ff60-4e9e-4cc7-8296-df82c91a73e5',
                                student_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
                                resolution=Resolution(paid=True))])
@@ -42,7 +42,7 @@ def test_delete_single():
 
 def test_delete_multiple():
     # Given there are multiple attendances
-    seed_database([
+    seed_attendances([
         Attendance(date='2023-10-15',
                    course_uuid='2580ff60-4e9e-4cc7-8296-df82c91a73e5',
                    student_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
@@ -80,7 +80,7 @@ def test_delete_multiple():
 
 def test_delete_some():
     # Given there are multiple attendances
-    seed_database([
+    seed_attendances([
         Attendance(date='2023-10-15',
                    course_uuid='2580ff60-4e9e-4cc7-8296-df82c91a73e5',
                    student_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',

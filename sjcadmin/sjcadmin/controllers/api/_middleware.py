@@ -59,7 +59,7 @@ def handle_error(function=None):
     def inner(request, *args, **kwargs):
         try:
             return function(request, *args, **kwargs)
-        except (DomainError, ValueError, ValidationError) as e:
+        except Exception as e:
             return JsonResponse({'error': str(e)})
 
     return inner

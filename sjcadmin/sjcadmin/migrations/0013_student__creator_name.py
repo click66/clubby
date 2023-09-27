@@ -30,5 +30,5 @@ class Migration(migrations.Migration):
             name='_creator_name',
             field=models.TextField(max_length=120, null=True),
         ),
-        migrations.RunPython(fill_creator_name),
+        # migrations.RunPython(fill_creator_name),
     ]

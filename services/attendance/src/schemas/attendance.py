@@ -19,6 +19,7 @@ class AttendanceBase(BaseModel):
 
 class AttendancePost(AttendanceBase):
     resolution: Optional[Literal['paid', 'comp']] = None
+    use_advanced_payment: Optional[bool] = False
 
 
 class AttendanceRead(AttendanceBase):

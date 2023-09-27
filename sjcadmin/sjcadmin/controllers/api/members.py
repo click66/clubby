@@ -31,6 +31,7 @@ def get_members(request):
             'phone': s.phone,
             'email': s.email,
             'membership': 'trial' if not s.has_licence() else 'licenced',
+            'allowed_trial_sessions': s.allowed_trial_sessions,
             'rem_trial_sessions': s.remaining_trial_sessions,
             'signed_up_for': list(map(lambda c: str(c.uuid), s.courses)),
             'member_since': s.join_date,
@@ -51,6 +52,7 @@ def get_members(request):
 @require_http_methods(['GET'])
 @csrf_exempt
 def get_member(request, pk):
+    # return JsonResponse({})
     s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
     r = {
         'uuid': str(s.uuid),
@@ -60,6 +62,7 @@ def get_member(request, pk):
         'phone': s.phone,
         'email': s.email,
         'membership': 'trial' if not s.has_licence() else 'licenced',
+        'allowed_trial_sessions': s.allowed_trial_sessions,
         'rem_trial_sessions': s.remaining_trial_sessions,
         'signed_up_for': list(map(lambda c: str(c.uuid), s.courses)),
         'member_since': s.join_date,
@@ -93,6 +96,7 @@ def get_members_by_courses(request):
         'phone': s.phone,
         'email': s.email,
         'membership': 'trial' if not s.has_licence() else 'licenced',
+        'allowed_trial_sessions': s.allowed_trial_sessions,
         'rem_trial_sessions': s.remaining_trial_sessions,
         'signed_up_for': [c.uuid for c in s.courses],
         'has_notes': s.has_notes,
@@ -141,6 +145,7 @@ def post_add_member(request):
         'phone': s.phone,
         'email': s.email,
         'membership': 'trial' if not s.has_licence() else 'licenced',
+        'allowed_trial_sessions': s.allowed_trial_sessions,
         'rem_trial_sessions': s.remaining_trial_sessions,
         'signed_up_for': list(map(lambda c: str(c.uuid), s.courses)),
         'member_since': s.join_date,
