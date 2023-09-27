@@ -12,21 +12,6 @@ services:
     build:
       context: .
       target: dev-runtime
-    environment:
-      - API_ROOT=http://api.southamptonjiujitsu.local:9000
-      - API_KEY=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZiB5b3UgYXJlIHJlYWRpbmcgdGhpcyI6InlvdSBoYXZlIHRvbyBtdWNoIHRpbWUgb24geW91ciBoYW5kcyJ9.a2Vm6eY2cbWIhwteh1lK3zn8sb6gH7rk38SNtnm_6XKvz2vnNqajXx2uxYtF7Cwl9n-f1Vn7FVg8y2OwWknkqDg3OY2leNN6GbDvdZpDiafYipVssOqo3Lq361vQCzSHtHnBlMu_Gf_EIwSqT1gsAtRwJlZ2oOD_otIVlpap7bU
-      - DJANGO_SETTINGS_MODULE=sjcadmin.settings
-      - DJANGO_SECRET_KEY="*(%z)+p^f+*&!zdv$j_ipce+)ru+f+g91udo2i&=1l1r6deyet"
-      - ENVIRONMENT_NAME=local
-      - PGHOST=database
-      - PGPASS=Rand0m!
-      - SJJ_S3_ACCESS_KEY=AKIARGPGSK4LMB2A3YFS
-      - SJJ_S3_SECRET_KEY=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
-      - EMAIL_HOST=mail
-      - EMAIL_PORT=1025
-      - EMAIL_USE_TLS=false
-      - EMAIL_HOST_USER='username'
-      - EMAIL_HOST_PASSWORD='password'
     networks:
       default:
         aliases:
