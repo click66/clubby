@@ -4,7 +4,7 @@ import MemberTabs from '../../components/MemberTabs'
 import { Button } from 'react-bootstrap'
 import confirmModal from '../../components/ConfirmModal'
 import { Link, useNavigate } from 'react-router-dom'
-import { addMemberToCourse, deleteMember, removeMemberFromCourse, updateMemberProfile } from '../../services/members'
+import { activateMember, addMemberToCourse, deactivateMember, deleteMember, removeMemberFromCourse, updateMemberProfile } from '../../services/members'
 import useCourses from '../../hooks/courses'
 import { notifyError, notifySuccess } from '../../utils/notifications'
 import { Member } from '../../models/Member'
@@ -94,7 +94,7 @@ function MemberProfile() {
 
     const undoSignUp = (courseUuid: string) => {
         if (member) {
-            setMember(new Member({ ...member, course_uuids: member.courseUuids.filter((uuid) => uuid !== courseUuid)}))
+            setMember(new Member({ ...member, course_uuids: member.courseUuids.filter((uuid) => uuid !== courseUuid) }))
             removeMemberFromCourse(member, { uuid: courseUuid }).then(() => {
                 notifySuccess('Member has been removed from course')
             }).catch(notifyError)
@@ -127,6 +127,16 @@ function MemberProfile() {
                                             updateMemberProfile(member.uuid!, values).then(() => {
                                                 setMember(new Member({ ...member, profile: { ...values, dateOfBirth: new Date(values.dob) } }))
                                                 notifySuccess("Member profile saved")
+                                            })
+                                            break
+                                        case "deactivate":
+                                            deactivateMember(member).then(() => {
+                                                notifySuccess("Member has been deactivated")
+                                            })
+                                            break
+                                        case "activate":
+                                            activateMember(member).then(() => {
+                                                notifySuccess("Member has been activated")
                                             })
                                             break
                                         case "delete":
@@ -173,10 +183,37 @@ function MemberProfile() {
                                                     setFieldValue('action', 'save', false)
                                                     handleSubmit()
                                                 }}>Save Member</Button>&nbsp;
+                                                {member.active ? (<>
+                                                    <Button type="submit" disabled={isSubmitting} variant="warning" className="text-dark" onClick={() => {
+                                                        confirmModal({
+                                                            title: "Confirm Member Deactivation",
+                                                            body: "This will hide the member from all attendance registers.",
+                                                            onConfirm: () => {
+                                                                setFieldValue('action', 'deactivate', false)
+                                                                handleSubmit()
+                                                            },
+                                                            onCancel: () => {
+                                                                setSubmitting(false)
+                                                            },
+                                                        })
+                                                    }}>Deactivate Member</Button>&nbsp; </>) : (<>
+                                                        <Button type="submit" disabled={isSubmitting} variant="success" className="text-light" onClick={() => {
+                                                            confirmModal({
+                                                                title: "Confirm Member Reactivation",
+                                                                body: "This member will now reappear on all attendance registers.",
+                                                                onConfirm: () => {
+                                                                    setFieldValue('action', 'activate', false)
+                                                                    handleSubmit()
+                                                                },
+                                                                onCancel: () => {
+                                                                    setSubmitting(false)
+                                                                },
+                                                            })
+                                                        }}>Reactivate Member</Button>&nbsp; </>)}
                                                 <Button type="submit" disabled={isSubmitting} variant="danger" className="text-light" onClick={() => {
                                                     confirmModal({
                                                         title: "Delete Member",
-                                                        body: "Are you sure? This will delete this member's record and all associated attendance records",
+                                                        body: "Are you sure? This will delete this member's record and all associated attendance records.",
                                                         onConfirm: () => {
                                                             setFieldValue('action', 'delete', false)
                                                             handleSubmit()
@@ -192,7 +229,7 @@ function MemberProfile() {
                                 </Formik>
                             </div>
                             <div className="col-lg-3 col-sm-12 mb-3">
-                                <SignedUpFor courses={courses} member={member} doSignUp={doSignUp} undoSignUp={undoSignUp}/>
+                                <SignedUpFor courses={courses} member={member} doSignUp={doSignUp} undoSignUp={undoSignUp} />
                             </div>
                         </div>
                     </div>

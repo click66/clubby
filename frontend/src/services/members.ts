@@ -25,6 +25,7 @@ export type DtoMember = {
     added_by: string
     member_since: string
     unused_payments: [{ course_uuid: string }]
+    active?: boolean
 }
 
 export type DtoNewMember = {
@@ -70,7 +71,8 @@ const member = (dto: DtoMember): Member => {
             phone: dto.phone ?? '',
             email: dto.email ?? '',
             address: dto.address ?? '',
-        }
+        },
+        active: dto.active ?? true,
     })
 }
 
@@ -122,4 +124,14 @@ export function addMemberToCourse(member: Member, course: DtoCourse): Promise<vo
 
 export function removeMemberFromCourse(member: Member, course: DtoCourse): Promise<void> {
     return api.post(`/members/${member.uuid}/courses/remove`, course)
+}
+
+export function activateMember(member: Member) {
+    member.activate()
+    return api.post(`/members/${member.uuid}/activate`)
+}
+
+export function deactivateMember(member: Member) {
+    member.deactivate()
+    return api.post(`/members/${member.uuid}/deactivate`)
 }

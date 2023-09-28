@@ -300,4 +300,75 @@ describe('Member model', () => {
         // Then the result is false
         expect(result).toBeFalsy()
     })
+
+    test('By default activated', () => {
+        const member = new Member({
+            name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
+            origin: { joinDate: new Date(), addedBy: 'John' },
+            course_uuids: ['20cfcac8-d2c8-437e-a770-d4902207d780'],
+            membership: { remainingTrialSessions: 0, licence: null }
+        })
+
+        expect(member.active).toBeTruthy();
+    })
+
+    test('Can be deactivated', () => {
+        const member = new Member({
+            name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
+            origin: { joinDate: new Date(), addedBy: 'John' },
+            course_uuids: ['20cfcac8-d2c8-437e-a770-d4902207d780'],
+            membership: { remainingTrialSessions: 0, licence: null }
+        })
+        
+        member.deactivate()
+
+        expect(member.active).toBeFalsy();
+    })
+
+    test('Can be reactivated if inactive', () => {
+        const member = new Member({
+            name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
+            origin: { joinDate: new Date(), addedBy: 'John' },
+            course_uuids: ['20cfcac8-d2c8-437e-a770-d4902207d780'],
+            membership: { remainingTrialSessions: 0, licence: null }
+        })
+
+        member.deactivate()
+        member.activate()
+
+        expect(member.active).toBeTruthy();
+    })
+
+    test('Cannot be activated if already active', () => {
+        const member = new Member({
+            name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
+            origin: { joinDate: new Date(), addedBy: 'John' },
+            course_uuids: ['20cfcac8-d2c8-437e-a770-d4902207d780'],
+            membership: { remainingTrialSessions: 0, licence: null }
+        })
+       
+        expect(() => {
+            member.activate()
+        }).toThrowError(DomainError)
+    })
+
+    test('Cannot be deactivated if already inactive', () => {
+        const member = new Member({
+            name: 'Joe Bloggs',
+            uuid: '3fb8ada6-b69c-446b-963f-1faa4b4c03ac',
+            origin: { joinDate: new Date(), addedBy: 'John' },
+            course_uuids: ['20cfcac8-d2c8-437e-a770-d4902207d780'],
+            membership: { remainingTrialSessions: 0, licence: null }
+        })
+
+        member.deactivate()
+
+        expect(() => {
+            member.deactivate()            
+        }).toThrowError(DomainError)
+    })
 })

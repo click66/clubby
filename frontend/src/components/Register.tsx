@@ -390,9 +390,11 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
         }) as Promise<void>
     }, [])
 
+    const fetchActiveMembers = () => fetchMembersByCourses(courses).then((members) => members.filter((m) => m.active))
+
     useEffect(() => {
         if (courses.length) {
-            fetchMembersByCourses(courses).then((members) => {
+            fetchActiveMembers().then((members) => {
                 const dates = generatePrevious30Dates(courses, squashDates)
                 setDates(dates)
 
@@ -422,7 +424,7 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
     return loaded ? (
         <>
             <div className="registerActions">
-                <MemberQuickAddButton courses={courses} onChange={() => fetchMembersByCourses(courses).then(setMembers)} />
+                <MemberQuickAddButton courses={courses} onChange={() => fetchActiveMembers().then(setMembers)} />
                 <div className='ps-2'>
                     <input type="text" className="form-control" placeholder="Search" onChange={(e) => setGlobalFilter(String(e.target.value))} />
                 </div>

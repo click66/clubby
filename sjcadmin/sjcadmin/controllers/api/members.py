@@ -25,6 +25,7 @@ def get_members(request):
     for s in students:
         student_data = {
             'uuid': str(s.uuid),
+            'active': s.active,
             'name': s.name,
             'dob': s.dob,
             'address': s.address,
@@ -56,6 +57,7 @@ def get_member(request, pk):
     s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
     r = {
         'uuid': str(s.uuid),
+        'active': s.active,
         'name': s.name,
         'dob': s.dob,
         'address': s.address,
@@ -90,6 +92,7 @@ def get_members_by_courses(request):
 
     return JsonResponse(list(map(lambda s: {
         'uuid': str(s.uuid),
+        'active': s.active,
         'name': s.name,
         'dob': s.dob,
         'address': s.address,
@@ -139,6 +142,7 @@ def post_add_member(request):
 
     r = {
         'uuid': str(s.uuid),
+        'active': s.active,
         'name': s.name,
         'dob': s.dob,
         'address': s.address,
@@ -187,6 +191,28 @@ def post_delete_member(request, pk):
     s.delete()
 
     return JsonResponse({'success': {'uuid': s.uuid}})
+
+
+@login_required_401
+@require_http_methods(['POST'])
+@handle_error
+@csrf_exempt
+def post_mark_member_inactive(request, pk):
+    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
+    s.active = False
+    s.save()
+    return JsonResponse({'success': None})
+
+
+@login_required_401
+@require_http_methods(['POST'])
+@handle_error
+@csrf_exempt
+def post_mark_member_active(request, pk):
+    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
+    s.active = True
+    s.save()
+    return JsonResponse({'success': None})
 
 
 @login_required_401

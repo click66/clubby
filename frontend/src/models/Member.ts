@@ -43,6 +43,7 @@ interface MemberProps {
     membership: Membership,
     origin: Origin,
     unusedPayments?: Payment[]
+    active?: boolean
 }
 
 export class Member {
@@ -53,6 +54,7 @@ export class Member {
     membership: Membership
     origin: Origin
     unusedPayments: Payment[] = []
+    active: boolean
 
     constructor({
         uuid,
@@ -62,6 +64,7 @@ export class Member {
         membership,
         origin,
         unusedPayments = [],
+        active = true
     }: MemberProps) {
         if (name == '') {
             throw new DomainError('Member name cannot be blank')
@@ -75,6 +78,8 @@ export class Member {
         this.membership = membership
         this.origin = origin
         this.unusedPayments = unusedPayments
+
+        this.active = active
     }
 
     public get dateOfBirth() {
@@ -167,5 +172,21 @@ export class Member {
 
     public isInCourse({ uuid }: Course) {
         return this.courseUuids.filter((cuuid: string) => cuuid === uuid).length > 0
+    }
+
+    public activate() {
+        if (this.active) {
+            throw new DomainError('Member is already active')
+        }
+
+        this.active = true
+    }
+
+    public deactivate() {
+        if (!this.active) {
+            throw new DomainError('Member is already inactive')
+        }
+
+        this.active = false
     }
 }

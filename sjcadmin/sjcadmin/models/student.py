@@ -90,6 +90,8 @@ class Student(models.Model):
     _creator_name = models.TextField(null=True, max_length=120)
     tenant_uuid = models.UUIDField(null=True, blank=True)
 
+    active = models.BooleanField(default=True)
+
     profile_name = models.CharField(null=True, max_length=120)
     profile_dob = models.DateField(null=True)
     profile_phone = models.CharField(null=True, max_length=32)
