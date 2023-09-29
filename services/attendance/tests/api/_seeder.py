@@ -29,7 +29,7 @@ def seed_member(member: dict) -> UUID:
     return UUID(requests.post('http://monolith.southamptonjiujitsu.local:8000/api/members/add',
                               json=member,
                               headers=headers({
-                                  'user_uuid': USER_UUID,
+                                  'userUuid': USER_UUID,
                               }),
                               ).json().get('success').get('uuid'))
 
@@ -38,6 +38,6 @@ def seed_course(course: dict) -> UUID:
     return UUID(requests.post('http://monolith.southamptonjiujitsu.local:8000/api/courses/add',
                               json=course,
                               headers=headers({
-                                  'user_uuid': USER_UUID,
+                                  'userUuid': USER_UUID,
                               }),
                               ).json().get('success').get('uuid'))
