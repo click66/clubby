@@ -35,12 +35,14 @@ function ChangePassword() {
                     <Form>
                         <div className="mb-3 form-group">
                             <label className="col-form-label" htmlFor="existingPassword">Current password</label>
-                            <Field className="form-control" id="existingPassword" name="existingPassword" type="password" />
+                            <Field className="form-control" id="existingPassword" name="existingPassword" type="password" validate={(value: string) => value === '' ? 'Required' : null} />
+                            <ErrorMessage name="existingPassword" component="div" className="form-text text-danger" />
                             <p className="form-text text-light">Provide your current password in order to change it.</p>
                         </div>
                         <div className="mb-3 form-group">
                             <label className="col-form-label" htmlFor="newPassword">New password</label>
-                            <Field className="form-control" id="newPassword" name="newPassword" type="password" />
+                            <Field className="form-control" id="newPassword" name="newPassword" type="password" validate={(value: string) => value === '' ? 'Required' : null} />
+                            <ErrorMessage name="newPassword" component="div" className="form-text text-danger" />
                         </div>
                         <div className="mb-3 form-group">
                             <label className="col-form-label" htmlFor="confirmNewPassword">Confirm new password</label>
@@ -57,13 +59,12 @@ function ChangePassword() {
     )
 }
 
-export default function Settings() {
+export default function User() {
     return (
         <div id="copy">
             <div className="settingsContainer">
                 <ChangePassword />
             </div>
-            <hr />
         </div>
     )
 }

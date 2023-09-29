@@ -20,7 +20,8 @@ import MemberLicence from './pages/member/MemberLicence'
 import { MemberProvider } from './contexts/MemberContext'
 import { useState } from 'react'
 import LoginGuard from './components/LoginGuard'
-import Settings from './pages/Settings'
+import User from './pages/User'
+import Admin from './pages/Admin'
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false)
@@ -76,7 +77,8 @@ function App() {
                 <Route path="/attendance" element={<Attendance />} />
                 <Route path="/attendance/:courseUuid" element={<Attendance />} />
                 <Route path="/reporting" element={<Reporting />} />
-                <Route path="/settings" element={<Settings />} />
+                <Route path="/user" element={<User />} />
+                <Route path="/admin" element={<Admin />} />
               </Route>
               <Route element={<StandardLayout bcParent={{ 'path': '/members', 'text': 'Members' }} />}>
                 <Route element={<MemberProvider children={<Outlet />} />}>

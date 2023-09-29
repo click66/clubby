@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.urls import include, path
 
-from .controllers.api import attendance as api_attendance, auth as api_auth, courses as api_courses, members as api_members
+from .controllers.api import admin as api_admin, attendance as api_attendance, auth as api_auth, courses as api_courses, members as api_members
 
 from .controllers import attendance, auth, courses, home, members, reports
 
@@ -57,6 +57,9 @@ urlpatterns = [
     path('api/courses/<uuid:pk>', api_courses.get_course),
     path('api/courses/add', api_courses.post_add_course),
     path('api/courses/delete/<uuid:pk>', api_courses.post_delete_course),
+
+    # Admin routes
+    path('api/clubs', api_admin.get_clubs),
 ]
 
 if settings.DEBUG:

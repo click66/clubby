@@ -23,15 +23,20 @@ def authorise_request(request):
 
         if 'expires' in data and data['expires'] <= time():
             return False
-        
-        if data.get('user_uuid', None) is not None:
-            u = User.fetch_by_uuid(data.get('user_uuid'))
-            if not u: return False
+
+        if 'userUuid' in data:
+            u = User.fetch_by_uuid(data.get('userUuid'))
+            if not u:
+                return False
             auth.login(request, u)
 
             return True
 
     return request.user.is_authenticated
+
+
+def superuser_check(request):
+    return request.user.is_superuser
 
 
 def user_passes_test(test_func):
@@ -49,6 +54,13 @@ def user_passes_test(test_func):
 
 def login_required_401(function=None):
     actual_decorator = user_passes_test(authorise_request)
+    if function:
+        return actual_decorator(function)
+    return actual_decorator
+
+
+def superuser_required_401(function=None):
+    actual_decorator = user_passes_test(superuser_check)
     if function:
         return actual_decorator(function)
     return actual_decorator

@@ -177,43 +177,6 @@ ul.comments {
   margin-bottom: 50px;
 }
 
-ul#portalLinks {
-  list-style-type: none;
-  padding: 0;
-  display: grid;
-  gap: 1rem;
-  margin: 0 auto;
-  max-width: 100%;
-
-  li {
-    display: block;
-    text-align: center;
-
-    i {
-      font-size: 4em;
-      line-height: 1.2em;
-      display: block;
-
-      span {
-        display: block;
-      }
-    }
-
-    a {
-      display: block;
-      padding: 0 0.8em;
-      color: inherit;
-      text-decoration: none;
-      border-radius: 3px;
-
-      &:hover {
-        background-color: $light;
-        color: $dark;
-      }
-    }
-  }
-}
-
 @media (min-width: 600px) {
   ul#portalLinks {
     grid-template-columns: repeat(3, 1fr);

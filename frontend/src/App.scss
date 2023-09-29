@@ -67,27 +67,6 @@ nav ol.breadcrumb {
   display: flex;
   flex-direction: column;
 
-  .tableActions {
-    display: flex;
-    justify-content: right;
-    align-items: center;
-    margin-bottom: 5px;
-
-    button {
-      font-size: 0.9em;
-    }
-
-    .btn-text {
-      display: none;
-
-      @media (min-width: 501px) {
-        & {
-          display: inline-block;
-        }
-      }
-    }
-  }
-
   .tableWrapper {
     flex: 1 1 auto;
     min-height: 0;
@@ -96,12 +75,37 @@ nav ol.breadcrumb {
   }
 }
 
+.tableActions {
+  display: flex;
+  justify-content: right;
+  align-items: center;
+  margin-bottom: 5px;
+
+  button {
+    font-size: 0.9em;
+  }
+
+  .btn-text {
+    display: none;
+
+    @media (min-width: 501px) {
+      & {
+        display: inline-block;
+      }
+    }
+  }
+
+  tfoot & {
+    margin-bottom: 0;
+  }
+}
+
 .table tr th:first-of-type,
 .table tr td:first-of-type {
   border-left-width: 0px !important;
 }
 
-.table-hover tr {
+.table-hover tbody tr {
   cursor: pointer;
 }
 

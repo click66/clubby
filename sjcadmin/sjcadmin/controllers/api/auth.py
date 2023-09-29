@@ -23,15 +23,17 @@ def get_jwt(request):
     expires = time.time() + (12 * 60 * 60)
 
     data = {
-        'user_uuid': str(request.user.uuid),
-        'tenant_uuid': str(request.user.tenant_uuid),
+        'userUuid': str(request.user.uuid),
+        'tenantUuid': str(request.user.tenant_uuid),
+        'isStaff': request.user.is_staff,
+        'isSuperuser': request.user.is_superuser,
         'expires': expires,
     }
 
     token = jwt.encode(data, private_key, algorithm='RS256')
 
     refresh_token = jwt.encode({
-        'user_uuid': str(request.user.uuid),
+        'userUuid': str(request.user.uuid),
         'expires': time.time() + (3 * 24 * 60 * 60),
     }, private_key, algorithm='RS256')
 
@@ -69,13 +71,13 @@ def refresh_token(request):
     if 'expires' in decrypted and decrypted['expires'] <= time.time():
         return JsonResponse({'error', 'Unauthorised'})
 
-    user = User.fetch_by_uuid(decrypted.get('user_uuid'))
+    user = User.fetch_by_uuid(decrypted.get('userUuid'))
 
     if user is not None:
         auth.login(request, user)
         return get_jwt(request)
 
-    return JsonResponse({'error': decrypted.get('user_uuid')})
+    return JsonResponse({'error': decrypted.get('userUuid')})
 
 
 @login_required_401

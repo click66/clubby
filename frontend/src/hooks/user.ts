@@ -1,6 +1,14 @@
 import jwtDecode from 'jwt-decode'
 import { useEffect, useState } from 'react'
 import Cookies from 'universal-cookie'
+import { User } from '../domain/authentication/models'
+
+interface TokenPayload {
+    userUuid: string
+    tenantUuid: string
+    isSuperuser: boolean
+    isStaff: boolean
+}
 
 export default function useUser() {
     const cookies = new Cookies()
@@ -9,11 +17,11 @@ export default function useUser() {
     useEffect(() => {
         const token = cookies.get('jwt_authorisation')
         if (token) {
-            const decoded = jwtDecode(token) as {user_uuid: string}
+            const { userUuid, isSuperuser, isStaff } = jwtDecode(token) as TokenPayload
             setUser({
-                uuid: decoded.user_uuid,
-                isClubAdmin: false,
-                isGroupAdmin: false,
+                uuid: userUuid,
+                isClubAdmin: isStaff,
+                isGroupAdmin: isSuperuser,
             })
         }
     }, [])
