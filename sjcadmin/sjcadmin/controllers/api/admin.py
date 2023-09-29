@@ -1,6 +1,8 @@
 import base64
 import json
 import os
+import secrets
+import string
 import time
 
 from jose import jwt
@@ -29,7 +31,7 @@ def get_clubs(request):
     }, clubs))})
 
 
-@require_http_methods(['GET'])
+@require_http_methods(['POST'])
 @csrf_exempt
 @login_required_401
 @superuser_required_401
@@ -37,8 +39,8 @@ def get_clubs(request):
 def create_club(request):
     data = json.loads(request.body)
 
-    # if 'name' not in data:
-    #     return JsonResponse({'error' : 'Missing required attribute "name".'})
+    if 'name' not in data:
+        return JsonResponse({'error': 'Missing required attribute "name".'})
 
     t = Tenant(name=data.get('name'))
     t.save()
@@ -46,4 +48,32 @@ def create_club(request):
     return JsonResponse({'success': {
         'uuid': t.uuid,
         'name': t.name,
+    }})
+
+
+@require_http_methods(['POST'])
+@csrf_exempt
+@login_required_401
+@superuser_required_401
+@handle_error
+def create_club_user(request, club_uuid):
+    data = json.loads(request.body)
+
+    email = data.get('email')
+    is_staff = data.get('isStaff')
+
+    def generate_secure_password(length=10):
+        characters = string.ascii_letters + string.digits + string.punctuation
+        secure_password = ''.join(secrets.choice(characters)
+                                  for _ in range(length))
+        return secure_password
+
+    password = generate_secure_password()
+
+    u = User.objects.create_user(
+        email=email, is_staff=is_staff, password=password, tenant_uuid=club_uuid)
+
+    return JsonResponse({'success': {
+        'uuid': u.uuid,
+        'password': password,
     }})

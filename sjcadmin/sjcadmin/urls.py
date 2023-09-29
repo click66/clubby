@@ -60,6 +60,8 @@ urlpatterns = [
 
     # Admin routes
     path('api/clubs', api_admin.get_clubs),
+    path('api/clubs/create', api_admin.create_club),
+    path('api/clubs/<uuid:club_uuid>/create_user', api_admin.create_club_user),
 ]
 
 if settings.DEBUG:

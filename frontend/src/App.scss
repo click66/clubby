@@ -200,7 +200,7 @@ thead th.sortableHeader {
 }
 
 form {
-  label {
+  label:not(.form-check-label) {
     font-weight: bold;
   }
 }
