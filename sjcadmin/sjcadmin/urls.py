@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/auth/jwt', api_auth.get_jwt),
     path('api/auth/login', api_auth.login),
     path('api/auth/refresh', api_auth.refresh_token),
+    path('api/auth/change_password', api_auth.change_password),
 
     path('', home.home, name='home'),
 

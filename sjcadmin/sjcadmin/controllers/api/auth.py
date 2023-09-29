@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from ._middleware import handle_error
+from ._middleware import handle_error, login_required_401
 from ....sjcauth.models import User
 
 
@@ -68,11 +68,38 @@ def refresh_token(request):
 
     if 'expires' in decrypted and decrypted['expires'] <= time.time():
         return JsonResponse({'error', 'Unauthorised'})
-    
+
     user = User.fetch_by_uuid(decrypted.get('user_uuid'))
-    
+
     if user is not None:
         auth.login(request, user)
         return get_jwt(request)
-    
+
     return JsonResponse({'error': decrypted.get('user_uuid')})
+
+
+@login_required_401
+@require_http_methods(['POST'])
+@csrf_exempt
+@handle_error
+def change_password(request):
+    data = json.loads(request.body)
+
+    existing_password = data.get('existingPassword', '')
+    new_password = data.get('newPassword', '')
+    confirm_new_password = data.get('confirmNewPassword', '')
+
+    if new_password != confirm_new_password:
+        return JsonResponse({'error': 'New passwords do not match'})
+
+    if new_password == '':
+        return JsonResponse({'error': 'New password cannot be empty'})
+
+    u = User.fetch_by_uuid(request.user._uuid)
+    if not u.check_password(existing_password):
+        return JsonResponse({'error': 'Existing password was incorrect'})
+
+    u.set_password(new_password)
+    u.save()
+
+    return JsonResponse({'success': None})

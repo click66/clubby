@@ -34,7 +34,7 @@ function LoginGuard({ children, loggedIn, setLoggedIn }: PropsWithChildren & { l
     }
 
     const attemptLoginRefresh = () => {
-        axios.post(`${API_URL}/auth/refresh`, { token: refreshToken })
+        axios.post(`${API_URL}/refresh`, { token: refreshToken })
             .then(successOrError).then(({ data }) => {
                 login(data.token, data.expires, data.refresh_token)
                 setLoggedIn(true)

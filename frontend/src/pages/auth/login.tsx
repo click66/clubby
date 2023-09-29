@@ -39,7 +39,7 @@ function Login({ loggedIn, setLoggedIn }: { loggedIn: boolean, setLoggedIn: (val
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        http.post(`${API_URL}/auth/login`, { email, password })
+        http.post(`${API_URL}/login`, { email, password })
             .then(successOrError)
             .then(({ data }) => {
                 login(data.token, data.expires, data.refresh_token)

@@ -9,6 +9,18 @@ $bootstrap-icons-font-file: "#{$bootstrap-icons-font-dir}/#{$bootstrap-icons-fon
 
 @import "./assets/legacy.scss";
 
+h1 {
+  font-size: 1.5em;
+  font-family: "open_sanssemibold", "sans-serif";
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 1.2em;
+  font-family: "open_sanssemibold", "sans-serif";
+  font-weight: bold;
+}
+
 nav ol.breadcrumb {
   a,
   a:hover {
@@ -180,5 +192,11 @@ thead th.sortableHeader {
       height: 50px;
       border-width: 8px;
     }
+  }
+}
+
+form {
+  label {
+    font-weight: bold;
   }
 }
