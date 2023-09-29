@@ -8,7 +8,6 @@ import { Course } from '../../models/Course'
 import { Button, Modal } from 'react-bootstrap'
 import { Field, Form, Formik } from 'formik'
 import { notifyError, notifySuccess } from '../../utils/notifications'
-import Spinner from '../../components/Spinner'
 
 type Payment = {
     datetime: Date
@@ -72,14 +71,14 @@ function Payments({ member, newPayments }: { member: Member, newPayments: Paymen
 
     const newAndUnusedPayments = newPayments.concat(unusedPayments)
 
-    return !loaded ? <Spinner /> : (
-        <>
+    return (
+        <div className={!loaded ? "loading": ""}>
             <h2>Unused Payments</h2>
             {newAndUnusedPayments.length === 0 ? <p className="text-center">No unused payments</p> : <PaymentTable payments={newAndUnusedPayments} showNextSession={true} />}
             <h2>Historical Payments</h2>
             {historicalPayments.length === 0 ? <p className="text-center">No historical payments</p> : <PaymentTable payments={historicalPayments} />}
             <p className="fst-italic">Showing maximum last 30 payments.</p>
-        </>
+        </div>
     )
 }
 

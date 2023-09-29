@@ -1,3 +1,5 @@
+import '../../assets/MemberProfile.page.scss'
+
 import { Field, Form, Formik } from 'formik'
 import MemberHeader from '../../components/MemberHeader'
 import MemberTabs from '../../components/MemberTabs'
@@ -12,6 +14,7 @@ import { useContext, useState } from 'react'
 import { MemberContext } from '../../contexts/MemberContext'
 import { Course, CourseCollection } from '../../models/Course'
 import { Check, Plus, X } from 'react-bootstrap-icons'
+import EscapeLink from '../../components/EscapeLink'
 
 function SignUpForm({ close, courses, onSubmit }: { close: () => void, courses: Course[], onSubmit: (courseUuid: string) => void }) {
     return (
@@ -69,11 +72,13 @@ function SignedUpFor({ courses, doSignUp, member, undoSignUp }: { courses: Cours
                     }} close={() => setSignUpFormOpen(false)} />
                 </div> : ''
             }
-            {
-                !signUpFormOpen && eligibleCourses.length !== 0 ? <div className="registerActions">
-                    <Button variant="primary" onClick={() => setSignUpFormOpen(true)}><Plus /></Button>
-                </div> : ''
-            }
+            <div className="actions">
+                {
+                    !signUpFormOpen && eligibleCourses.length !== 0 ?
+                        <Button variant="primary" onClick={() => setSignUpFormOpen(true)}><Plus /></Button>
+                        : ''
+                }
+            </div>
         </>
     )
 }
@@ -108,8 +113,8 @@ function MemberProfile() {
                 <MemberTabs selected="profile" />
                 <div className="tab-content">
                     <div className="tab-pane fade p-3 active show" role="tabpanel">
-                        <div className="row">
-                            <div className="col-lg-9 col-sm-12">
+                        <div className="memberProfile row">
+                            <div className="memberProfileForm col-lg-9 col-sm-12">
                                 <Formik initialValues={{
                                     action: 'save',
                                     name: member.name,
@@ -178,12 +183,12 @@ function MemberProfile() {
                                                     <Field component="textarea" name="address" rows="6" className="form-control" />
                                                 </div>
                                             </div>
-                                            <div className="registerActions">
+                                            <div className="actions">
                                                 <Button type="submit" disabled={isSubmitting} onClick={() => {
                                                     setFieldValue('action', 'save', false)
                                                     handleSubmit()
-                                                }}>Save Member</Button>&nbsp;
-                                                {member.active ? (<>
+                                                }}>Save Member</Button>
+                                                {member.active ? (
                                                     <Button type="submit" disabled={isSubmitting} variant="warning" className="text-dark" onClick={() => {
                                                         confirmModal({
                                                             title: "Confirm Member Deactivation",
@@ -196,20 +201,20 @@ function MemberProfile() {
                                                                 setSubmitting(false)
                                                             },
                                                         })
-                                                    }}>Deactivate Member</Button>&nbsp; </>) : (<>
-                                                        <Button type="submit" disabled={isSubmitting} variant="success" className="text-light" onClick={() => {
-                                                            confirmModal({
-                                                                title: "Confirm Member Reactivation",
-                                                                body: "This member will now reappear on all attendance registers.",
-                                                                onConfirm: () => {
-                                                                    setFieldValue('action', 'activate', false)
-                                                                    handleSubmit()
-                                                                },
-                                                                onCancel: () => {
-                                                                    setSubmitting(false)
-                                                                },
-                                                            })
-                                                        }}>Reactivate Member</Button>&nbsp; </>)}
+                                                    }}>Deactivate Member</Button>) : (
+                                                    <Button type="submit" disabled={isSubmitting} variant="success" className="text-light" onClick={() => {
+                                                        confirmModal({
+                                                            title: "Confirm Member Reactivation",
+                                                            body: "This member will now reappear on all attendance registers.",
+                                                            onConfirm: () => {
+                                                                setFieldValue('action', 'activate', false)
+                                                                handleSubmit()
+                                                            },
+                                                            onCancel: () => {
+                                                                setSubmitting(false)
+                                                            },
+                                                        })
+                                                    }}>Reactivate Member</Button>)}
                                                 <Button type="submit" disabled={isSubmitting} variant="danger" className="text-light" onClick={() => {
                                                     confirmModal({
                                                         title: "Delete Member",
@@ -228,8 +233,13 @@ function MemberProfile() {
                                     )}
                                 </Formik>
                             </div>
-                            <div className="col-lg-3 col-sm-12 mb-3">
-                                <SignedUpFor courses={courses} member={member} doSignUp={doSignUp} undoSignUp={undoSignUp} />
+                            <div className="memberProfileCourses col-lg-3 col-sm-12 mb-3">
+                                <div className="pb-2">
+                                    <SignedUpFor courses={courses} member={member} doSignUp={doSignUp} undoSignUp={undoSignUp} />
+                                </div>
+                                <div className="actions">
+                                    <EscapeLink to="/coures">Manage Courses</EscapeLink>
+                                </div>
                             </div>
                         </div>
                     </div>

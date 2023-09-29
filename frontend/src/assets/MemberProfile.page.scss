@@ -1,0 +1,57 @@
+.memberProfile {
+  .memberProfileForm {
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: right;
+
+      @media (min-width: 501px) {
+        flex-direction: row;
+      }
+    }
+  }
+
+  .memberProfileCourses {
+    padding-top: 10px;
+    margin-top: 10px;
+    border-top: 1px solid #ccc;
+
+    @media (min-width: 501px) {
+      padding-top: inherit;
+      margin-top: inherit;
+      border-top: none;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: row;
+      justify-content: right;
+    }
+  }
+}
+
+.inlineForm {
+  display: flex;
+  flex-direction: row;
+
+  .field {
+    flex: 1;
+    margin-right: 5px;
+  }
+
+  .controls {
+    display: flex;
+    gap: 5px;
+  }
+}
+
+li.signedUpCourse {
+  position: relative;
+
+  button.remove {
+    position: absolute;
+    right: 0;
+    padding: 0 5px;
+  }
+}

@@ -4,7 +4,6 @@ import { Member } from "../models/Member"
 import { useEffect, useState } from "react"
 import { fetchMembers } from "../services/members"
 import { useNavigate } from "react-router"
-import Spinner from "../components/Spinner"
 import MemberBadge from '../components/MemberBadge'
 
 const columnHelper = createColumnHelper<Member>()
@@ -61,45 +60,48 @@ function Members() {
     return (
         <>
             <h1>Members</h1>
-            <div className="rounded-3 bg-white p-3 text-dark" id="copy">
-                {!loaded ? <Spinner /> : <>
-                    <div className="registerActions">
-                        <MemberQuickAddButton courses={[]} onChange={() => fetchMembers().then(setData)} />
-                        <div className='ps-2'>
-                            <input type="text" className="form-control" placeholder="Search" onChange={(e) => setGlobalFilter(String(e.target.value))} />
+            <div className="rounded-3 bg-white p-3 text-dark fullTable" id="copy">
+                <div className="tableActions">
+                    <MemberQuickAddButton courses={[]} onChange={() => fetchMembers().then(setData)} />
+                    <div className='ps-2'>
+                        <input type="text" className="form-control" placeholder="Search" onChange={(e) => setGlobalFilter(String(e.target.value))} />
+                    </div>
+                </div>
+                <div id="tblStudents" className={"tableWrapper " + (!loaded ? "loading" : "")}>
+                    <table className="table table-hover">
+                        <thead>
+                            {table.getHeaderGroups().map((headerGroup) => (
+                                <tr key={headerGroup.id}>
+                                    {headerGroup.headers.map((header) => (
+                                        <th className={`sortableHeader ${header.column.getIsSorted() === false ? '' : `sorting sort-${header.column.getIsSorted() as string}`}`} key={header.id}>
+                                            {header.isPlaceholder ? null : (
+                                                <div onClick={header.column.getToggleSortingHandler()}>
+                                                    {flexRender(header.column.columnDef.header, header.getContext())}
+                                                </div>
+                                            )}
+                                        </th>
+                                    ))}
+                                </tr>
+                            ))}
+                        </thead>
+                        <tbody>
+                            {table.getRowModel().rows.map((row) => (
+                                <tr key={row.id} onClick={() => navigate(`/members/${row.original.uuid}/profile`, { state: { member: row.original } })}>
+                                    {row.getVisibleCells().map((cell) => (
+                                        <td key={cell.id}>
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    {data.length === 0 ? (
+                        <div className="tableError">
+                            <p>No members found</p>
                         </div>
-                    </div>
-                    <div id="tblStudents">
-                        <table className="table table-hover">
-                            <thead>
-                                {table.getHeaderGroups().map((headerGroup) => (
-                                    <tr key={headerGroup.id}>
-                                        {headerGroup.headers.map((header) => (
-                                            <th className={`sortableHeader ${header.column.getIsSorted() === false ? '' : `sorting sort-${header.column.getIsSorted() as string}`}`} key={header.id}>
-                                                {header.isPlaceholder ? null : (
-                                                    <div onClick={header.column.getToggleSortingHandler()}>
-                                                        {flexRender(header.column.columnDef.header, header.getContext())}
-                                                    </div>
-                                                )}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </thead>
-                            <tbody>
-                                {table.getRowModel().rows.map((row) => (
-                                    <tr key={row.id} onClick={() => navigate(`/members/${row.original.uuid}/profile`, { state: { member: row.original } })}>
-                                        {row.getVisibleCells().map((cell) => (
-                                            <td key={cell.id}>
-                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </td>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </>}
+                    ) : ''}
+                </div>
             </div>
         </>
     )

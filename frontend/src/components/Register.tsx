@@ -8,12 +8,11 @@ import { MemberQuickAddButton } from './MemberQuickAdd'
 import { Fragment, memo, useCallback, useEffect, useRef, useState } from 'react'
 import { deleteAttendance, getMemberAttendances, logAttendance } from '../services/attendance'
 import { Badge } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
-import { BoxArrowUpRight, Cash } from 'react-bootstrap-icons'
+import { Cash } from 'react-bootstrap-icons'
 import MemberBadge from './MemberBadge'
 import { DomainError } from '../errors'
 import { renderLogAttendanceModal } from './LogAttendanceModal'
-import Spinner from './Spinner'
+import EscapeLink from './EscapeLink'
 
 interface Course {
     uuid: string
@@ -183,7 +182,7 @@ const MemberDetails = ({ member }: { member: Member }) => (
                         </li>
                     </> : ''
             }
-            <li><Link to={`/members/${member.uuid}/profile`} state={{ member }}><BoxArrowUpRight />&nbsp;Manage</Link></li>
+            <li><EscapeLink to={`/members/${member.uuid}/profile`} state={{ member }}>Manage</EscapeLink></li>
         </ul>
     </div>
 )
@@ -393,13 +392,13 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
     const fetchActiveMembers = () => fetchMembersByCourses(courses).then((members) => members.filter((m) => m.active))
 
     useEffect(() => {
-        if (courses.length) {
-            fetchActiveMembers().then((members) => {
-                const dates = generatePrevious30Dates(courses, squashDates)
-                setDates(dates)
+        fetchActiveMembers().then((members) => {
+            const dates = generatePrevious30Dates(courses, squashDates)
+            setDates(dates)
 
-                // Might be more efficient to have the attendance API read by course, then these can be performed in unison
-                return getMemberAttendances({
+            // Might be more efficient to have the attendance API read by course, then these can be performed in unison
+            if (dates.length) {
+                getMemberAttendances({
                     members,
                     courses,
                     dateEarliest: dates[dates.length - 1].date,
@@ -417,19 +416,21 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
                         setMembers(members)
                         setLoaded(true)
                     })
-            })
-        }
+            } else {
+                setLoaded(true)
+            }
+        })
     }, [courses])
 
-    return loaded ? (
+    return (
         <>
-            <div className="registerActions">
+            <div className="tableActions">
                 <MemberQuickAddButton courses={courses} onChange={() => fetchActiveMembers().then(setMembers)} />
-                <div className='ps-2'>
+                <div className="ps-2">
                     <input type="text" className="form-control" placeholder="Search" onChange={(e) => setGlobalFilter(String(e.target.value))} />
                 </div>
             </div>
-            <div className="tblRegister">
+            <div className={"tblRegister tableWrapper " + (!loaded ? "loading" : "")}>
                 <div className="tblRegisterInner">
                     <table>
                         <thead>
@@ -480,9 +481,15 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
                         </tbody>
                     </table>
                 </div>
+                {members.length === 0 ? (
+                    <div className="tableError">
+                        <p>No members found</p>
+                        <EscapeLink to="/members">Manage Members</EscapeLink>
+                    </div>
+                ) : ''}
             </div>
         </>
-    ) : <Spinner />
+    )
 }
 
 export default Register

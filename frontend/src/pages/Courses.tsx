@@ -2,12 +2,11 @@ import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Modal from 'react-bootstrap/Modal'
 import { CourseCollection, Course } from '../models/Course'
-import { XCircleFill } from 'react-bootstrap-icons'
+import { PlusCircleFill, XCircleFill } from 'react-bootstrap-icons'
 import { Form, Formik, Field } from 'formik'
 import confirmModal from '../components/ConfirmModal'
 import { DtoNewCourse, addCourse, deleteCourse, fetchCourses } from '../services/courses'
 import { notifyError, notifySuccess } from '../utils/notifications'
-
 
 function Courses() {
     const [courses, setCourses] = useState<CourseCollection>(new Map())
@@ -59,6 +58,13 @@ function Courses() {
     useEffect(() => {
         fetchAndSetCourses()
     }, [])
+
+    const CoursePlaceholder = () => (
+        <div className="text-light text-center">
+            <p>No courses yet?</p>
+            <p>Click the button below to create a course and begin organising your sessions.</p>
+        </div>
+    )
 
     const SingleCourse = (course: Course) => (
         <div className="row mt-3" key={course.uuid}>
@@ -131,11 +137,12 @@ function Courses() {
         <>
             <h1>Courses</h1>
             <div className="container-lg">
+                {courses.size === 0 ? <CoursePlaceholder /> : ''}
                 {[...courses.values()].map(SingleCourse)}
                 <div className="row mt-3">
                     <div className="col-sm-12 col-md-12 col-lg-12">
                         <a onClick={openAddForm} className="rounded-3 text-dark bg-white p-3 report-link">
-                            <div className="text-center">+</div>
+                            <div className="text-center"><PlusCircleFill /></div>
                         </a>
                     </div>
                 </div>
