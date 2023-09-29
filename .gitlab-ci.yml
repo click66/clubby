@@ -61,8 +61,8 @@ deploy-monolith:
     - docker info
     - docker --version
   script:
-    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app -f Dockerfile --target prod-runtime .
-    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx -f Dockerfile.nginx .
+    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app:latest -f Dockerfile --target prod-runtime .
+    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx:latest -f Dockerfile.nginx .
     - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app
     - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx
     - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
