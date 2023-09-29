@@ -1,3 +1,5 @@
+import '../assets/Courses.page.scss'
+
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Modal from 'react-bootstrap/Modal'
@@ -91,7 +93,7 @@ function Courses() {
         <>
             <div className="mb-3 row">
                 <div className="col-sm-12">
-                    <Field className="form-control" type="text" name="label" placeholder="Course Name"></Field>
+                    <Field autoFocus className="form-control" type="text" name="label" placeholder="Course Name"></Field>
                 </div>
             </div>
             <label>Run on days:</label>
@@ -136,9 +138,11 @@ function Courses() {
     return (
         <>
             <h1>Courses</h1>
-            <div className="container-lg">
+            <div className="container-lg coursesContainer">
                 {courses.size === 0 ? <CoursePlaceholder /> : ''}
                 {[...courses.values()].map(SingleCourse)}
+            </div>
+            <div className="container-lg coursesFooter">
                 <div className="row mt-3">
                     <div className="col-sm-12 col-md-12 col-lg-12">
                         <a onClick={openAddForm} className="rounded-3 text-dark bg-white p-3 report-link">
@@ -150,6 +154,7 @@ function Courses() {
             <Modal
                 show={addFormOpen}
                 onHide={closeAddForm}
+                centered
             >
                 <Formik
                     initialValues={{

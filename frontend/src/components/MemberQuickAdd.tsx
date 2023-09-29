@@ -40,7 +40,7 @@ function MemberQuickAddAndAssign({ courses, onChange }: MemberQuickAddProps) {
                         <Form>
                             <div className="mb-3 row">
                                 <div className="col-sm-12">
-                                    <Field type="text" className="form-control" name="studentName" placeholder="Name" />
+                                    <Field type="text" autoFocus className="form-control" name="studentName" placeholder="Name" />
                                 </div>
                             </div>
                             {

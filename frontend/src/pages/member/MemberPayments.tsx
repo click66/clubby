@@ -72,7 +72,7 @@ function Payments({ member, newPayments }: { member: Member, newPayments: Paymen
     const newAndUnusedPayments = newPayments.concat(unusedPayments)
 
     return (
-        <div className={!loaded ? "loading": ""}>
+        <div className={!loaded ? "loading" : ""}>
             <h2>Unused Payments</h2>
             {newAndUnusedPayments.length === 0 ? <p className="text-center">No unused payments</p> : <PaymentTable payments={newAndUnusedPayments} showNextSession={true} />}
             <h2>Historical Payments</h2>
@@ -94,18 +94,20 @@ function MemberPayments() {
             <MemberHeader />
             <div className="rounded-3 bg-white text-dark" id="copy">
                 <MemberTabs selected="payments" />
-                <div className="p-3" id="tabCopyPayments" role="tabpanel" aria-labelledby="tabPayments">
-                    <div className="row justify-content-center">
-                        <div className="col-sm-12 col-md-10 col-lg-8">
-                            <div className="mb-3 text-end">
-                                <Button variant="primary" onClick={() => { setFormOpen(true) }} disabled={member.courseUuids.length === 0}>Add Payment</Button>
+                <div className="tab-content" id="tabCopyPayments" role="tabpanel" aria-labelledby="tabPayments">
+                    <div className="p-3">
+                        <div className="row justify-content-center">
+                            <div className="col-sm-12 col-md-10 col-lg-8">
+                                <div className="mb-3 text-end">
+                                    <Button variant="primary" onClick={() => { setFormOpen(true) }} disabled={member.courseUuids.length === 0}>Add Payment</Button>
+                                </div>
+                                <Payments member={member} newPayments={newPayments} />
                             </div>
-                            <Payments member={member} newPayments={newPayments} />
                         </div>
                     </div>
                 </div>
             </div>
-            <Modal show={formOpen} onHide={() => setFormOpen(false)}>
+            <Modal show={formOpen} onHide={() => setFormOpen(false)} centered>
                 <Formik
                     initialValues={{
                         courseUuid: memberCourses.length === 1 ? memberCourses[0]!.uuid : '',

@@ -34,6 +34,7 @@ function LogAttendanceModal({ member, session, allowClearAttendance, removeAtten
         <Modal
             show={show}
             onHide={close}
+            centered
         >
             <Formik
                 initialValues={{

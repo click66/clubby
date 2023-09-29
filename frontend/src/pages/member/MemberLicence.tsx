@@ -74,6 +74,7 @@ function MemberLicence() {
             <Modal
                 show={licenceFormOpen}
                 onHide={() => { setLicenceFormOpen(false) }}
+                centered
             >
                 <Formik
                     initialValues={{

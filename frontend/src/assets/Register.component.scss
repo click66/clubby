@@ -4,8 +4,8 @@
   position: relative;
 
   .tblRegisterInner {
-    overflow: scroll;
     margin-left: 200px;
+    overflow-x: scroll;
   }
 }
 

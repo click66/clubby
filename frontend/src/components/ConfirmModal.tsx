@@ -25,6 +25,7 @@ function ConfirmModal({
         <Modal
             show={open}
             onHide={close}
+            centered
         >
             <Modal.Header>
                 <Modal.Title>{title}</Modal.Title>
