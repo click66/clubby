@@ -1,5 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 
+export type HttpInstance = AxiosInstance
+
 interface TokenContainer {
     get(tokenName: string): any
 }
@@ -34,4 +36,8 @@ export function withInterceptors(axiosInstance: AxiosInstance, tokens: TokenCont
     axiosInstance.interceptors.request.use(appendAuthorisation(tokens), (error) => Promise.reject(error))
     axiosInstance.interceptors.response.use(successOrError)
     return axiosInstance
+}
+
+export function createApiInstance(baseURL: string, tokens: TokenContainer): HttpInstance {
+    return withInterceptors(http.create({ baseURL }), tokens)
 }
