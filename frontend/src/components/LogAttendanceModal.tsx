@@ -1,4 +1,3 @@
-import '../assets/Register.component.scss'
 import { Member } from '../models/Member'
 import { Button, Modal } from 'react-bootstrap'
 import { Field, Form, Formik } from 'formik'

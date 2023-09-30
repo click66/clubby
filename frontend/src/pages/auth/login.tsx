@@ -58,7 +58,7 @@ function Login({ loggedIn, setLoggedIn }: { loggedIn: boolean, setLoggedIn: (val
         <>
             <form onSubmit={handleSubmit}>
                 <div className="form-outline mb-4">
-                    <input type="text" name="email" className="form-control" placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)}></input>
+                    <input type="text" name="email" className="form-control" placeholder="Username or Email" value={email} onChange={e => setEmail(e.target.value)}></input>
                 </div>
                 <div className="form-outline mb-4">
                     <input type="password" name="password" className="form-control" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)}></input>

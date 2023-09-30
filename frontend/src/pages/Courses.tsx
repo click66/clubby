@@ -13,6 +13,7 @@ import { notifyError, notifySuccess } from '../utils/notifications'
 function Courses() {
     const [courses, setCourses] = useState<CourseCollection>(new Map())
     const [addFormOpen, setAddFormOpen] = useState(false)
+    const [loaded, setLoaded] = useState(false)
 
     const openAddForm = () => {
         setAddFormOpen(true)
@@ -22,9 +23,7 @@ function Courses() {
         setAddFormOpen(false)
     }
 
-    const fetchAndSetCourses = () => {
-        fetchCourses().then(setCourses)
-    }
+    const fetchAndSetCourses = () => fetchCourses().then(setCourses)
 
     const submitNewCourse = (data: DtoNewCourse) => {
         addCourse(data).then((_) => {
@@ -58,7 +57,7 @@ function Courses() {
     }
 
     useEffect(() => {
-        fetchAndSetCourses()
+        fetchAndSetCourses().then(() => setLoaded(true))
     }, [])
 
     const CoursePlaceholder = () => (
@@ -138,7 +137,7 @@ function Courses() {
     return (
         <>
             <h1>Courses</h1>
-            <div className="container-lg coursesContainer">
+            <div className={"container-lg coursesContainer bg-dark " + (!loaded ? "loading" : "")}>
                 {courses.size === 0 ? <CoursePlaceholder /> : ''}
                 {[...courses.values()].map(SingleCourse)}
             </div>
