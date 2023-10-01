@@ -14,7 +14,7 @@ export interface Attendee {
     hasLicence(): boolean
     isLicenceExpired(now: Date): boolean
     hasUsablePaymentForCourse(course: Course): boolean
-    
+
     withRemainingTrialSessions(count: number): Attendee
     withTakenPayment(payment: Payment): Attendee
 }
@@ -30,4 +30,18 @@ export interface NewAttendance {
     resolution?: 'comp' | 'paid' | null
     paymentOption?: 'advance' | 'now'
     replace?: boolean
+}
+
+export interface Attendance {
+    id: number
+    session: Session
+    attendee: Attendee
+    resolution: 'comp' | 'paid' | null
+}
+
+export interface AttendanceQuery {
+    attendees: Attendee[]
+    courses: Course[]
+    dateEarliest: Date
+    dateLatest: Date
 }
