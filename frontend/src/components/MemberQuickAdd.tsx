@@ -1,7 +1,11 @@
 import { Field, Form, Formik } from 'formik'
 import { Button, OverlayTrigger, Popover } from 'react-bootstrap'
-import { addMember } from '../services/members'
 import { notifyError, notifySuccess } from '../utils/notifications'
+import { createMember } from '../domain/members/members'
+import { createApiInstance } from '../utils/http'
+import { V1MemberFactory } from '../domain/MemberFactory'
+import Cookies from 'universal-cookie'
+import { Member } from '../domain/members/types'
 
 interface Course {
     uuid: string
@@ -10,18 +14,26 @@ interface Course {
 
 interface MemberQuickAddProps {
     courses: Course[]
-    onChange: () => void
+    onChange: (newMember: Member) => void
 }
 
 interface MemberAndCourse {
-    studentName: string
-    product: string
+    name: string
+    productUuid: string
 }
 
 function MemberQuickAddAndAssign({ courses, onChange }: MemberQuickAddProps) {
+    const cookies = new Cookies()
+    const LEGACY_API_URL = import.meta.env.VITE_LEGACY_API_URL
+    const httpMembers = createApiInstance(LEGACY_API_URL, cookies)
+
+
     const submitNewMember = (data: MemberAndCourse) => {
-        addMember({ name: data.studentName }, { uuid: data.product }).then(() => {
-            onChange()
+        createMember(httpMembers, new V1MemberFactory())({
+            name: data.name,
+            course: { uuid: data.productUuid, }
+        }).then((member) => {
+            onChange(member)
             notifySuccess('New member added')
         }).catch(notifyError)
         document.body.click()
@@ -33,21 +45,21 @@ function MemberQuickAddAndAssign({ courses, onChange }: MemberQuickAddProps) {
         <Popover>
             <Popover.Body>
                 <Formik
-                    initialValues={{ product: firstCourse?.uuid ?? '', studentName: '' }}
+                    initialValues={{ productUuid: firstCourse?.uuid ?? '', name: '' }}
                     onSubmit={submitNewMember}
                 >
                     {({ isSubmitting }) => (
                         <Form>
                             <div className="mb-3 row">
                                 <div className="col-sm-12">
-                                    <Field type="text" autoFocus className="form-control" name="studentName" placeholder="Name" />
+                                    <Field type="text" autoFocus className="form-control" name="name" placeholder="Name" />
                                 </div>
                             </div>
                             {
                                 courses.length > 0 ?
                                     <div className="mb-3 row">
                                         <div className="col-sm-12">
-                                            <Field as="select" className="form-select" name="product">
+                                            <Field as="select" className="form-select" name="productUuid">
                                                 {courses.map((c: Course) => (
                                                     <option key={c.uuid} value={c.uuid}>{c.label}</option>
                                                 ))}

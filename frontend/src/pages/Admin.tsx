@@ -1,8 +1,8 @@
 import '../assets/Settings.page.scss'
 
 import { useEffect, useState } from 'react'
-import { getClubs } from '../domain/group-administration/service'
-import { Club } from '../domain/group-administration/models'
+import { getClubs } from '../domain/group-administration/group-administration'
+import { Club } from '../domain/group-administration/types'
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
 function ManageClubs() {

@@ -4,7 +4,7 @@ import { Attendance, AttendanceQuery, Attendee, Course, NewAttendance, Session }
 
 const isoDate = (date: Date) => date.toISOString().split('T')[0]
 
-function saveNewAttendance(http: HttpInstance, { attendee, session, resolution, paymentOption }: NewAttendance) {
+function saveNewAttendance(http: HttpInstance, { attendee, session, resolution = null, paymentOption }: NewAttendance) {
     return Promise.all(session.courses.reduce((acc: Promise<any>[], course) => {
         acc.push(http.post('/attendance/create', {
             student_uuid: attendee.uuid,
@@ -14,7 +14,14 @@ function saveNewAttendance(http: HttpInstance, { attendee, session, resolution, 
             use_advanced_payment: paymentOption === 'advance',
         }))
         return acc
-    }, [] as Promise<any>[]))
+    }, [] as Promise<any>[])).then((data) => ({
+        session: {
+            date: session.date,
+            courses: session.courses.filter((c) => data.map((d) => d.data.course_uuid).includes(c.uuid)),
+        },
+        attendee: attendee,
+        resolution: resolution,
+    }))
 }
 
 function deleteAttendance(http: HttpInstance, { attendee, course, date }: { attendee: Attendee, course: Course, date: Date }) {
@@ -27,11 +34,12 @@ function deleteAttendance(http: HttpInstance, { attendee, course, date }: { atte
 }
 
 export function attendSession(http: HttpInstance) {
-    return ({ session, attendee, resolution = null, paymentOption = 'now', replace = false }: NewAttendance): Promise<Attendee> => {
+    return ({ session, attendee, resolution = null, paymentOption = 'now', replace = false }: NewAttendance): Promise<Attendance> => {
         if (attendee.hasLicence() && attendee.isLicenceExpired(session.date)) {
             return Promise.reject(new DomainError('Attendee licence has expired.'))
         }
-
+        
+        session = { ...session }
         session.courses = session.courses.filter((c) => attendee.isInCourse(c))
 
         if (!attendee.hasLicence() && (attendee.remainingTrialSessions - session.courses.length) < 0) {
@@ -48,12 +56,16 @@ export function attendSession(http: HttpInstance) {
             resolution,
             paymentOption,
             replace,
-        }).then(() => session.courses.reduce(
-            (acc: Attendee, course: Course) => acc
-                .withRemainingTrialSessions(acc.remainingTrialSessions - (replace || acc.remainingTrialSessions === 0 ? 0 : 1))
-                .withTakenPayment({ course }),
-            attendee,
-        ))
+        })
+            .then((attendance: Attendance) => attendance.session.courses.reduce(
+                (acc: Attendance, course: Course) => {
+                    acc.attendee = acc.attendee
+                        .withRemainingTrialSessions(acc.attendee.remainingTrialSessions - (replace || acc.attendee.remainingTrialSessions === 0 ? 0 : 1))
+                        .withTakenPayment({ course })
+                    return acc
+                },
+                attendance,
+            ))
     }
 }
 
@@ -85,7 +97,6 @@ export function getAttendance(http: HttpInstance) {
         })))
             .then((responses) => responses.map((r) => r.data).flat())
             .then((data) => data.map((d): Attendance => ({
-                id: d.id,
                 attendee: attendees.find((a) => a.uuid === d.student_uuid)!,
                 session: {
                     date: new Date(d.date),

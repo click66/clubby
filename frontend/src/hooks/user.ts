@@ -1,7 +1,7 @@
 import jwtDecode from 'jwt-decode'
 import { useEffect, useState } from 'react'
 import Cookies from 'universal-cookie'
-import { User } from '../domain/authentication/models'
+import { User } from '../domain/authentication/types'
 
 interface TokenPayload {
     userUuid: string

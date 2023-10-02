@@ -1,6 +1,6 @@
 import { Dispatch, ReactNode, SetStateAction, createContext } from 'react'
 import useMember from '../hooks/member'
-import { Member } from '../models/Member'
+import { Member } from '../domain/members/types'
 
 export const MemberContext = createContext<[Member | undefined, Dispatch<SetStateAction<Member | undefined>>]>([undefined, () => { }])
 

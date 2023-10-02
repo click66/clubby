@@ -1,13 +1,31 @@
-import { attendSession, getAttendance, unattendSession } from '../../../src/domain/attendance/service'
+import { attendSession, getAttendance, unattendSession } from '../../../src/domain/attendance/attendance'
 import MockAdapter from 'axios-mock-adapter'
 import { http } from '../../../src/utils/http'
 import { Member } from '../../../src/domain/Member'
+import { Attendee, Course } from '../../../src/domain/attendance/types'
 import { DomainError } from '../../../src/errors'
 
 const mockHttp = new MockAdapter(http)
 
 describe('attendSession', () => {
-    mockHttp.onPost('/attendance/create').reply(200)
+    function mockAttendanceCreate(attendee: Attendee, course: Course, useAdvancedPayment: boolean = false) {
+        const requestBody = {
+            student_uuid: attendee.uuid,
+            course_uuid: course.uuid,
+            date: '2023-10-15',
+            resolution: null,
+            use_advanced_payment: useAdvancedPayment,
+        }
+
+        const responseBody = {
+            'student_uuid': attendee.uuid,
+            'course_uuid': course.uuid,
+            'date': '2023-10-15',
+            'resolution': null,
+        }
+
+        mockHttp.onPost('/attendance/create', requestBody).reply(200, responseBody)
+    }
 
     test('Persists correctly to server', () => {
         // Given a session with two courses
@@ -23,9 +41,13 @@ describe('attendSession', () => {
         // And an attendee signed up for one of them
         const attendee = new Member({
             uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
             remainingTrialSessions: 4,
             courses: [course],
         })
+
+        mockAttendanceCreate(attendee, course)
 
         // When the attendee attends the session
         const spy = jest.spyOn(http, 'post')
@@ -54,18 +76,23 @@ describe('attendSession', () => {
         // But the attendee is only signed up for 2 of them
         const attendee = new Member({
             uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
             remainingTrialSessions: 4,
             courses: [
                 { uuid: '782732e2-1b1f-4291-821c-c73400164473' },
                 { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
             ],
-            licence: { id: 12345, expiryDate: new Date('2023-11-15') },
+            licence: { number: 12345, expiryDate: new Date('2023-11-15') },
         })
+
+        mockAttendanceCreate(attendee, session.courses[0])
+        mockAttendanceCreate(attendee, session.courses[1])
 
         // When the attendee attends the session
         // Then the attendee will have attended 2 sessions
         return expect(attendSession(http)({ session, attendee })).resolves.toStrictEqual(expect.objectContaining({
-            remainingTrialSessions: 2,
+            attendee: expect.objectContaining({ remainingTrialSessions: 2 })
         }))
     })
 
@@ -76,27 +103,33 @@ describe('attendSession', () => {
         // And the attendee has attended one session on 2023-10-15
         const attendee = new Member({
             uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
             remainingTrialSessions: 1,
             courses: [
                 { uuid: '782732e2-1b1f-4291-821c-c73400164473' },
             ],
-            licence: { id: 12345, expiryDate: new Date('2023-11-15') },
+            licence: { number: 12345, expiryDate: new Date('2023-11-15') },
         })
+
+        mockAttendanceCreate(attendee, session.courses[0])
 
         // When the attendee attends the session, and we instruct to replace existing attendances
         // Then the attendee will still have only attended one session
         return expect(attendSession(http)({ session, attendee, replace: true })).resolves.toStrictEqual(expect.objectContaining({
-            remainingTrialSessions: 1,
+            attendee: expect.objectContaining({ remainingTrialSessions: 1 }),
         }))
     })
 
-    test('If an attendee is unlicenced, they can attend if they have remaining trial sessions', () => {
+    test('If an attendee is unlicenced, they can attend if they hae remaining trial sessions', () => {
         // Given a session occurs on 2023-10-15
         const session = { date: new Date('2023-10-15'), courses: [{ uuid: '782732e2-1b1f-4291-821c-c73400164473' }] }
 
         // And the attendee has one remaining trial session
         const attendee = new Member({
             uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
             remainingTrialSessions: 1,
             courses: [
                 { uuid: '782732e2-1b1f-4291-821c-c73400164473' },
@@ -105,9 +138,11 @@ describe('attendSession', () => {
             licence: null,
         })
 
+        mockAttendanceCreate(attendee, session.courses[0])
+
         // When the attendee attends the session
         return expect(attendSession(http)({ session, attendee })).resolves.toStrictEqual(expect.objectContaining({
-            remainingTrialSessions: 0,
+            attendee: expect.objectContaining({ remainingTrialSessions: 0 }),
         }))
     })
 
@@ -118,12 +153,14 @@ describe('attendSession', () => {
         // And the attendee has an expired licence
         const attendee = new Member({
             uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
             remainingTrialSessions: 0,
             courses: [
                 { uuid: '782732e2-1b1f-4291-821c-c73400164473' },
                 { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
             ],
-            licence: { id: 12345, expiryDate: new Date('2023-09-15') },
+            licence: { number: 12345, expiryDate: new Date('2023-09-15') },
         })
 
         // When the attendee attends the session
@@ -138,6 +175,8 @@ describe('attendSession', () => {
         // And the attendee has no licence and no remaining trial sessions
         const attendee = new Member({
             uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
             remainingTrialSessions: 0,
             courses: [
                 { uuid: '782732e2-1b1f-4291-821c-c73400164473' },
@@ -145,6 +184,8 @@ describe('attendSession', () => {
             ],
             licence: null,
         })
+
+        mockAttendanceCreate(attendee, session.courses[0])
 
         // Then an error will be thrown
         return expect(attendSession(http)({ session, attendee })).rejects.toThrowError(DomainError)
@@ -157,18 +198,22 @@ describe('attendSession', () => {
         // And the attendee has no usable payment for the course
         const attendee = new Member({
             uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
             remainingTrialSessions: 4,
             courses: [
                 { uuid: '782732e2-1b1f-4291-821c-c73400164473' },
             ],
-            licence: { id: 12345, expiryDate: new Date('2023-11-15') },
+            licence: { number: 12345, expiryDate: new Date('2023-11-15') },
             unusedPayments: [{ course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' } }],
         })
+
+        mockAttendanceCreate(attendee, session.courses[0], true)
 
         // When the attendee attends the session and declares they have paid in advance
         return attendSession(http)({ session, attendee, paymentOption: 'advance' }).then((result) => {
             // Then that payment is no longer available
-            expect(result.hasUsablePaymentForCourse(session.courses[0])).toBeFalsy()
+            expect(result.attendee.hasUsablePaymentForCourse(session.courses[0])).toBeFalsy()
         })
     })
 
@@ -179,21 +224,25 @@ describe('attendSession', () => {
         // And the attendee has no usable payment for the course
         const attendee = new Member({
             uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
             remainingTrialSessions: 4,
             courses: [
                 { uuid: '782732e2-1b1f-4291-821c-c73400164473' },
             ],
-            licence: { id: 12345, expiryDate: new Date('2023-11-15') },
+            licence: { number: 12345, expiryDate: new Date('2023-11-15') },
             unusedPayments: [
                 { course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' } },
                 { course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' } },
             ],
         })
 
+        mockAttendanceCreate(attendee, session.courses[0], true)
+
         // When the attendee attends the session and declares they have paid in advance
         return attendSession(http)({ session, attendee, paymentOption: 'advance' }).then((result) => {
             // Then the payment is no longer available afterwards
-            expect(result.hasUsablePaymentForCourse(session.courses[0])).toBeTruthy()
+            expect(result.attendee.hasUsablePaymentForCourse(session.courses[0])).toBeTruthy()
         })
     })
 
@@ -204,11 +253,13 @@ describe('attendSession', () => {
         // And the attendee has no usable payment for the course
         const attendee = new Member({
             uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
             remainingTrialSessions: 4,
             courses: [
                 { uuid: '782732e2-1b1f-4291-821c-c73400164473' },
             ],
-            licence: { id: 12345, expiryDate: new Date('2023-11-15') },
+            licence: { number: 12345, expiryDate: new Date('2023-11-15') },
             unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' } }],
         })
 
@@ -225,6 +276,8 @@ describe('unattendSession', () => {
         // Given an attendee is on a trial membership
         const attendee = new Member({
             uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
             remainingTrialSessions: 0,
             courses: [
                 { uuid: '782732e2-1b1f-4291-821c-c73400164473' },
@@ -242,7 +295,7 @@ describe('unattendSession', () => {
             ]
         }
 
-        // When the attendee "unattends" the session
+        // When the attendee 'unattends' the session
         // Then the attendee will gain back 2 trial sessions
         return expect(unattendSession(http)({ session, attendee })).resolves.toStrictEqual(expect.objectContaining({
             remainingTrialSessions: 2,
@@ -258,16 +311,22 @@ describe('getAttendance', () => {
         // And 3 students
         const attendee1 = new Member({
             uuid: '2e4070ee-eb57-4280-94cd-4aabb98257bd',
+            name: 'John Doe',
+            active: true,
             remainingTrialSessions: 0,
             courses: [course],
         })
         const attendee2 = new Member({
             uuid: 'ef18ee60-4bbc-4e09-bc7f-8822fc8ed91c',
+            name: 'Jane Doe',
+            active: true,
             remainingTrialSessions: 0,
             courses: [course],
         })
         const attendee3 = new Member({
             uuid: '563eebea-a982-4595-a9dd-e3e7a4a9287b',
+            name: 'Harry Solomon',
+            active: true,
             remainingTrialSessions: 0,
             courses: [course],
         })
@@ -306,7 +365,6 @@ describe('getAttendance', () => {
             dateLatest: new Date('2023-07-30'),
         })).resolves.toStrictEqual([
             {
-                id: 904,
                 session: {
                     date: new Date('2023-07-17'),
                     courses: [course],
@@ -315,7 +373,6 @@ describe('getAttendance', () => {
                 resolution: null,
             },
             {
-                id: 894,
                 session: {
                     date: new Date('2023-07-13'),
                     courses: [course],
@@ -324,7 +381,6 @@ describe('getAttendance', () => {
                 resolution: 'paid',
             },
             {
-                id: 895,
                 session: {
                     date: new Date('2023-07-13'),
                     courses: [course],

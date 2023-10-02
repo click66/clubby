@@ -1,10 +1,13 @@
 import { SortingState, createColumnHelper, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table"
 import { MemberQuickAddButton } from "../components/MemberQuickAdd"
-import { Member } from "../models/Member"
 import { useEffect, useState } from "react"
-import { fetchMembers } from "../services/members"
 import { useNavigate } from "react-router"
 import MemberBadge from '../components/MemberBadge'
+import { Member } from '../domain/members/types'
+import { getMembers } from '../domain/members/members'
+import Cookies from 'universal-cookie'
+import { V1MemberFactory } from '../domain/MemberFactory'
+import { createApiInstance } from '../utils/http'
 
 const columnHelper = createColumnHelper<Member>()
 
@@ -19,7 +22,7 @@ const columns = [
         header: 'Email',
         cell: info => info.getValue(),
     }),
-    columnHelper.accessor('membership', {
+    columnHelper.accessor(r => r.hasLicence(), {
         header: 'Type',
         cell: ({ row }) =>
             <div className="memberRowHeader">
@@ -30,6 +33,11 @@ const columns = [
 ]
 
 function Members() {
+    const cookies = new Cookies()
+    const LEGACY_API_URL = import.meta.env.VITE_LEGACY_API_URL
+    const httpMembers = createApiInstance(LEGACY_API_URL, cookies)
+
+
     const navigate = useNavigate()
     const [data, setData] = useState<Member[]>([])
     const [loaded, setLoaded] = useState(false)
@@ -51,7 +59,7 @@ function Members() {
     })
 
     useEffect(() => {
-        fetchMembers().then((d) => {
+        getMembers(httpMembers, new V1MemberFactory())().then((d) => {
             setData(d)
             setLoaded(true)
         })
@@ -62,7 +70,7 @@ function Members() {
             <h1>Members</h1>
             <div className="rounded-3 bg-white p-3 text-dark fullTable" id="copy">
                 <div className="tableActions">
-                    <MemberQuickAddButton courses={[]} onChange={() => fetchMembers().then(setData)} />
+                    <MemberQuickAddButton courses={[]} onChange={() => getMembers(httpMembers, new V1MemberFactory())().then(setData)} />
                     <div className='ps-2'>
                         <input type="text" className="form-control" placeholder="Search" onChange={(e) => setGlobalFilter(String(e.target.value))} />
                     </div>

@@ -1,9 +1,9 @@
 import '../assets/Register.component.scss'
-import { Member } from '../models/Member'
 import { Button, Modal } from 'react-bootstrap'
 import { Field, Form, Formik } from 'formik'
 import { createRoot } from 'react-dom/client'
 import { useState } from 'react'
+import { Attendee } from '../domain/attendance/types'
 
 interface Course {
     uuid: string
@@ -17,13 +17,13 @@ type Session = {
 
 interface LogAttendanceModalProps {
     allowClearAttendance: boolean
-    member: Member
+    attendee: Attendee
     session: Session
-    addAttendance: ({ member, session, resolution, paymentOption }: { member: Member, session: Session, resolution: string, paymentOption: string }) => void
-    removeAttendance: ({ member, session }: { member: Member, session: Session }) => void,
+    addAttendance: ({ attendee, session, resolution, paymentOption }: { attendee: Attendee, session: Session, resolution: 'paid' | 'comp' | null, paymentOption: 'advance' | 'now' }) => void
+    removeAttendance: ({ attendee, session }: { attendee: Attendee, session: Session }) => void,
 }
 
-function LogAttendanceModal({ member, session, allowClearAttendance, removeAttendance, addAttendance }: LogAttendanceModalProps) {
+function LogAttendanceModal({ attendee, session, allowClearAttendance, removeAttendance, addAttendance }: LogAttendanceModalProps) {
     const [show, setShow] = useState<boolean>(true)
 
     const close = () => {
@@ -40,16 +40,21 @@ function LogAttendanceModal({ member, session, allowClearAttendance, removeAtten
                 initialValues={{
                     action: '',
                     resolution: 'attending',
-                    paymentOption: session.courses.map((c) => member.hasUsablePaymentForCourse(c)).includes(true) ? 'advance' : 'now',
+                    paymentOption: session.courses.map((c) => attendee.hasUsablePaymentForCourse(c)).includes(true) ? 'advance' : 'now',
                 }}
                 onSubmit={(values, { setSubmitting }) => {
-                    if (member && session) {
+                    if (attendee && session) {
                         switch (values.action) {
                             case 'confirm':
-                                addAttendance({ member, session, resolution: values.resolution, paymentOption: values.paymentOption })
+                                addAttendance({
+                                    attendee,
+                                    session,
+                                    resolution: values.resolution === 'paid' || values.resolution === 'comp' ? values.resolution : null,
+                                    paymentOption: values.paymentOption === 'advance' ? 'advance' : 'now',
+                                })
                                 break
                             case 'clear':
-                                removeAttendance({ member, session })
+                                removeAttendance({ attendee, session })
                                 break
                         }
                     }
@@ -67,7 +72,7 @@ function LogAttendanceModal({ member, session, allowClearAttendance, removeAtten
                             <div className="mb-3 row">
                                 <label className="col-sm-4 col-form-label">Student name</label>
                                 <div className="col-sm-8">
-                                    <input type="text" readOnly={true} className="form-control-plaintext" value={member.name} />
+                                    <input type="text" readOnly={true} className="form-control-plaintext" value={attendee.name} />
                                 </div>
                             </div>
                             <div className="mb-3 row">

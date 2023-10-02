@@ -1,3 +1,5 @@
+import { IMember } from '../Member'
+
 export interface Course {
     uuid: string
 }
@@ -6,14 +8,16 @@ export interface Payment {
     course: Course
 }
 
-export interface Attendee {
-    uuid: string
-    remainingTrialSessions: number
+export interface Attendee extends IMember {
+    readonly uuid: string
+    readonly name: string
+    readonly remainingTrialSessions: number
 
     isInCourse(course: Course): boolean
     hasLicence(): boolean
     isLicenceExpired(now: Date): boolean
     hasUsablePaymentForCourse(course: Course): boolean
+    activeTrial(): boolean
 
     withRemainingTrialSessions(count: number): Attendee
     withTakenPayment(payment: Payment): Attendee
@@ -33,7 +37,6 @@ export interface NewAttendance {
 }
 
 export interface Attendance {
-    id: number
     session: Session
     attendee: Attendee
     resolution: 'comp' | 'paid' | null

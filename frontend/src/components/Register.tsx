@@ -1,18 +1,21 @@
 import '../assets/Register.component.scss'
 
 import { RowData, SortingState, createColumnHelper, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table'
-import { Member } from '../models/Member'
-import { fetchMembersByCourses } from '../services/members'
 import { notifyError, notifySuccess } from '../utils/notifications'
 import { MemberQuickAddButton } from './MemberQuickAdd'
 import { Fragment, memo, useCallback, useEffect, useRef, useState } from 'react'
-import { deleteAttendance, getMemberAttendances, logAttendance } from '../services/attendance'
 import { Badge } from 'react-bootstrap'
 import { Cash } from 'react-bootstrap-icons'
 import MemberBadge from './MemberBadge'
 import { DomainError } from '../errors'
 import { renderLogAttendanceModal } from './LogAttendanceModal'
 import EscapeLink from './EscapeLink'
+import Cookies from 'universal-cookie'
+import { createApiInstance } from '../utils/http'
+import { attendSession, getAttendance, unattendSession } from '../domain/attendance/attendance'
+import { Attendance, Attendee } from '../domain/attendance/types'
+import { getMembersByCourses } from '../domain/members/members'
+import { V1MemberFactory } from '../domain/MemberFactory'
 
 interface Course {
     uuid: string
@@ -26,14 +29,6 @@ interface RegisterProps {
     squashDates: boolean
 }
 
-interface CourseRegisterData {
-    id: number
-    courseUuid: string
-    resolution: string
-    studentUuid: string
-    date: Date
-}
-
 interface SessionCourse {
     uuid: string
     label: string
@@ -44,25 +39,25 @@ type Session = {
     date: Date,
 }
 
-type MemberCourseAttendance = Map<string, Map<string, CourseRegisterData>>
+type MemberCourseAttendance = Map<string, Map<string, Attendance>>
 type RegisterMap = Map<string, MemberCourseAttendance>
 
 interface AddAttendanceArgs {
-    member: Member,
+    attendee: Attendee,
     session: Session,
-    resolution: string,
-    paymentOption: string,
+    resolution: 'comp' | 'paid' | null,
+    paymentOption: 'advance' | 'now',
     replace?: boolean,
 }
 
 interface RemoveAttendanceArgs {
-    member: Member,
+    attendee: Attendee,
     session: Session
 }
 
 interface RegisterCellProps {
-    attendance: CourseRegisterData | null,
-    member: Member,
+    attendance: Attendance | null,
+    attendee: Attendee,
     session: Session,
     addAttendance: (props: AddAttendanceArgs) => Promise<void>,
     removeAttendance: (props: RemoveAttendanceArgs) => Promise<void>,
@@ -70,7 +65,7 @@ interface RegisterCellProps {
 
 interface RegisterRowProps {
     attendance: MemberCourseAttendance | null,
-    member: Member
+    attendee: Attendee
     sessions: Session[],
     addAttendance: (props: AddAttendanceArgs) => Promise<void>,
     removeAttendance: (props: RemoveAttendanceArgs) => Promise<void>,
@@ -79,7 +74,7 @@ interface RegisterRowProps {
 declare module '@tanstack/table-core' {
     interface TableMeta<TData extends RowData> {
         courses: Course[],
-        updateData: (member: Member) => void
+        updateData: (member: Attendee) => void
     }
 }
 
@@ -111,7 +106,7 @@ function generatePrevious30Dates(courses: Course[], squash: boolean): Session[] 
     return result
 }
 
-const columnHelper = createColumnHelper<Member>()
+const columnHelper = createColumnHelper<Attendee>()
 const columns = [
     columnHelper.accessor(r => r.name, {
         id: 'name',
@@ -126,14 +121,14 @@ const columns = [
         ),
         sortDescFirst: false,
     }),
-    columnHelper.accessor('membership', {
+    columnHelper.accessor(r => r.hasLicence(), {
         header: 'Type',
         cell: ({ row }) => <span className="memberLicence"><MemberBadge member={row.original} /></span>,
         sortingFn: (a, b) => {
             const sortName = () => b.original.name.localeCompare(a.original.name)
 
-            const memberA = a.original as Member
-            const memberB = b.original as Member
+            const memberA = a.original as Attendee
+            const memberB = b.original as Attendee
             const hasLicenceA = memberA.hasLicence()
             const hasLicenceB = memberB.hasLicence()
             const isActiveTrialA = memberA.activeTrial()
@@ -149,8 +144,8 @@ const columns = [
             }
 
             if (hasLicenceA && hasLicenceB) {
-                if (memberA.expired(currentDate) && !memberB.expired(currentDate)) return -1
-                if (memberB.expired(currentDate) && !memberA.expired(currentDate)) return 1
+                if (memberA.isLicenceExpired(currentDate) && !memberB.isLicenceExpired(currentDate)) return -1
+                if (memberB.isLicenceExpired(currentDate) && !memberA.isLicenceExpired(currentDate)) return 1
             }
 
             return sortName()
@@ -159,7 +154,7 @@ const columns = [
     })
 ]
 
-const MemberDetails = ({ member }: { member: Member }) => (
+const MemberDetails = ({ member }: { member: Attendee }) => (
     <div>
         <ul className="details">
             {
@@ -189,7 +184,7 @@ const MemberDetails = ({ member }: { member: Member }) => (
 
 const isoDate = (date: Date) => date.toISOString().split('T')[0]
 
-const AttendanceBadge = ({ attendance }: { attendance: CourseRegisterData | null }) => {
+const AttendanceBadge = ({ attendance }: { attendance: Attendance | null }) => {
     if (!attendance) {
         return (<span>&nbsp;</span>)
     }
@@ -207,50 +202,52 @@ const AttendanceBadge = ({ attendance }: { attendance: CourseRegisterData | null
 const RegisterCell = memo(({
     attendance,
     session,
-    member,
+    attendee,
     addAttendance,
     removeAttendance,
 }: RegisterCellProps) => {
     const [selected, setSelected] = useState(false)
     const [loading, setLoading] = useState(false)
-    const courses = session.courses.filter((c) => member.isInCourse(c))
+    const courses = session.courses.filter((c) => attendee.isInCourse(c))
     const disabled = courses.length === 0
 
     return (
         <td onClick={(e) => {
-            setSelected(true)
-            setTimeout(() => {
-                setSelected(false)
-            }, 2000)
-            renderLogAttendanceModal(e.target as Node, {
-                allowClearAttendance: attendance !== null,
-                member: member,
-                session: session,
-                addAttendance: (props) => {
-                    setLoading(true)
-                    addAttendance({ ...props, replace: attendance !== null }).finally(() => setLoading(false))
-                },
-                removeAttendance: (props) => {
-                    setLoading(true)
-                    removeAttendance(props).finally(() => setLoading(false))
-                },
-            })
+            if (!disabled) {
+                setSelected(true)
+                setTimeout(() => {
+                    setSelected(false)
+                }, 2000)
+                renderLogAttendanceModal(e.target as Node, {
+                    allowClearAttendance: attendance !== null,
+                    attendee: attendee,
+                    session: session,
+                    addAttendance: (props) => {
+                        setLoading(true)
+                        addAttendance({ ...props, replace: attendance !== null }).finally(() => setLoading(false))
+                    },
+                    removeAttendance: (props) => {
+                        setLoading(true)
+                        removeAttendance(props).finally(() => setLoading(false))
+                    },
+                })
+            }
         }} className={'registerCell ' + (disabled ? 'disabled ' : ' ') + (selected ? 'selected ' : ' ') + (loading ? 'loading ' : ' ')}>
             <AttendanceBadge attendance={attendance} />
         </td>
     )
 })
 
-const RegisterRow = ({ sessions = [], attendance, member, addAttendance, removeAttendance }: RegisterRowProps) => (
+const RegisterRow = ({ sessions = [], attendance, attendee, addAttendance, removeAttendance }: RegisterRowProps) => (
     <>
         {sessions.map((s, i) => (
             <RegisterCell
                 key={i}
                 attendance={s.courses.reduce(
                     (acc, course: SessionCourse) => acc ?? (attendance?.get(course.uuid)?.get(isoDate(s.date)) ?? null),
-                    null as CourseRegisterData | null,
+                    null as Attendance | null,
                 )}
-                member={member}
+                attendee={attendee}
                 session={s}
                 addAttendance={addAttendance}
                 removeAttendance={removeAttendance}
@@ -259,65 +256,20 @@ const RegisterRow = ({ sessions = [], attendance, member, addAttendance, removeA
     </>
 )
 
-const addMemberAttendance = ({ member, session, resolution, paymentOption, replace = false }: AddAttendanceArgs): Promise<Member> => {
-    const courses = session.courses.filter((c) => member.isInCourse(c))
-    const sessions = courses.map((c) => {
-        return {
-            ...session,
-            payment: (resolution === 'paid' && paymentOption === 'advance' ? { courseUuid: c.uuid } : null),
-        }
-    })
-    const useAdvancedPayment = paymentOption === 'advance'
-    const date = session.date
-
-    try {
-        if (replace) {
-            sessions.reduce((m: Member, s: Session) => {
-                m.unattend(s)
-                return m
-            }, member)
-        }
-
-        member.attendMultiple(sessions)
-    } catch (e) {
-        if (e instanceof DomainError) {
-            return Promise.reject(e)
-        }
-    }
-
-    return Promise.all(courses.reduce((acc: Promise<any>[], course: SessionCourse) => {
-        acc.push(logAttendance({
-            member,
-            course,
-            date,
-            resolution: resolution === 'attending' ? null : resolution,
-            useAdvancedPayment,
-        }))
-
-        return acc
-    }, [] as Promise<any>[])).then((_) => {
-        return member
-    })
-}
-
-const removeMemberAttendance = ({ member, session }: RemoveAttendanceArgs) => Promise.all(session.courses.filter((c) => member.isInCourse(c)).reduce((acc: Promise<any>[], course: SessionCourse) => {
-    member.unattend(session)
-
-    acc.push(deleteAttendance({
-        member,
-        course,
-        date: session.date,
-    }))
-    return acc
-}, [] as Promise<any>[])).then(() => {
-    return member
-})
-
 const Register = ({ courses = [], squashDates }: RegisterProps) => {
+
+    const cookies = new Cookies()
+    const ATTENDANCE_API_URL = import.meta.env.VITE_API_URL
+    const LEGACY_API_URL = import.meta.env.VITE_LEGACY_API_URL
+
+    const httpAttendance = createApiInstance(ATTENDANCE_API_URL, cookies)
+    const httpMembers = createApiInstance(LEGACY_API_URL, cookies)
+
+
     const registerData = useRef<RegisterMap>(new Map())
 
     const [dates, setDates] = useState<Session[]>([])
-    const [members, setMembers] = useState<Member[]>([])
+    const [members, setMembers] = useState<Attendee[]>([])
     const [loaded, setLoaded] = useState(false)
     const [sorting, setSorting] = useState<SortingState>([{ id: 'name', desc: false }])
     const [globalFilter, setGlobalFilter] = useState('')
@@ -330,8 +282,11 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
         getSortedRowModel: getSortedRowModel(),
         meta: {
             courses,
-            updateData: (member: Member) => {
-                setMembers((old) => old.map((row) => row.uuid == member.uuid ? member : row))
+            updateData: (attendee: Attendee) => {
+                setMembers((old) => {
+                    const index = old.findIndex((row) => row.uuid === attendee.uuid)
+                    return index !== -1 ? [...old.slice(0, index), attendee, ...old.slice(index + 1)] : [...old, attendee]
+                })
             }
         },
         state: {
@@ -342,75 +297,68 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
         onSortingChange: setSorting,
     })
 
-    const lookupMemberAttendance = (member: Member) => registerData.current.get(member.uuid) ?? null
+    const lookupMemberAttendance = (member: Attendee) => registerData.current.get(member.uuid) ?? null
 
-    const storeAttendance = (data: CourseRegisterData[]) => data.reduce((acc: RegisterMap, d: CourseRegisterData) => {
-        const { studentUuid, courseUuid, date } = d
+    const storeAttendance = (data: Attendance[]) => data.reduce((acc: RegisterMap, attendance: Attendance) => {
+        const studentUuid = attendance.attendee.uuid
+        const date = attendance.session.date
+
         acc.set(studentUuid, acc.get(studentUuid) || new Map())
-        acc.get(studentUuid)!.set(courseUuid, acc.get(studentUuid)!.get(courseUuid) || new Map())
-        acc.get(studentUuid)!.get(courseUuid)!.set(isoDate(date), d)
+        attendance.session.courses.forEach((course) => {
+            acc.get(studentUuid)!.set(course.uuid, acc.get(studentUuid)!.get(course.uuid) || new Map())
+            acc.get(studentUuid)!.get(course.uuid)!.set(isoDate(date), attendance)
+        })
         return acc
     }, registerData.current)
 
-    const purgeAttendance = (member: Member, session: Session) => session.courses.reduce((acc: RegisterMap, c: SessionCourse) => {
+    const purgeAttendance = (member: Attendee, session: Session) => session.courses.reduce((acc: RegisterMap, c: SessionCourse) => {
         acc.get(member.uuid)?.get(c.uuid)?.delete(isoDate(session.date))
         return acc
     }, registerData.current)
 
     const addAttendanceAndPropagate = useCallback((props: AddAttendanceArgs): Promise<void> => {
-        return addMemberAttendance(props).then((member: Member) => {
-            table.options.meta?.updateData(member)
-            storeAttendance([{
-                id: 0,
-                courseUuid: props.session.courses[0].uuid,
-                resolution: props.resolution,
-                studentUuid: member.uuid,
-                date: props.session.date,
-            }])
-            notifySuccess('Attendance recorded')
-        }).catch((e) => {
-            if (e instanceof DomainError) {
-                return notifyError(e.message)
-            }
-            notifyError('Unable to connect to server; check your network connection or try again later')
-        }) as Promise<void>
+        return attendSession(httpAttendance)(props)
+            .then((attendance: Attendance) => {
+                table.options.meta?.updateData(attendance.attendee)
+                storeAttendance([attendance])
+                notifySuccess('Attendance recorded')
+            }).catch((e) => {
+                if (e instanceof DomainError) {
+                    return notifyError(e.message)
+                }
+                notifyError('Unable to connect to server; check your network connection or try again later')
+            }) as Promise<void>
     }, [])
 
     const removeAttendanceAndPropagate = useCallback((props: RemoveAttendanceArgs): Promise<void> => {
-        return removeMemberAttendance(props).then((member: Member) => {
-            table.options.meta?.updateData(member)
-            purgeAttendance(props.member, props.session)
-            notifySuccess('Attendance cleared')
-        }).catch((e) => {
-            if (e instanceof DomainError) {
-                return notifyError(e.message)
-            }
-            notifyError('Unable to connect to server; check your network connection or try again later')
-        }) as Promise<void>
+        return unattendSession(httpAttendance)(props)
+            .then((attendee: Attendee) => {
+                table.options.meta?.updateData(attendee)
+                purgeAttendance(props.attendee, props.session)
+                notifySuccess('Attendance cleared')
+            }).catch((e) => {
+                if (e instanceof DomainError) {
+                    return notifyError(e.message)
+                }
+                notifyError('Unable to connect to server; check your network connection or try again later')
+            }) as Promise<void>
     }, [])
 
-    const fetchActiveMembers = () => fetchMembersByCourses(courses).then((members) => members.filter((m) => m.active))
+    const fetchActiveAttendees = () => getMembersByCourses(httpMembers, new V1MemberFactory())({ courses }).then((members) => members.filter((m) => m.active)) as Promise<Attendee[]>
 
     useEffect(() => {
-        fetchActiveMembers().then((members) => {
+        fetchActiveAttendees().then((members) => {
             const dates = generatePrevious30Dates(courses, squashDates)
             setDates(dates)
 
             // Might be more efficient to have the attendance API read by course, then these can be performed in unison
             if (dates.length) {
-                getMemberAttendances({
-                    members,
+                getAttendance(httpAttendance)({
+                    attendees: members,
                     courses,
                     dateEarliest: dates[dates.length - 1].date,
                     dateLatest: dates[0].date,
                 })
-                    .then((data) => data.map((d) => {
-                        return {
-                            ...d,
-                            studentUuid: d.member.uuid,
-                            courseUuid: d.course.uuid,
-                        }
-                    }))
                     .then(storeAttendance)
                     .then(() => {
                         setMembers(members)
@@ -425,7 +373,7 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
     return (
         <>
             <div className="tableActions">
-                <MemberQuickAddButton courses={courses} onChange={() => fetchActiveMembers().then(setMembers)} />
+                <MemberQuickAddButton courses={courses} onChange={(newMember) => table.options.meta?.updateData(newMember)} />
                 <div className="ps-2">
                     <input type="text" className="form-control" placeholder="Search" onChange={(e) => setGlobalFilter(String(e.target.value))} />
                 </div>
@@ -463,7 +411,7 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
                                             </th>
                                         ))}
                                         <RegisterRow
-                                            member={row.original}
+                                            attendee={row.original}
                                             sessions={dates}
                                             attendance={lookupMemberAttendance(row.original)}
                                             addAttendance={addAttendanceAndPropagate}

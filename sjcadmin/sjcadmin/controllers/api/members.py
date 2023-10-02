@@ -223,7 +223,7 @@ def post_add_member_licence(request, pk):
     data = json.loads(request.body)
     s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
     number = data.get('number')
-    expire_date = date.fromisoformat(data.get('expire_date'))
+    expire_date = date.fromisoformat(data.get('expiryDate'))
     s.add_licence(Licence(number=number, expires=expire_date))
     s.save()
 
