@@ -1,19 +1,28 @@
+const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const dayNames = (numbs: number[]): string[] => {
+    return numbs.map(num => days[num])
+}
+
 export type CourseCollection = Map<string, Course>
 
 export class Course {
     uuid: string
-    label: string
+    name: string
     _days!: number[]
     nextSession?: Date
 
     constructor(props: { uuid: string, label: string, days: number[], next_session_date?: string }) {
         this.uuid = props.uuid
-        this.label = props.label
+        this.name = props.label
         this.days = props.days
 
         if (props.next_session_date) {
             this.nextSession = new Date(props.next_session_date)
         }
+    }
+
+    get label(): string {
+        return this.name || dayNames(this._days).join(', ')
     }
 
     get days(): number[] {
