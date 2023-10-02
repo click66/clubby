@@ -95,6 +95,27 @@ export class Member implements IMember {
         this.joinDate = options.joinDate
     }
 
+    private withProperty<K extends keyof MemberOptions>(prop: K, value: MemberOptions[K]): Member {
+        return new Member({
+            ...{
+                uuid: this.uuid,
+                name: this.name,
+                email: this.email,
+                phone: this.phone,
+                dateOfBirth: this.dateOfBirth,
+                address: this.address,
+                active: this.active,
+                remainingTrialSessions: this.remainingTrialSessions,
+                courses: this.courses,
+                licence: this.licence,
+                unusedPayments: this.unusedPayments,
+                addedBy: this.addedBy,
+                joinDate: this.joinDate,
+            },
+            [prop]: value,
+        })
+    }
+
     public get licenceNo(): number | undefined {
         return this.licence?.number
     }
@@ -125,21 +146,7 @@ export class Member implements IMember {
     }
 
     withRemainingTrialSessions(count: number): IMember {
-        return new Member({
-            uuid: this.uuid,
-            name: this.name,
-            email: this.email,
-            phone: this.phone,
-            dateOfBirth: this.dateOfBirth,
-            address: this.address,
-            active: this.active,
-            remainingTrialSessions: count,
-            courses: this.courses,
-            licence: this.licence,
-            unusedPayments: this.unusedPayments,
-            addedBy: this.addedBy,
-            joinDate: this.joinDate,
-        })
+        return this.withProperty('remainingTrialSessions', count)
     }
 
     withTakenPayment(paymentToRemove: Payment): IMember {
@@ -149,106 +156,31 @@ export class Member implements IMember {
             payments.splice(index, 1)
         }
 
-        return new Member({
-            uuid: this.uuid,
-            name: this.name,
-            email: this.email,
-            phone: this.phone,
-            dateOfBirth: this.dateOfBirth,
-            address: this.address,
-            active: this.active,
-            remainingTrialSessions: this.remainingTrialSessions,
-            courses: this.courses,
-            licence: this.licence,
-            unusedPayments: payments,
-            addedBy: this.addedBy,
-            joinDate: this.joinDate,
-        })
+        return this.withProperty('unusedPayments', payments)
+    }
+    
+    withCourse(course: Course): Member {
+        return this.withProperty('courses', [...this.courses, course])
     }
 
-    withCourse(course: Course): IMember {
-        return new Member({
-            uuid: this.uuid,
-            name: this.name,
-            email: this.email,
-            phone: this.phone,
-            dateOfBirth: this.dateOfBirth,
-            address: this.address,
-            active: this.active,
-            remainingTrialSessions: this.remainingTrialSessions,
-            courses: this.courses.concat([course]),
-            licence: this.licence,
-            unusedPayments: this.unusedPayments,
-            addedBy: this.addedBy,
-            joinDate: this.joinDate,
-        })
+    withoutCourse(course: Course): Member {
+        return this.withProperty('courses', this.courses.filter((c) => c.uuid !== course.uuid))
     }
 
-    withoutCourse(course: Course): IMember {
-        return new Member({
-            uuid: this.uuid,
-            name: this.name,
-            email: this.email,
-            phone: this.phone,
-            dateOfBirth: this.dateOfBirth,
-            address: this.address,
-            active: this.active,
-            remainingTrialSessions: this.remainingTrialSessions,
-            courses: this.courses.filter((c) => c.uuid !== course.uuid),
-            licence: this.licence,
-            unusedPayments: this.unusedPayments,
-            addedBy: this.addedBy,
-            joinDate: this.joinDate,
-        })
+    withProfile(profile: Profile): Member {
+        return this.withProperty('name', profile.name)
+            .withProperty('email', profile.email)
+            .withProperty('phone', profile.phone)
+            .withProperty('dateOfBirth', profile.dateOfBirth)
+            .withProperty('address', profile.address)
     }
 
-    withProfile(profile: Profile): IMember {
-        return new Member({
-            uuid: this.uuid,
-            active: this.active,
-            remainingTrialSessions: this.remainingTrialSessions,
-            courses: this.courses,
-            licence: this.licence,
-            unusedPayments: this.unusedPayments,
-            addedBy: this.addedBy,
-            joinDate: this.joinDate,
-            ...profile,
-        })
+    withActive(status: boolean): Member {
+        return this.withProperty('active', status)
     }
 
-    withActive(status: boolean): IMember {
-        return new Member({
-            uuid: this.uuid,
-            name: this.name,
-            email: this.email,
-            phone: this.phone,
-            dateOfBirth: this.dateOfBirth,
-            address: this.address,
-            active: status,
-            remainingTrialSessions: this.remainingTrialSessions,
-            courses: this.courses,
-            licence: this.licence,
-            unusedPayments: this.unusedPayments,
-            addedBy: this.addedBy,
-            joinDate: this.joinDate,
-        })
+    withLicence(licence: Licence): Member {
+        return this.withProperty('licence', licence)
     }
 
-    withLicence(licence: Licence): IMember {
-        return new Member({
-            uuid: this.uuid,
-            name: this.name,
-            email: this.email,
-            phone: this.phone,
-            dateOfBirth: this.dateOfBirth,
-            address: this.address,
-            active: this.active,
-            remainingTrialSessions: this.remainingTrialSessions,
-            courses: this.courses,
-            licence: licence,
-            unusedPayments: this.unusedPayments,
-            addedBy: this.addedBy,
-            joinDate: this.joinDate,
-        })
-    }
 }
