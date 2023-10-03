@@ -2,7 +2,6 @@ import base64
 import os
 
 import django.contrib.auth as auth
-from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from functools import wraps
 from time import time

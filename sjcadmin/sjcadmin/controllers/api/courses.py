@@ -1,8 +1,6 @@
 import json
 
 from django.http import JsonResponse
-from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from datetime import date
 
@@ -14,7 +12,6 @@ from ...models.session import Session
 
 @login_required_401
 @require_http_methods(['POST'])
-@csrf_exempt
 @handle_error
 def post_add_course(request):
     data = json.loads(request.body)
@@ -32,7 +29,6 @@ def post_add_course(request):
 
 @login_required_401
 @require_http_methods(['POST'])
-@csrf_exempt
 @handle_error
 def post_delete_course(request, pk):
     c = Course.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
@@ -47,7 +43,6 @@ def post_delete_course(request, pk):
 
 @login_required_401
 @require_http_methods(['GET'])
-@csrf_exempt
 @handle_error
 def get_courses(request):
     return JsonResponse(list(map(lambda c: {
@@ -60,7 +55,6 @@ def get_courses(request):
 
 @login_required_401
 @require_http_methods(['GET'])
-@csrf_exempt
 @handle_error
 def get_course(request, pk):
     c = Course.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)

@@ -2,7 +2,6 @@ import json
 
 from django.http import JsonResponse
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from datetime import date
 
@@ -51,7 +50,6 @@ def get_members(request):
 
 @login_required_401
 @require_http_methods(['GET'])
-@csrf_exempt
 def get_member(request, pk):
     # return JsonResponse({})
     s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
@@ -82,7 +80,6 @@ def get_member(request, pk):
 
 @login_required_401
 @require_http_methods(['POST'])
-@csrf_exempt
 def get_members_by_courses(request):
     data = json.loads(request.body)
     course_uuids = data.get('courses')
@@ -125,7 +122,6 @@ def get_member_licences(request, pk):
 
 @login_required_401
 @require_http_methods(['POST'])
-@csrf_exempt
 @handle_error
 def post_add_member(request):
     data = json.loads(request.body)
@@ -163,7 +159,6 @@ def post_add_member(request):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
-@csrf_exempt
 def post_update_member_profile(request, pk):
     s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
 
@@ -183,7 +178,6 @@ def post_update_member_profile(request, pk):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
-@csrf_exempt
 def post_delete_member(request, pk):
     s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
     if s:
@@ -196,7 +190,6 @@ def post_delete_member(request, pk):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
-@csrf_exempt
 def post_mark_member_inactive(request, pk):
     s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
     s.active = False
@@ -207,7 +200,6 @@ def post_mark_member_inactive(request, pk):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
-@csrf_exempt
 def post_mark_member_active(request, pk):
     s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
     s.active = True
@@ -218,7 +210,6 @@ def post_mark_member_active(request, pk):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
-@csrf_exempt
 def post_add_member_licence(request, pk):
     data = json.loads(request.body)
     s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
@@ -247,7 +238,6 @@ def post_add_member_note(request, pk):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
-@csrf_exempt
 def post_add_member_to_course(request, pk):
     data = json.loads(request.body)
     s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
@@ -262,7 +252,6 @@ def post_add_member_to_course(request, pk):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
-@csrf_exempt
 def post_remove_member_from_course(request, pk):
     data = json.loads(request.body)
     s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
@@ -279,7 +268,6 @@ def post_remove_member_from_course(request, pk):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
-@csrf_exempt
 def post_add_member_payment(request, pk):
     s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
     data = json.loads(request.body)
@@ -295,7 +283,6 @@ def post_add_member_payment(request, pk):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
-@csrf_exempt
 def post_query_member_payments(request):
     data = json.loads(request.body)
     memberUuid = data.get('memberUuid')

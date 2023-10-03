@@ -6,7 +6,6 @@ from collections import defaultdict
 from datetime import date, timedelta
 from django.http import JsonResponse
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from ._middleware import handle_error, login_required_401
@@ -145,7 +144,6 @@ def get_attendance(request):
 @login_required_401
 @require_http_methods(['POST'])
 @handle_error
-@csrf_exempt
 def post_log_attendance(request):
     data = json.loads(request.body)
 
@@ -203,7 +201,6 @@ def post_log_attendance(request):
 
 @login_required_401
 @require_http_methods(['POST'])
-@csrf_exempt
 def post_clear_attendance(request):
     data = json.loads(request.body)
 

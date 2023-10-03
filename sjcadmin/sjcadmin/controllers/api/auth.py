@@ -7,7 +7,6 @@ from jose import jwt
 
 import django.contrib.auth as auth
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from ._middleware import handle_error, login_required_401
@@ -16,7 +15,6 @@ from ....sjcauth.models import User
 
 @require_http_methods(['POST'])
 @handle_error
-@csrf_exempt
 def get_jwt(request):
     private_key = base64.b64decode(os.getenv('PRIV_KEY'))
 
@@ -41,7 +39,6 @@ def get_jwt(request):
 
 
 @require_http_methods(['POST'])
-@csrf_exempt
 @handle_error
 def login(request):
     data = json.loads(request.body)
@@ -58,7 +55,6 @@ def login(request):
 
 
 @require_http_methods(['POST'])
-@csrf_exempt
 @handle_error
 def refresh_token(request):
     data = json.loads(request.body)
@@ -82,7 +78,6 @@ def refresh_token(request):
 
 @login_required_401
 @require_http_methods(['POST'])
-@csrf_exempt
 @handle_error
 def change_password(request):
     data = json.loads(request.body)

@@ -3,29 +3,11 @@ from django.urls import include, path
 
 from .controllers.api import admin as api_admin, attendance as api_attendance, auth as api_auth, courses as api_courses, members as api_members
 
-from .controllers import attendance, auth, courses, home, members, reports
-
 urlpatterns = [
-    path('auth/login', auth.login),
-    path('auth/logout', auth.logout),
     path('api/auth/jwt', api_auth.get_jwt),
     path('api/auth/login', api_auth.login),
     path('api/auth/refresh', api_auth.refresh_token),
     path('api/auth/change_password', api_auth.change_password),
-
-    path('', home.home, name='home'),
-
-    path('courses', courses.courses, name='courses'),
-
-    path('members', members.members, name='members'),
-    path('members/<uuid:pk>', members.member, name='member'),
-
-    path('attendance', attendance.attendance, name='attendance'),
-    path('attendance/<uuid:course_uuid>',
-         attendance.attendance, name='course_attendance'),
-
-    path('reports', reports.reports, name='reports'),
-    path('reports/attendance/download', reports.attendance_download),
 
     path('api/members', api_members.get_members),
     path('api/members/<uuid:pk>', api_members.get_member),
@@ -42,7 +24,6 @@ urlpatterns = [
     path('api/members/<uuid:pk>/courses/remove', api_members.post_remove_member_from_course),
     path('api/members/<uuid:pk>/deactivate', api_members.post_mark_member_inactive),
     path('api/members/<uuid:pk>/activate', api_members.post_mark_member_active),
-
 
     path('api/members/<uuid:pk>/payments/add',
          api_members.post_add_member_payment),
