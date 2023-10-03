@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import { ConnectivityError } from '../errors'
 
 export type HttpInstance = AxiosInstance
 
@@ -22,19 +23,23 @@ function appendAuthorisation(tokens: TokenContainer) {
 
 function successOrError(r: AxiosResponse) {
     let data = r.data
-    if (data.hasOwnProperty('error')) {
+    if (data && data.hasOwnProperty('error')) {
         return Promise.reject(new Error(data.error))
     }
 
-    r.data = data.success ?? data
+    r.data = data?.success ?? data
     return r
+}
+
+function handleError() {
+    throw new ConnectivityError('Please check your internet connection or try again later.')
 }
 
 export const http = axios
 
 export function withInterceptors(axiosInstance: AxiosInstance, tokens: TokenContainer): AxiosInstance {
     axiosInstance.interceptors.request.use(appendAuthorisation(tokens), (error) => Promise.reject(error))
-    axiosInstance.interceptors.response.use(successOrError)
+    axiosInstance.interceptors.response.use(successOrError, handleError)
     return axiosInstance
 }
 

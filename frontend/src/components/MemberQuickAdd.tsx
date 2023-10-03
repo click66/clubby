@@ -1,11 +1,8 @@
 import { Field, Form, Formik } from 'formik'
 import { Button, OverlayTrigger, Popover } from 'react-bootstrap'
 import { notifyError, notifySuccess } from '../utils/notifications'
-import { createMember } from '../domain/members/members'
-import { createApiInstance } from '../utils/http'
-import { V1MemberFactory } from '../domain/MemberFactory'
-import Cookies from 'universal-cookie'
 import { Member } from '../domain/members/types'
+import { membersApi } from '../domain/members/provider'
 
 interface Course {
     uuid: string
@@ -23,13 +20,8 @@ interface MemberAndCourse {
 }
 
 function MemberQuickAddAndAssign({ courses, onChange }: MemberQuickAddProps) {
-    const cookies = new Cookies()
-    const LEGACY_API_URL = import.meta.env.VITE_LEGACY_API_URL
-    const httpMembers = createApiInstance(LEGACY_API_URL, cookies)
-
-
     const submitNewMember = (data: MemberAndCourse) => {
-        createMember(httpMembers, new V1MemberFactory())({
+        membersApi.createMember({
             name: data.name,
             course: { uuid: data.productUuid, }
         }).then((member) => {

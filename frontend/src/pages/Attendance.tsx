@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Course, CourseCollection } from '../models/Course'
 import { fetchCourseByUuid, fetchCourses } from '../services/courses'
 import EscapeLink from '../components/EscapeLink'
+import { notifyError } from '../utils/notifications'
 
 function Attendance() {
     const navigate = useNavigate()
@@ -25,7 +26,7 @@ function Attendance() {
             fetchCourses().then((courses) => {
                 setAllCourses(courses)
                 setLoaded(true)
-            })
+            }).catch(notifyError)
         }
     }, [courseUuid])
 

@@ -12,9 +12,9 @@ export class DomainObjectCreationError extends Error {
     }
 }
 
-export class DomainAdaptationError extends Error {
+export class ConnectivityError extends Error {
     constructor(message: string) {
         super(message)
-        this.name = 'DomainAdaptationError'
+        this.name = 'Connectivity Error'
     }
 }

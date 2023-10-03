@@ -1,13 +1,17 @@
 import { attendSession, getAttendance, unattendSession } from '../../../src/domain/attendance/attendance'
-import MockAdapter from 'axios-mock-adapter'
 import { http } from '../../../src/utils/http'
 import { Member } from '../../../src/domain/Member'
 import { Attendee, Course } from '../../../src/domain/attendance/types'
 import { DomainError } from '../../../src/errors'
+import makeMockHttp from '../mock-http'
 
-const mockHttp = new MockAdapter(http)
+const mockHttp = makeMockHttp(http)
 
 describe('attendSession', () => {
+    afterEach(() => {
+        mockHttp.reset()
+    })
+
     function mockAttendanceCreate(attendee: Attendee, course: Course, useAdvancedPayment: boolean = false) {
         const requestBody = {
             student_uuid: attendee.uuid,
@@ -270,7 +274,9 @@ describe('attendSession', () => {
 })
 
 describe('unattendSession', () => {
-    mockHttp.onPost('/attendance/delete').reply(200)
+    afterEach(() => {
+        mockHttp.reset()
+    })
 
     test('If session has 3 courses, but attendeee is only in 2, they gain 2 trial sessions back', () => {
         // Given an attendee is on a trial membership
@@ -295,6 +301,20 @@ describe('unattendSession', () => {
             ]
         }
 
+        mockHttp.onPost('/attendance/delete', {
+            course_uuid: '782732e2-1b1f-4291-821c-c73400164473',
+            student_uuids: ['7d64ac24-50f2-4210-bcfe-822f82f942bd'],
+            date_earliest: '2023-10-15',
+            date_latest: '2023-10-15',
+        }).reply(204)
+
+        mockHttp.onPost('/attendance/delete', {
+            course_uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024',
+            student_uuids: ['7d64ac24-50f2-4210-bcfe-822f82f942bd'],
+            date_earliest: '2023-10-15',
+            date_latest: '2023-10-15',
+        }).reply(204)
+
         // When the attendee 'unattends' the session
         // Then the attendee will gain back 2 trial sessions
         return expect(unattendSession(http)({ session, attendee })).resolves.toStrictEqual(expect.objectContaining({
@@ -304,6 +324,10 @@ describe('unattendSession', () => {
 })
 
 describe('getAttendance', () => {
+    afterEach(() => {
+        mockHttp.reset()
+    })
+
     test('Returns set of attendances for 3 students attending 1 course', () => {
         // Given a course with UUID
         const course = { uuid: '3e52b880-6526-4a27-9b9c-8396d124e65d' }

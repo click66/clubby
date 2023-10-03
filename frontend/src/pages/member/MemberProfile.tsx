@@ -14,9 +14,7 @@ import { Course as BaseCourse, CourseCollection } from '../../models/Course'
 import { Check, Plus, X } from 'react-bootstrap-icons'
 import EscapeLink from '../../components/EscapeLink'
 import { Course, Member } from '../../domain/members/types'
-import { activate, deactivate, permanentlyDelete, removeFromCourse, signUpForCourse, updateProfile } from '../../domain/members/members'
-import { createApiInstance } from '../../utils/http'
-import Cookies from 'universal-cookie'
+import { membersApi } from '../../domain/members/provider'
 
 function SignUpForm({ close, courses, onSubmit }: { close: () => void, courses: BaseCourse[], onSubmit: (course: Course) => void }) {
     return (
@@ -91,25 +89,19 @@ function SignedUpFor({ courses, doSignUp, member, undoSignUp }: { courses: Cours
 }
 
 function MemberProfile() {
-    const cookies = new Cookies()
-    const LEGACY_API_URL = import.meta.env.VITE_LEGACY_API_URL
-    const httpMembers = createApiInstance(LEGACY_API_URL, cookies)
-
-
-
     const navigate = useNavigate()
     const [member, setMember] = useContext(MemberContext)
     const courses = useCourses()
 
     if (member) {
 
-        const doSignUp = (course: Course) => signUpForCourse(httpMembers)({ member, course }).then(setMember)
+        const doSignUp = (course: Course) => membersApi.signUpForCourse({ member, course }).then(setMember)
             .then(() => {
                 notifySuccess('Member has been signed up for course.')
             })
             .catch(notifyError)
 
-        const undoSignUp = (course: Course) => removeFromCourse(httpMembers)({ member, course }).then(setMember)
+        const undoSignUp = (course: Course) => membersApi.removeFromCourse({ member, course }).then(setMember)
             .then(() => {
                 notifySuccess('Member has been removed from course.')
             })
@@ -138,24 +130,24 @@ function MemberProfile() {
                                                     notifyError('All fields are required')
                                                     break
                                                 }
-                                                updateProfile(httpMembers)({ member, profile: { ...values, dateOfBirth: new Date(values.dateOfBirth) } })
+                                                membersApi.updateProfile({ member, profile: { ...values, dateOfBirth: new Date(values.dateOfBirth) } })
                                                     .then(setMember)
                                                     .then(() => {
                                                         notifySuccess("Member profile saved")
                                                     })
                                                 break
                                             case "deactivate":
-                                                deactivate(httpMembers)({ member }).then(setMember).then(() => {
+                                                membersApi.deactivate({ member }).then(setMember).then(() => {
                                                     notifySuccess("Member has been deactivated")
                                                 })
                                                 break
                                             case "activate":
-                                                activate(httpMembers)({ member }).then(setMember).then(() => {
+                                                membersApi.activate({ member }).then(setMember).then(() => {
                                                     notifySuccess("Member has been activated")
                                                 })
                                                 break
                                             case "delete":
-                                                permanentlyDelete(httpMembers)({ member }).then(() => {
+                                                membersApi.permanentlyDelete({ member }).then(() => {
                                                     notifySuccess("Member deleted")
                                                     navigate("/members")
                                                 })

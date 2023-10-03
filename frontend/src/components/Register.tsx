@@ -10,12 +10,9 @@ import MemberBadge from './MemberBadge'
 import { DomainError } from '../errors'
 import { renderLogAttendanceModal } from './LogAttendanceModal'
 import EscapeLink from './EscapeLink'
-import Cookies from 'universal-cookie'
-import { createApiInstance } from '../utils/http'
-import { attendSession, getAttendance, unattendSession } from '../domain/attendance/attendance'
 import { Attendance, Attendee } from '../domain/attendance/types'
-import { getMembersByCourses } from '../domain/members/members'
-import { V1MemberFactory } from '../domain/MemberFactory'
+import { attendanceApi } from '../domain/attendance/provider'
+import { membersApi } from '../domain/members/provider'
 
 interface Course {
     uuid: string
@@ -257,15 +254,6 @@ const RegisterRow = ({ sessions = [], attendance, attendee, addAttendance, remov
 )
 
 const Register = ({ courses = [], squashDates }: RegisterProps) => {
-
-    const cookies = new Cookies()
-    const ATTENDANCE_API_URL = import.meta.env.VITE_API_URL
-    const LEGACY_API_URL = import.meta.env.VITE_LEGACY_API_URL
-
-    const httpAttendance = createApiInstance(ATTENDANCE_API_URL, cookies)
-    const httpMembers = createApiInstance(LEGACY_API_URL, cookies)
-
-
     const registerData = useRef<RegisterMap>(new Map())
 
     const [dates, setDates] = useState<Session[]>([])
@@ -317,7 +305,7 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
     }, registerData.current)
 
     const addAttendanceAndPropagate = useCallback((props: AddAttendanceArgs): Promise<void> => {
-        return attendSession(httpAttendance)(props)
+        return attendanceApi.attendSession(props)
             .then((attendance: Attendance) => {
                 table.options.meta?.updateData(attendance.attendee)
                 storeAttendance([attendance])
@@ -331,7 +319,7 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
     }, [])
 
     const removeAttendanceAndPropagate = useCallback((props: RemoveAttendanceArgs): Promise<void> => {
-        return unattendSession(httpAttendance)(props)
+        return attendanceApi.unattendSession(props)
             .then((attendee: Attendee) => {
                 table.options.meta?.updateData(attendee)
                 purgeAttendance(props.attendee, props.session)
@@ -344,7 +332,7 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
             }) as Promise<void>
     }, [])
 
-    const fetchActiveAttendees = () => getMembersByCourses(httpMembers, new V1MemberFactory())({ courses }).then((members) => members.filter((m) => m.active)) as Promise<Attendee[]>
+    const fetchActiveAttendees = () => membersApi.getMembersByCourses({ courses }).then((members) => members.filter((m) => m.active)) as Promise<Attendee[]>
 
     useEffect(() => {
         fetchActiveAttendees().then((members) => {
@@ -353,7 +341,7 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
 
             // Might be more efficient to have the attendance API read by course, then these can be performed in unison
             if (dates.length) {
-                getAttendance(httpAttendance)({
+                attendanceApi.getAttendance({
                     attendees: members,
                     courses,
                     dateEarliest: dates[dates.length - 1].date,

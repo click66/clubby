@@ -5,10 +5,8 @@ import { useContext, useState } from 'react'
 import { Field, Form, Formik } from 'formik'
 import { notifyError, notifySuccess } from '../../utils/notifications'
 import { MemberContext } from '../../contexts/MemberContext'
-import { addLicence } from '../../domain/members/members'
-import { createApiInstance } from '../../utils/http'
-import Cookies from 'universal-cookie'
 import { Member } from '../../domain/members/types'
+import { membersApi } from '../../domain/members/provider'
 
 function MemberLicenceAlert({ member, openForm }: { member: Member, openForm: () => void }) {
     const ActiveLicenceAlert = () => (
@@ -55,11 +53,6 @@ function MemberLicenceAlert({ member, openForm }: { member: Member, openForm: ()
 }
 
 function MemberLicence() {
-    const cookies = new Cookies()
-    const LEGACY_API_URL = import.meta.env.VITE_LEGACY_API_URL
-    const httpMembers = createApiInstance(LEGACY_API_URL, cookies)
-
-
     const [licenceFormOpen, setLicenceFormOpen] = useState(false)
     const [member, setMember] = useContext(MemberContext)
 
@@ -89,7 +82,7 @@ function MemberLicence() {
                         expiryDate: new Date((new Date().setFullYear(new Date().getFullYear() + 1))).toISOString().split('T')[0],
                     }}
                     onSubmit={(values, { setSubmitting }) => {
-                        addLicence(httpMembers)({ member, licence: { ...values, expiryDate: new Date(values.expiryDate) } }).then(setMember).then(() => {
+                        membersApi.addLicence({ member, licence: { ...values, expiryDate: new Date(values.expiryDate) } }).then(setMember).then(() => {
                             setSubmitting(false)
                             notifySuccess('Member licence updated')
                         }).catch(notifyError)
