@@ -20,7 +20,10 @@ def authorise_request(request):
         token = auth_header.replace('Bearer ', '')
         data = jwt.decode(token, public_key)
 
-        if 'expires' in data and data['expires'] <= time():
+        if 'isStaff' not in data or data['isStaff'] is False:
+            return False
+
+        if 'expires' not in data or data['expires'] <= time():
             return False
 
         if 'userUuid' in data:

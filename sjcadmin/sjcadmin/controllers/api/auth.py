@@ -47,7 +47,7 @@ def login(request):
 
     user = auth.authenticate(username=username, password=password)
 
-    if user is not None:
+    if user is not None and user.is_staff is True:
         auth.login(request, user)
         return get_jwt(request)
 

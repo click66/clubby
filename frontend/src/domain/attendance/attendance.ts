@@ -7,17 +7,17 @@ const isoDate = (date: Date) => date.toISOString().split('T')[0]
 function saveNewAttendance(http: HttpInstance, { attendee, session, resolution = null, paymentOption }: NewAttendance) {
     return Promise.all(session.courses.reduce((acc: Promise<any>[], course) => {
         acc.push(http.post('/attendance/create', {
-            student_uuid: attendee.uuid,
-            course_uuid: course.uuid,
+            studentUuid: attendee.uuid,
+            courseUuid: course.uuid,
             date: isoDate(session.date),
             resolution,
-            use_advanced_payment: paymentOption === 'advance',
+            useAdvancedPayment: paymentOption === 'advance',
         }))
         return acc
     }, [] as Promise<any>[])).then((data) => ({
         session: {
             date: session.date,
-            courses: session.courses.filter((c) => data.map((d) => d.data.course_uuid).includes(c.uuid)),
+            courses: session.courses.filter((c) => data.map((d) => d.data.courseUuid).includes(c.uuid)),
         },
         attendee: attendee,
         resolution: resolution,
@@ -26,10 +26,10 @@ function saveNewAttendance(http: HttpInstance, { attendee, session, resolution =
 
 function deleteAttendance(http: HttpInstance, { attendee, course, date }: { attendee: Attendee, course: Course, date: Date }) {
     return http.post('/attendance/delete', {
-        course_uuid: course.uuid,
-        student_uuids: [attendee.uuid],
-        date_earliest: isoDate(date),
-        date_latest: isoDate(date),
+        courseUuid: course.uuid,
+        studentUuids: [attendee.uuid],
+        dateEarliest: isoDate(date),
+        dateLatest: isoDate(date),
     })
 }
 
@@ -38,7 +38,7 @@ export function attendSession(http: HttpInstance) {
         if (attendee.hasLicence() && attendee.isLicenceExpired(session.date)) {
             return Promise.reject(new DomainError('Attendee licence has expired.'))
         }
-        
+
         session = { ...session }
         session.courses = session.courses.filter((c) => attendee.isInCourse(c))
 
@@ -61,7 +61,7 @@ export function attendSession(http: HttpInstance) {
                 (acc: Attendance, course: Course) => {
                     acc.attendee = acc.attendee
                         .withRemainingTrialSessions(acc.attendee.remainingTrialSessions - (replace || acc.attendee.remainingTrialSessions === 0 ? 0 : 1))
-                        .withTakenPayment({ course })
+                    acc.attendee = paymentOption === 'advance' ? acc.attendee.withTakenPayment({ course }) : acc.attendee
                     return acc
                 },
                 attendance,
@@ -90,17 +90,17 @@ export function getAttendance(http: HttpInstance) {
         const uuids = attendees.map((a) => a.uuid)
 
         return Promise.all(courses.map((course) => http.post('/attendance/query', {
-            student_uuids: uuids,
-            course_uuid: course.uuid,
-            date_earliest: isoDate(dateEarliest),
-            date_latest: isoDate(dateLatest),
+            studentUuids: uuids,
+            courseUuid: course.uuid,
+            dateEarliest: isoDate(dateEarliest),
+            dateLatest: isoDate(dateLatest),
         })))
             .then((responses) => responses.map((r) => r.data).flat())
             .then((data) => data.map((d): Attendance => ({
-                attendee: attendees.find((a) => a.uuid === d.student_uuid)!,
+                attendee: attendees.find((a) => a.uuid === d.studentUuid)!,
                 session: {
                     date: new Date(d.date),
-                    courses: [courses.find((c) => c.uuid === d.course_uuid)!],
+                    courses: [courses.find((c) => c.uuid === d.courseUuid)!],
                 },
                 resolution: d.resolution === 'comp' || d.resolution === 'paid' ? d.resolution : null,
             })))

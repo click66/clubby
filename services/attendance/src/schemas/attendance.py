@@ -1,17 +1,23 @@
 from datetime import date
-from pydantic import BaseModel, BeforeValidator
+from pydantic import BaseModel, ConfigDict, BeforeValidator
+from pydantic.alias_generators import to_camel
+
 from typing import Annotated, Literal, Optional
 from uuid import UUID
 
 
-class AttendanceQuery(BaseModel):
+class CamelModel(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name = True)
+
+
+class AttendanceQuery(CamelModel):
     student_uuids: list[UUID]
     course_uuid: UUID
     date_earliest: date
     date_latest: date
 
 
-class AttendanceBase(BaseModel):
+class AttendanceBase(CamelModel):
     student_uuid: UUID
     course_uuid: UUID
     date: date

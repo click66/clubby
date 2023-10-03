@@ -14,8 +14,8 @@ def test_empty_query():
 
     # When I query for all attendances in a given timespan
     response = requests.post(API_URL, json={
-        'student_uuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
-        'course_uuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
+        'studentUuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
+        'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date_earliest': '2022-10-10',
         'date_latest': '2024-10-10',
     }, headers=headers())
@@ -36,8 +36,8 @@ def test_expected_attendance_schema_complementary():
 
     # When I query for all attendances in a given timespan
     response = requests.post(API_URL, json={
-        'student_uuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
-        'course_uuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
+        'studentUuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
+        'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date_earliest': '2022-10-10',
         'date_latest': '2024-10-10',
     }, headers=headers())
@@ -49,8 +49,8 @@ def test_expected_attendance_schema_complementary():
     result = response.json()
     assert len(result) > 0
     assert {
-        'student_uuid': '17f935dd-c1ef-4672-a666-0fccbbdeffa9',
-        'course_uuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
+        'studentUuid': '17f935dd-c1ef-4672-a666-0fccbbdeffa9',
+        'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date': '2023-10-15',
         'resolution': 'comp',
     }.items() <= result[0].items()
@@ -65,8 +65,8 @@ def test_expected_attendance_schema_paid():
 
     # When I query for all attendances in a given timespan
     response = requests.post(API_URL, json={
-        'student_uuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
-        'course_uuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
+        'studentUuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
+        'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date_earliest': '2022-10-10',
         'date_latest': '2024-10-10',
     }, headers=headers())
@@ -78,8 +78,8 @@ def test_expected_attendance_schema_paid():
     result = response.json()
     assert len(result) > 0
     assert {
-        'student_uuid': '17f935dd-c1ef-4672-a666-0fccbbdeffa9',
-        'course_uuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
+        'studentUuid': '17f935dd-c1ef-4672-a666-0fccbbdeffa9',
+        'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date': '2023-10-15',
         'resolution': 'paid',
     }.items() <= result[0].items()
@@ -93,8 +93,8 @@ def test_no_resolution():
 
     # When I query for all attendances in a given timespan
     response = requests.post(API_URL, json={
-        'student_uuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
-        'course_uuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
+        'studentUuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
+        'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date_earliest': '2022-10-10',
         'date_latest': '2024-10-10',
     }, headers=headers())
@@ -106,8 +106,8 @@ def test_no_resolution():
     result = response.json()
     assert len(result) > 0
     assert {
-        'student_uuid': '17f935dd-c1ef-4672-a666-0fccbbdeffa9',
-        'course_uuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
+        'studentUuid': '17f935dd-c1ef-4672-a666-0fccbbdeffa9',
+        'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date': '2023-10-15',
         'resolution': None,
     }.items() <= result[0].items()

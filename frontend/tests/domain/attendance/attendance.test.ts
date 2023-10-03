@@ -14,16 +14,16 @@ describe('attendSession', () => {
 
     function mockAttendanceCreate(attendee: Attendee, course: Course, useAdvancedPayment: boolean = false) {
         const requestBody = {
-            student_uuid: attendee.uuid,
-            course_uuid: course.uuid,
+            studentUuid: attendee.uuid,
+            courseUuid: course.uuid,
             date: '2023-10-15',
             resolution: null,
-            use_advanced_payment: useAdvancedPayment,
+            useAdvancedPayment: useAdvancedPayment,
         }
 
         const responseBody = {
-            'student_uuid': attendee.uuid,
-            'course_uuid': course.uuid,
+            'studentUuid': attendee.uuid,
+            'courseUuid': course.uuid,
             'date': '2023-10-15',
             'resolution': null,
         }
@@ -57,11 +57,11 @@ describe('attendSession', () => {
         const spy = jest.spyOn(http, 'post')
         return attendSession(http)({ session, attendee }).then(() => {
             expect(spy).toHaveBeenCalledWith('/attendance/create', expect.objectContaining({
-                student_uuid: attendee.uuid,
-                course_uuid: course.uuid,
+                studentUuid: attendee.uuid,
+                courseUuid: course.uuid,
                 date: '2023-10-15',
                 resolution: null,
-                use_advanced_payment: false,
+                useAdvancedPayment: false,
             }))
         })
     })
@@ -271,6 +271,32 @@ describe('attendSession', () => {
         // Then an error will be thrown
         return expect(attendSession(http)({ session, attendee, paymentOption: 'advance' })).rejects.toThrowError(DomainError)
     })
+
+    test('Only take a payment if attendee declares they want to use it', () => {
+        // Given a session occurs on 2023-10-15
+        const session = { date: new Date('2023-10-15'), courses: [{ uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }] }
+
+        // And the attendee has no usable payment for the course
+        const attendee = new Member({
+            uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
+            remainingTrialSessions: 4,
+            courses: [
+                { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
+            ],
+            licence: { number: 12345, expiryDate: new Date('2023-11-15') },
+            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' } }],
+        })
+        
+        mockAttendanceCreate(attendee, session.courses[0], false)
+
+        // When the attendee attends the session but does not want to use the payment
+        return attendSession(http)({ session, attendee, paymentOption: 'now' }).then((result) => {
+            // Then the payment will still be usable afterwards
+            expect(result.attendee.hasUsablePaymentForCourse(session.courses[0])).toBeTruthy()
+        })
+    })
 })
 
 describe('unattendSession', () => {
@@ -302,17 +328,17 @@ describe('unattendSession', () => {
         }
 
         mockHttp.onPost('/attendance/delete', {
-            course_uuid: '782732e2-1b1f-4291-821c-c73400164473',
-            student_uuids: ['7d64ac24-50f2-4210-bcfe-822f82f942bd'],
-            date_earliest: '2023-10-15',
-            date_latest: '2023-10-15',
+            courseUuid: '782732e2-1b1f-4291-821c-c73400164473',
+            studentUuids: ['7d64ac24-50f2-4210-bcfe-822f82f942bd'],
+            dateEarliest: '2023-10-15',
+            dateLatest: '2023-10-15',
         }).reply(204)
 
         mockHttp.onPost('/attendance/delete', {
-            course_uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024',
-            student_uuids: ['7d64ac24-50f2-4210-bcfe-822f82f942bd'],
-            date_earliest: '2023-10-15',
-            date_latest: '2023-10-15',
+            courseUuid: '1562d983-fa70-47b0-8915-3b7e9f22c024',
+            studentUuids: ['7d64ac24-50f2-4210-bcfe-822f82f942bd'],
+            dateEarliest: '2023-10-15',
+            dateLatest: '2023-10-15',
         }).reply(204)
 
         // When the attendee 'unattends' the session
@@ -358,22 +384,22 @@ describe('getAttendance', () => {
         // And the server holds 1 attendance for each student for that course
         mockHttp.onPost('/attendance/query').reply(200, [
             {
-                'student_uuid': attendee1.uuid,
-                'course_uuid': course.uuid,
+                'studentUuid': attendee1.uuid,
+                'courseUuid': course.uuid,
                 'date': '2023-07-17',
                 'resolution': null,
                 'id': 904
             },
             {
-                'student_uuid': attendee2.uuid,
-                'course_uuid': course.uuid,
+                'studentUuid': attendee2.uuid,
+                'courseUuid': course.uuid,
                 'date': '2023-07-13',
                 'resolution': 'paid',
                 'id': 894
             },
             {
-                'student_uuid': attendee3.uuid,
-                'course_uuid': course.uuid,
+                'studentUuid': attendee3.uuid,
+                'courseUuid': course.uuid,
                 'date': '2023-07-13',
                 'resolution': 'comp',
                 'id': 895

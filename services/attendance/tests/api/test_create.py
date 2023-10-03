@@ -31,8 +31,8 @@ def test_create_new_attendance_no_resolution():
 
     # When I post a new attendance
     post = {
-        'student_uuid': str(member_uuid),
-        'course_uuid': str(course_uuid),
+        'studentUuid': str(member_uuid),
+        'courseUuid': str(course_uuid),
         'date': '2023-10-15',
     }
     response = requests.post(API_URL, json=post, headers=headers())
@@ -46,9 +46,9 @@ def test_create_new_attendance_no_resolution():
     # And When I query for the attendance I just created
     response = requests.post(f'{API_ROOT}/attendance/query', json={
         'student_uuids': [str(member_uuid)],
-        'course_uuid': str(course_uuid),
-        'date_earliest': '2023-10-15',
-        'date_latest': '2023-10-15',
+        'courseUuid': str(course_uuid),
+        'dateEarliest': '2023-10-15',
+        'dateLatest': '2023-10-15',
     }, headers=headers())
 
     # Then that same attendance is included in the response
@@ -67,8 +67,8 @@ def test_create_new_attendance_paid():
 
     # When I post a new attendance with a resolution of "paid"
     post = {
-        'student_uuid': str(member_uuid),
-        'course_uuid': str(course_uuid),
+        'studentUuid': str(member_uuid),
+        'courseUuid': str(course_uuid),
         'date': '2023-10-15',
         'resolution': 'paid',
     }
@@ -83,9 +83,9 @@ def test_create_new_attendance_paid():
     # And When I query for the attendance I just created
     response = requests.post(f'{API_ROOT}/attendance/query', json={
         'student_uuids': [str(member_uuid)],
-        'course_uuid': str(course_uuid),
-        'date_earliest': '2023-10-15',
-        'date_latest': '2023-10-15',
+        'courseUuid': str(course_uuid),
+        'dateEarliest': '2023-10-15',
+        'dateLatest': '2023-10-15',
     }, headers=headers())
 
     # Then that same attendance is included in the response
@@ -104,8 +104,8 @@ def test_create_new_attendance_comp():
 
     # When I post a new attendance with a resolution of "comp"
     post = {
-        'student_uuid': str(member_uuid),
-        'course_uuid': str(course_uuid),
+        'studentUuid': str(member_uuid),
+        'courseUuid': str(course_uuid),
         'date': '2023-10-15',
         'resolution': 'comp',
     }
@@ -120,9 +120,9 @@ def test_create_new_attendance_comp():
     # And When I query for the attendance I just created
     response = requests.post(f'{API_ROOT}/attendance/query', json={
         'student_uuids': [str(member_uuid)],
-        'course_uuid': str(course_uuid),
-        'date_earliest': '2023-10-15',
-        'date_latest': '2023-10-15',
+        'courseUuid': str(course_uuid),
+        'dateEarliest': '2023-10-15',
+        'dateLatest': '2023-10-15',
     }, headers=headers())
 
     # Then that same attendance is included in the response
@@ -144,8 +144,8 @@ def test_create_attendance_ineligble_member():
     responses = []
     while i <= 3:
         responses.append(requests.post(API_URL, json={
-            'student_uuid': str(member_uuid),
-            'course_uuid': str(course_uuid),
+            'studentUuid': str(member_uuid),
+            'courseUuid': str(course_uuid),
             'date': '2023-10-0' + str(i),
         }, headers=headers()))
         i += 1
