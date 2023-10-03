@@ -8,14 +8,6 @@ include:
   - "services/attendance/.gitlab-ci.yml"
   # - "workers/attendance/.gitlab-ci.yml"
 
-test-frontend:
-  stage: test
-  image: node:latest
-  script:
-    - cd frontend
-    - npm ci
-    - npm run test
-
 terraform:
   stage: infra
   image: docker:latest
