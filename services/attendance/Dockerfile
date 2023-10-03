@@ -42,4 +42,4 @@ COPY --from=build /app/.venv .venv
 COPY certs ./certs
 COPY migrations ./migrations
 COPY src ./src
-COPY alembic.ini main.py data-migration.py ./
+COPY alembic.ini main.py ./
