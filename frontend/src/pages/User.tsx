@@ -2,7 +2,7 @@ import '../assets/Settings.page.scss'
 
 import { ErrorMessage, Field, Form, Formik } from 'formik'
 import { Button } from 'react-bootstrap'
-import { changePassword } from '../domain/authentication/athentication'
+import { changePassword } from '../domain/authentication/authentication'
 import { notifyError, notifySuccess } from '../utils/notifications'
 
 function ChangePassword() {
