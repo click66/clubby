@@ -1,12 +1,12 @@
 import { Button, Modal } from 'react-bootstrap'
 import MemberHeader from '../../components/MemberHeader'
-import { Member } from '../../models/Member'
 import MemberTabs from '../../components/MemberTabs'
 import { useContext, useState } from 'react'
 import { Field, Form, Formik } from 'formik'
-import { addMemberLicence } from '../../services/members'
 import { notifyError, notifySuccess } from '../../utils/notifications'
 import { MemberContext } from '../../contexts/MemberContext'
+import { Member } from '../../domain/members/types'
+import { membersApi } from '../../domain/members/provider'
 
 function MemberLicenceAlert({ member, openForm }: { member: Member, openForm: () => void }) {
     const ActiveLicenceAlert = () => (
@@ -41,15 +41,15 @@ function MemberLicenceAlert({ member, openForm }: { member: Member, openForm: ()
     )
 
     if (member.hasLicence()) {
-        if (!member.expired(new Date())) {
-            return <ActiveLicenceAlert />;
+        if (!member.isLicenceExpired(new Date())) {
+            return <ActiveLicenceAlert />
         } else {
-            return <ExpiredLicenceAlert />;
+            return <ExpiredLicenceAlert />
         }
     } else if (member.activeTrial()) {
-        return <TrialLicenceAlert />;
+        return <TrialLicenceAlert />
     }
-    return <TrialLicenceAlert />;
+    return <TrialLicenceAlert />
 }
 
 function MemberLicence() {
@@ -78,12 +78,11 @@ function MemberLicence() {
             >
                 <Formik
                     initialValues={{
-                        licenceNo: 0,
+                        number: 0,
                         expiryDate: new Date((new Date().setFullYear(new Date().getFullYear() + 1))).toISOString().split('T')[0],
                     }}
                     onSubmit={(values, { setSubmitting }) => {
-                        addMemberLicence(member.uuid!, { ...values, expiryDate: new Date(values.expiryDate) }).then(() => {
-                            setMember(new Member({ ...member, membership: { ...member.membership, licence: { idNumber: values.licenceNo, expires: new Date(values.expiryDate) } } }))
+                        membersApi.addLicence({ member, licence: { ...values, expiryDate: new Date(values.expiryDate) } }).then(setMember).then(() => {
                             setSubmitting(false)
                             notifySuccess('Member licence updated')
                         }).catch(notifyError)
@@ -99,7 +98,7 @@ function MemberLicence() {
                                 <div className="mb-3 row">
                                     <label className="col-sm-4 col-form-label">Licence Number</label>
                                     <div className="col-sm-8">
-                                        <Field type="number" className="form-control" name="licenceNo" />
+                                        <Field type="number" className="form-control" name="number" />
                                     </div>
                                 </div>
                                 <div className="mb-3 row">

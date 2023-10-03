@@ -1,10 +1,11 @@
 import { SortingState, createColumnHelper, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table"
 import { MemberQuickAddButton } from "../components/MemberQuickAdd"
-import { Member } from "../models/Member"
 import { useEffect, useState } from "react"
-import { fetchMembers } from "../services/members"
 import { useNavigate } from "react-router"
 import MemberBadge from '../components/MemberBadge'
+import { Member } from '../domain/members/types'
+import { membersApi } from '../domain/members/provider'
+import { notifyError } from '../utils/notifications'
 
 const columnHelper = createColumnHelper<Member>()
 
@@ -19,7 +20,7 @@ const columns = [
         header: 'Email',
         cell: info => info.getValue(),
     }),
-    columnHelper.accessor('membership', {
+    columnHelper.accessor(r => r.hasLicence(), {
         header: 'Type',
         cell: ({ row }) =>
             <div className="memberRowHeader">
@@ -51,10 +52,10 @@ function Members() {
     })
 
     useEffect(() => {
-        fetchMembers().then((d) => {
+        membersApi.getMembers().then((d) => {
             setData(d)
             setLoaded(true)
-        })
+        }).catch(notifyError)
     }, [])
 
     return (
@@ -62,7 +63,7 @@ function Members() {
             <h1>Members</h1>
             <div className="rounded-3 bg-white p-3 text-dark fullTable" id="copy">
                 <div className="tableActions">
-                    <MemberQuickAddButton courses={[]} onChange={() => fetchMembers().then(setData)} />
+                    <MemberQuickAddButton courses={[]} onChange={() => membersApi.getMembers().then(setData)} />
                     <div className='ps-2'>
                         <input type="text" className="form-control" placeholder="Search" onChange={(e) => setGlobalFilter(String(e.target.value))} />
                     </div>

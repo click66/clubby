@@ -1,16 +1,17 @@
 import { Badge } from 'react-bootstrap'
-import { Member } from '../models/Member'
+import { Member } from '../domain/members/types'
 
 function MemberBadge({ member }: { member: Member }) {
     if (!member.active) {
         return <Badge bg="danger">Inactive</Badge>
     }
 
-    if (member.expired(new Date())) {
+    if ((member.hasLicence() && member.isLicenceExpired(new Date()))
+        || (!member.hasLicence() && member.remainingTrialSessions <= 0)) {
         return <Badge bg="danger">Expired</Badge>
     }
 
-    if (member.activeTrial()) {
+    if (!member.hasLicence() && member.remainingTrialSessions > 0) {
         return <Badge bg="warning" className="text-dark">Trial</Badge>
     }
 

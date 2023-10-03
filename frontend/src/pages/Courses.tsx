@@ -57,7 +57,7 @@ function Courses() {
     }
 
     useEffect(() => {
-        fetchAndSetCourses().then(() => setLoaded(true))
+        fetchAndSetCourses().then(() => setLoaded(true)).catch(notifyError)
     }, [])
 
     const CoursePlaceholder = () => (

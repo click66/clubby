@@ -17,7 +17,6 @@ type Payment = {
 
 type Member = {
     uuid: string
-    courseUuids: string[]
 }
 
 function PaymentTable({ payments, showNextSession = false }: { payments: Payment[], showNextSession?: boolean }) {
@@ -87,7 +86,7 @@ function MemberPayments() {
     const [member] = useContext(MemberContext)
     const [formOpen, setFormOpen] = useState<boolean>(false)
     const [newPayments, setNewPayments] = useState<Payment[]>([])
-    const memberCourses = courses.size === 0 || member === undefined ? [] : member.courseUuids.map((uuid: string): Course | undefined => courses.get(uuid))
+    const memberCourses = courses.size === 0 || !member ? [] : [...courses.values()].filter((c) => member.isInCourse(c))
 
     return member ? (
         <>
@@ -99,7 +98,7 @@ function MemberPayments() {
                         <div className="row justify-content-center">
                             <div className="col-sm-12 col-md-10 col-lg-8">
                                 <div className="mb-3 text-end">
-                                    <Button variant="primary" onClick={() => { setFormOpen(true) }} disabled={member.courseUuids.length === 0}>Add Payment</Button>
+                                    <Button variant="primary" onClick={() => { setFormOpen(true) }} disabled={memberCourses.length === 0}>Add Payment</Button>
                                 </div>
                                 <Payments member={member} newPayments={newPayments} />
                             </div>
