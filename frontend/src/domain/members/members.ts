@@ -47,12 +47,12 @@ export function updateProfile(http: HttpInstance) {
 }
 
 export function deactivate(http: HttpInstance) {
-    return ({ member }: { member: Member }) => http.post(`/members/${member.uuid}/activate`)
+    return ({ member }: { member: Member }) => http.post(`/members/${member.uuid}/deactivate`)
         .then(() => member.withActive(false))
 }
 
 export function activate(http: HttpInstance) {
-    return ({ member }: { member: Member }) => http.post(`/members/${member.uuid}/deactivate`)
+    return ({ member }: { member: Member }) => http.post(`/members/${member.uuid}/activate`)
         .then(() => member.withActive(true))
 }
 
