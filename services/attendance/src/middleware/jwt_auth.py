@@ -10,6 +10,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.status import HTTP_401_UNAUTHORIZED
 from time import time
 
+from ..schemas.token import Token
+
 
 def _load_public_key(cert_path: str):
     with open(cert_path, 'r') as f:
@@ -45,5 +47,5 @@ class JWTAuthorisation(BaseHTTPMiddleware):
         if 'expires' in decrypted and decrypted['expires'] <= time():
             return JSONResponse(status_code=HTTP_401_UNAUTHORIZED, content={'detail': 'JWT expired'})
 
-        request.state.token = credentials
+        request.state.token = Token(**decrypted)
         return await next(request)

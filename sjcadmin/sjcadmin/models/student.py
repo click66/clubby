@@ -79,7 +79,7 @@ class Payment(models.Model):
     @property
     def course(self):
         return self._course
-    
+
     def can_pay_for(self, course: Course):
         return course.uuid == self._course.uuid
 
@@ -147,13 +147,15 @@ class Student(models.Model):
             o._removed_courses = []
 
         return objects
-    
+
     @classmethod
     def fetch_by_uuid(cls, uuid: str, tenant_uuid: str):
         o = cls.objects.get(pk=uuid, tenant_uuid=tenant_uuid)
 
-        o._unused_payments = list(o.payment_set.filter(_used=False).order_by('-_datetime'))
-        o._used_payments = list(o.payment_set.filter(_used=True).order_by('-_datetime'))
+        o._unused_payments = list(o.payment_set.filter(
+            _used=False).order_by('-_datetime'))
+        o._used_payments = list(o.payment_set.filter(
+            _used=True).order_by('-_datetime'))
         o._new_payments = []
         o._unused_and_new_payments = o._unused_payments
 
@@ -167,12 +169,11 @@ class Student(models.Model):
         o._removed_courses = []
 
         return o
-    
 
     @classmethod
     def fetch_signed_up_for(cls, course: Course, tenant_uuid: str):
         return course.student_set.all()
-    
+
     @classmethod
     def fetch_signed_up_for_multiple(cls, course_uuids: list[str], tenant_uuid: str):
         objects = cls.objects\
@@ -182,7 +183,7 @@ class Student(models.Model):
             .annotate(_sessions_attended=models.Count('attendance'))\
             .prefetch_related('_courses')\
             .all().filter(_courses__in=course_uuids)
-        
+
         for o in objects:
             payments = o.payment_set.all()
             o._unused_payments = [p for p in payments if not p.used]
@@ -200,12 +201,44 @@ class Student(models.Model):
         return objects
 
     @classmethod
+    def fetch_query(cls, course_uuids: list[str] = None, user: User = None, tenant_uuid: str = None):
+        queryset = cls.objects\
+            .select_related('licence')\
+            .prefetch_related('note_set')\
+            .prefetch_related(models.Prefetch('payment_set', queryset=Payment.objects.order_by('-_datetime')))\
+            .annotate(_sessions_attended=models.Count('attendance'))\
+            .prefetch_related('_courses')\
+            .all()
+        
+        if course_uuids:
+            queryset = queryset.filter(_courses__in=course_uuids)
+
+        if tenant_uuid:
+            queryset = queryset.filter(tenant_uuid=tenant_uuid)
+        
+        for o in queryset:
+            payments = o.payment_set.all()
+            o._unused_payments = [p for p in payments if not p.used]
+            o._used_payments = [p for p in payments if p.used]
+            o._new_payments = []
+            o._unused_and_new_payments = o._unused_payments
+
+            o._notes = list(o.note_set.all())
+            o._new_notes = []
+
+            o._existing_courses = list(o._courses.all())
+            o._new_courses = []
+            o._removed_courses = []
+
+        return queryset
+
+    @classmethod
     def make(
             cls,
-            name: str=None,
+            name: str = None,
             profile=None,
             licence=None,
-            creator: User=None,
+            creator: User = None,
     ):
         if not name and (not profile or (profile and not profile.name)):
             raise ValueError('Student name cannot be blank')
@@ -229,8 +262,7 @@ class Student(models.Model):
         student._removed_courses = []
 
         return student
-    
-    
+
     def save(self, *args, **kwargs):
         for note in self._new_notes:
             note.save()
@@ -250,7 +282,6 @@ class Student(models.Model):
         #     self._courses.remove(c)
 
         super().save(*args, **kwargs)
-
 
     def set_profile(self, profile: Profile):
         self.profile_name = profile.name
@@ -346,7 +377,7 @@ class Student(models.Model):
 
     def unsign_up(self, course):
         self._removed_courses.append(course)
-    
+
     def increment_attendance(self):
         self._sessions_attended += 1
 

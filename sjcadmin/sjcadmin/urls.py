@@ -12,7 +12,7 @@ urlpatterns = [
     path('api/members', api_members.get_members),
     path('api/members/<uuid:pk>', api_members.get_member),
     path('api/members/add', api_members.post_add_member),
-    path('api/members/query', api_members.get_members_by_courses),
+    path('api/members/query', api_members.get_members_query),
     path('api/members/<uuid:pk>/profile',
          api_members.post_update_member_profile),
     path('api/members/delete/<uuid:pk>', api_members.post_delete_member),

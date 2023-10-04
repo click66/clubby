@@ -80,12 +80,18 @@ def get_member(request, pk):
 
 @login_required_401
 @require_http_methods(['POST'])
-def get_members_by_courses(request):
+def get_members_query(request):
     data = json.loads(request.body)
-    course_uuids = data.get('courses')
+    course_uuids = data.get('courses', None)
+    user = data.get('user_uuid', None)
+    if user:
+        user = User.fetch_by_uuid(user)
 
-    students = Student.fetch_signed_up_for_multiple(
-        course_uuids, tenant_uuid=request.user.tenant_uuid)
+    students = Student.fetch_query(
+        course_uuids=course_uuids,
+        user=user,
+        tenant_uuid=request.user.tenant_uuid,
+    )
 
     return JsonResponse(list(map(lambda s: {
         'uuid': str(s.uuid),
