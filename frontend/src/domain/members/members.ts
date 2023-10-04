@@ -14,7 +14,7 @@ export function getMembers(http: HttpInstance, factory: MemberFactory) {
 export function getMembersByCourses(http: HttpInstance, factory: MemberFactory) {
     return ({ courses }: { courses: Course[] }): Promise<Member[]> => http.post(
         '/members/query',
-        { courses: courses.map((c) => c.uuid) },
+        { courses },
     ).then(({ data }) => data.map((d: any) => factory.makeMember(d)))
 }
 

@@ -4,13 +4,14 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from datetime import date
 
-from ._middleware import handle_error, login_required_401
+from ._middleware import handle_error, login_required_401, role_required
 from ...models.attendance import Attendance
 from ...models.course import Course
 from ...models.session import Session
 
 
 @login_required_401
+@role_required(['staff'])
 @require_http_methods(['POST'])
 @handle_error
 def post_add_course(request):
@@ -28,6 +29,7 @@ def post_add_course(request):
 
 
 @login_required_401
+@role_required(['staff'])
 @require_http_methods(['POST'])
 @handle_error
 def post_delete_course(request, pk):
@@ -42,6 +44,7 @@ def post_delete_course(request, pk):
 
 
 @login_required_401
+@role_required(['staff'])
 @require_http_methods(['GET'])
 @handle_error
 def get_courses(request):
@@ -54,6 +57,7 @@ def get_courses(request):
 
 
 @login_required_401
+@role_required(['staff'])
 @require_http_methods(['GET'])
 @handle_error
 def get_course(request, pk):

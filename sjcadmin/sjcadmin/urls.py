@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.urls import include, path
 
-from .controllers.api import admin as api_admin, attendance as api_attendance, auth as api_auth, courses as api_courses, members as api_members
+from .controllers.api import attendance as api_attendance, courses as api_courses, members_old as api_members_old
+from .controllers.api import admin as api_admin, auth as api_auth, members as api_members
 
 urlpatterns = [
     path('api/auth/jwt', api_auth.get_jwt),
@@ -9,26 +10,34 @@ urlpatterns = [
     path('api/auth/refresh', api_auth.refresh_token),
     path('api/auth/change_password', api_auth.change_password),
 
-    path('api/members', api_members.get_members),
-    path('api/members/<uuid:pk>', api_members.get_member),
-    path('api/members/add', api_members.post_add_member),
-    path('api/members/query', api_members.get_members_query),
+    path('api/members/<uuid:pk>', api_members.member),
+    path('api/members/query', api_members.query),
+
+    #####
+
+    path('api/members', api_members_old.get_members),
+    path('api/members/add', api_members_old.post_add_member),
     path('api/members/<uuid:pk>/profile',
-         api_members.post_update_member_profile),
-    path('api/members/delete/<uuid:pk>', api_members.post_delete_member),
-    path('api/members/<uuid:pk>/licences', api_members.get_member_licences),
+         api_members_old.post_update_member_profile),
+    path('api/members/delete/<uuid:pk>', api_members_old.post_delete_member),
+    path('api/members/<uuid:pk>/licences', api_members_old.get_member_licences),
     path('api/members/<uuid:pk>/licences/add',
-         api_members.post_add_member_licence),
-    path('api/members/<uuid:pk>/notes/add', api_members.post_add_member_note),
-    path('api/members/<uuid:pk>/courses/add', api_members.post_add_member_to_course),
-    path('api/members/<uuid:pk>/courses/remove', api_members.post_remove_member_from_course),
-    path('api/members/<uuid:pk>/deactivate', api_members.post_mark_member_inactive),
-    path('api/members/<uuid:pk>/activate', api_members.post_mark_member_active),
+         api_members_old.post_add_member_licence),
+    path('api/members/<uuid:pk>/notes/add',
+         api_members_old.post_add_member_note),
+    path('api/members/<uuid:pk>/courses/add',
+         api_members_old.post_add_member_to_course),
+    path('api/members/<uuid:pk>/courses/remove',
+         api_members_old.post_remove_member_from_course),
+    path('api/members/<uuid:pk>/deactivate',
+         api_members_old.post_mark_member_inactive),
+    path('api/members/<uuid:pk>/activate',
+         api_members_old.post_mark_member_active),
 
     path('api/members/<uuid:pk>/payments/add',
-         api_members.post_add_member_payment),
+         api_members_old.post_add_member_payment),
 
-    path('api/payments/query', api_members.post_query_member_payments),
+    path('api/payments/query', api_members_old.post_query_member_payments),
 
     path('api/attendance', api_attendance.get_attendance),
     path('api/attendance/log', api_attendance.post_log_attendance),

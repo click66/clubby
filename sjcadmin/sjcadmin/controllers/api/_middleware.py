@@ -20,9 +20,6 @@ def authorise_request(request):
         token = auth_header.replace('Bearer ', '')
         data = jwt.decode(token, public_key)
 
-        if 'isStaff' not in data or data['isStaff'] is False:
-            return False
-
         if 'expires' not in data or data['expires'] <= time():
             return False
 
@@ -67,6 +64,31 @@ def superuser_required_401(function=None):
         return actual_decorator(function)
     return actual_decorator
 
+def role_required(allowed_roles):
+    def check_role(user: User):
+        if 'staff' in allowed_roles and user.is_staff:
+            return True
+        
+        if 'superadmin' in allowed_roles and user.is_superuser:
+            return True
+        
+        if 'member' in allowed_roles and not user.is_staff and not user.is_superuser:
+            return True
+        
+        return False
+
+
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if request.user.is_authenticated and not check_role(request.user):
+                return HttpResponse('Unauthorized', status=401)
+            
+            return view_func(request, *args, **kwargs)
+        
+        return _wrapped_view
+
+    return decorator
 
 def handle_error(function=None):
     @wraps(function)

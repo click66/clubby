@@ -216,6 +216,9 @@ class Student(models.Model):
         if tenant_uuid:
             queryset = queryset.filter(tenant_uuid=tenant_uuid)
         
+        if user:
+            queryset = queryset.filter(profile_email=user.email)
+        
         for o in queryset:
             payments = o.payment_set.all()
             o._unused_payments = [p for p in payments if not p.used]
@@ -289,6 +292,9 @@ class Student(models.Model):
         self.profile_phone = profile.phone
         self.profile_email = profile.email
         self.profile_address = profile.address
+    
+    def is_user(self, user: User) -> bool:
+        return user.email == self.email
 
     @property
     def name(self) -> str:
@@ -296,10 +302,14 @@ class Student(models.Model):
 
     @property
     def added_by(self) -> str | None:
-        return self._creator
+        return self._creator_name
 
     @property
     def dob(self) -> str:
+        return self.profile_dob
+    
+    @property
+    def date_of_birth(self) -> str:
         return self.profile_dob
 
     @property

@@ -45,7 +45,9 @@ async def attempt_attendance(client: HttpClient, request, attendance: Attendance
                 error = response.get('error', default_error)
                 raise DomainError(error)
 
-        except:
+        except DomainError:
+            raise
+        except Exception:
             raise DomainError(default_error)
 
 
@@ -59,7 +61,7 @@ async def delete_attendance(client: HttpClient, request, student_uuid: UUID, dat
 
 async def get_manageable_members(client: HttpClient, request, user_uuid: UUID):
     async with client.post('/api/members/query', json={
-        'user_uuid': str(user_uuid),
+        'user': str(user_uuid),
     }, headers={'Authorization': request.headers.get('Authorization')}) as resp:
         response = await resp.json()
         if resp.status is not 200 or 'error' in response:

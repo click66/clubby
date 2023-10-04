@@ -5,13 +5,14 @@ import string
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
-from ._middleware import handle_error, login_required_401, superuser_required_401
+from ._middleware import handle_error, login_required_401, role_required, superuser_required_401
 from ....sjcauth.models import User
 from ...models.tenant import Tenant
 
 
 @require_http_methods(['GET'])
 @login_required_401
+@role_required(['superadmin'])
 @superuser_required_401
 @handle_error
 def get_clubs(request):
@@ -25,6 +26,7 @@ def get_clubs(request):
 
 @require_http_methods(['POST'])
 @login_required_401
+@role_required(['superadmin'])
 @superuser_required_401
 @handle_error
 def create_club(request):
@@ -44,6 +46,7 @@ def create_club(request):
 
 @require_http_methods(['POST'])
 @login_required_401
+@role_required(['superadmin'])
 @superuser_required_401
 @handle_error
 def create_club_user(request, club_uuid):

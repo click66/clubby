@@ -227,3 +227,10 @@ sentry_sdk.init(
     traces_sample_rate=1.0,
     profiles_sample_rate=1.0,
 )
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'sjcadmin.authentication.CsrfExemptSessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication'
+    ],
+}

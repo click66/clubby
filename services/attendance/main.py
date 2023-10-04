@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_403_FORBIDDEN
+from uuid import UUID
 
 from src.database import db_url
 from src.errors import DomainError
@@ -52,7 +53,10 @@ async def check_permissions(http_client: HttpClient, request, requested_member_u
     is_staff = token.isStaff
     user_uuid = token.userUuid
     if is_staff is False:   # Staff can manage all members
-        if requested_member_uuids <= await get_manageable_members(http_client, request, user_uuid):
+        manageable_uuids = await get_manageable_members(http_client, request, user_uuid)
+        manageable_uuids = list(
+            map(lambda m: UUID(m.get('uuid')), manageable_uuids))
+        if set(requested_member_uuids) - set(manageable_uuids):
             raise HTTPException(status_code=HTTP_403_FORBIDDEN,
                                 detail='User is not authorised.')
 
@@ -65,7 +69,7 @@ async def startup():
 
 @app.post('/attendance/query')
 async def get_attendance(query: AttendanceQuery, request: Request, http_client: aiohttp.ClientSession = Depends(monolith_client)) -> list[AttendanceRead]:
-    check_permissions(http_client, request, query.student_uuids)
+    await check_permissions(http_client, request, query.student_uuids)
 
     return session.scalars(select(Attendance).where(Attendance.student_uuid.in_(query.student_uuids),
                                                     Attendance.course_uuid == query.course_uuid,
@@ -75,7 +79,7 @@ async def get_attendance(query: AttendanceQuery, request: Request, http_client: 
 
 @app.post('/attendance/create')
 async def post_attendance(post: AttendancePost, request: Request, http_client: aiohttp.ClientSession = Depends(monolith_client)) -> AttendanceRead:
-    check_permissions(http_client, request, [post.student_uuid])
+    await check_permissions(http_client, request, [post.student_uuid])
 
     create = Attendance(student_uuid=post.student_uuid,
                         course_uuid=post.course_uuid,
@@ -109,7 +113,7 @@ async def post_attendance(post: AttendancePost, request: Request, http_client: a
 
 @app.post('/attendance/delete')
 async def delete_by_query(query: AttendanceQuery, request: Request, http_client: aiohttp.ClientSession = Depends(monolith_client)) -> Response:
-    check_permissions(http_client, request, query.student_uuids)
+    await check_permissions(http_client, request, query.student_uuids)
 
     session.query(Attendance).filter(Attendance.student_uuid.in_(query.student_uuids),
                                      Attendance.course_uuid == query.course_uuid,

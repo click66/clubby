@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
-from ._middleware import handle_error, login_required_401
+from ._middleware import handle_error, login_required_401, role_required
 from ...models.attendance import Attendance
 from ...models.course import Course
 from ...models.student import Student, Payment
@@ -114,6 +114,7 @@ def serialize_attendance_local(attendances: list[dict], students: list[Student])
 
 
 @login_required_401
+@role_required(['staff'])
 @require_http_methods(['GET'])
 def get_attendance(request):
     course_uuids = request.GET.getlist('courses[]')
@@ -142,6 +143,7 @@ def get_attendance(request):
 
 
 @login_required_401
+@role_required(['staff'])
 @require_http_methods(['POST'])
 @handle_error
 def post_log_attendance(request):
@@ -200,6 +202,7 @@ def post_log_attendance(request):
 
 
 @login_required_401
+@role_required(['staff'])
 @require_http_methods(['POST'])
 def post_clear_attendance(request):
     data = json.loads(request.body)
