@@ -1,4 +1,5 @@
 import os
+from time import time
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -31,11 +32,27 @@ def _make_token(data: dict):
 
 
 def test_authorised_call():
-    token = _make_token({'foo': 'bar'})
+    token = _make_token({
+        'userUuid': '952f3093-aec5-44ed-955e-8e84f096127e',
+        'expires': time() + 86400,
+        'isStaff': True,
+    })
     response = client.get(
         '/test', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == 200
+
+
+def test_expired_token():
+    token = _make_token({
+        'userUuid': '952f3093-aec5-44ed-955e-8e84f096127e',
+        'expires': time() - 86400,
+        'isStaff': True,
+    })
+    response = client.get(
+        '/test', headers={'Authorization': f'Bearer {token}'})
+
+    assert response.status_code == 401
 
 
 def test_no_credentials():
