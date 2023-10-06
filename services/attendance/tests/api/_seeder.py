@@ -1,6 +1,7 @@
 import os
 import requests
 
+from faker import Faker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from uuid import UUID
@@ -9,6 +10,7 @@ from src.database import db_url
 from src.models.attendance import Attendance
 from ._jwt import headers
 
+fake = Faker()
 sa_engine = create_engine(db_url(os.getenv('PGHOST'), os.getenv('PGPASS')))
 session = Session(sa_engine)
 
@@ -26,12 +28,12 @@ def seed_attendances(attendances: Attendance):
 
 
 def seed_member(member: dict) -> UUID:
-    return UUID(requests.post('http://monolith.southamptonjiujitsu.local:8000/api/members/add',
+    return UUID(requests.post('http://monolith.southamptonjiujitsu.local:8000/api/members/create',
                               json=member,
                               headers=headers({
                                   'userUuid': USER_UUID,
                               }),
-                              ).json().get('success').get('uuid'))
+                              ).json().get('uuid'))
 
 
 def seed_course(course: dict) -> UUID:
@@ -41,3 +43,39 @@ def seed_course(course: dict) -> UUID:
                                   'userUuid': USER_UUID,
                               }),
                               ).json().get('success').get('uuid'))
+
+
+def seed_user(email: str) -> UUID:
+    return UUID(requests.post('http://monolith.southamptonjiujitsu.local:8000/api/users/create',
+                              json={
+                                  'email': email,
+                              },
+                              headers=headers({
+                                  'userUuid': USER_UUID,
+                                  'isStaff': True,
+                              }),
+                              ).json().get('success').get('uuid'))
+
+
+def delete_user(uuid: UUID):
+    requests.post(f'http://monolith.southamptonjiujitsu.local:8000/api/users/{uuid}/delete',
+                  headers=headers({
+                      'userUuid': USER_UUID,
+                      'isStaff': True,
+                  }))
+
+
+def delete_course(uuid: UUID):
+    requests.post(f'http://monolith.southamptonjiujitsu.local:8000/api/courses/{uuid}/delete',
+                  headers=headers({
+                      'userUuid': USER_UUID,
+                      'isStaff': True,
+                  }))
+
+
+def delete_member(uuid: UUID):
+    requests.post(f'http://monolith.southamptonjiujitsu.local:8000/api/members/{uuid}/delete',
+                  headers=headers({
+                      'userUuid': USER_UUID,
+                      'isStaff': True,
+                  }))

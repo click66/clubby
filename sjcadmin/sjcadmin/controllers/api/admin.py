@@ -70,3 +70,37 @@ def create_club_user(request, club_uuid):
         'uuid': u.uuid,
         'password': password,
     }})
+
+
+@require_http_methods(['POST'])
+@login_required_401
+@role_required(['superadmin'])
+@superuser_required_401
+@handle_error
+def create_member_user(request):
+    data = json.loads(request.body)
+
+    email = data.get('email')
+
+    def generate_secure_password(length=10):
+        characters = string.ascii_letters + string.digits + string.punctuation
+        secure_password = ''.join(secrets.choice(characters)
+                                  for _ in range(length))
+        return secure_password
+
+    password = generate_secure_password()
+
+    u = User.objects.create_user(
+        email=email, is_staff=False, password=password)
+
+    return JsonResponse({'success': {'uuid': u.uuid, 'password': password}})
+
+
+@require_http_methods(['POST'])
+@login_required_401
+@role_required(['superadmin'])
+@superuser_required_401
+@handle_error
+def delete_user(request, user_uuid):
+    User.objects.filter(_uuid=user_uuid).delete()
+    return JsonResponse({'success': user_uuid}, status=200)

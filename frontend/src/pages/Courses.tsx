@@ -3,15 +3,15 @@ import '../assets/Courses.page.scss'
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Modal from 'react-bootstrap/Modal'
-import { CourseCollection, Course } from '../models/Course'
 import { PlusCircleFill, XCircleFill } from 'react-bootstrap-icons'
 import { Form, Formik, Field } from 'formik'
 import confirmModal from '../components/ConfirmModal'
-import { DtoNewCourse, addCourse, deleteCourse, fetchCourses } from '../services/courses'
 import { notifyError, notifySuccess } from '../utils/notifications'
+import courses from '../domain/courses/provider'
+import { Course, NewCourse } from '../domain/courses/types'
 
 function Courses() {
-    const [courses, setCourses] = useState<CourseCollection>(new Map())
+    const [data, setData] = useState<Course[]>([])
     const [addFormOpen, setAddFormOpen] = useState(false)
     const [loaded, setLoaded] = useState(false)
 
@@ -23,10 +23,10 @@ function Courses() {
         setAddFormOpen(false)
     }
 
-    const fetchAndSetCourses = () => fetchCourses().then(setCourses)
+    const fetchAndSetCourses = () => courses.getCourses().then(setData)
 
-    const submitNewCourse = (data: DtoNewCourse) => {
-        addCourse(data).then((_) => {
+    const submitNewCourse = (data: NewCourse) => {
+        courses.addCourse(data).then((_) => {
             notifySuccess('New course added')
             fetchAndSetCourses()
             closeAddForm()
@@ -38,7 +38,7 @@ function Courses() {
             title: 'Delete Course',
             body: 'Confirm removal of course? This will delete all attendance records and student registrations.',
             onConfirm: () => {
-                deleteCourse(course).then(() => {
+                courses.deleteCourse(course).then(() => {
                     notifySuccess('Course deleted')
                     fetchAndSetCourses()
                 }).catch(notifyError)
@@ -138,8 +138,8 @@ function Courses() {
         <>
             <h1>Courses</h1>
             <div className={"container-lg coursesContainer bg-dark " + (!loaded ? "loading" : "")}>
-                {courses.size === 0 ? <CoursePlaceholder /> : ''}
-                {[...courses.values()].map(SingleCourse)}
+                {data.length === 0 ? <CoursePlaceholder /> : ''}
+                {data.map(SingleCourse)}
             </div>
             <div className="container-lg coursesFooter">
                 <div className="row mt-3">

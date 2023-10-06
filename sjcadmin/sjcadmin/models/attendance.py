@@ -35,7 +35,7 @@ class Attendance(models.Model):
 
         if not student.has_licence() and student.remaining_trial_sessions <= 0:
             raise NoRemainingTrialSessionsError(
-                'Unlicenced student has no remaining trial sessions')
+                'Unlicenced member has no remaining trial sessions')
 
         attendance = Attendance(student=student, date=date, _course=course)
         student.increment_attendance()
@@ -46,6 +46,10 @@ class Attendance(models.Model):
         existing = Attendance.objects.filter(student=student, date=date)
         student.decrement_attendance(existing.count())
         existing.delete()
+    
+    @property
+    def course(self):
+        return self._course
 
     @property
     def student_name(self):

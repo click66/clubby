@@ -1,37 +1,50 @@
+import pytest
 import requests
 
-from ._seeder import seed_course, seed_attendances, seed_member
+from ._seeder import delete_user, delete_course, delete_member, seed_course, seed_attendances, seed_member, seed_user
 from ._jwt import headers
 
 API_ROOT = 'http://localhost:8000'
 API_URL = f'{API_ROOT}/attendance/create'
 
 
-def seed_course_and_member():
+@pytest.fixture
+def setup_course_and_member():
     course_uuid = seed_course({
-        'courseName': 'My course',
-        'courseDay': [0],
+        'label': 'My course',
+        'days': [0],
     })
 
     member_uuid = seed_member({
-        'studentName': 'John Doe',
-        'product': str(course_uuid),
+        'name': 'John Doe',
+        'course': {'uuid': str(course_uuid)},
+        'email': 'johndoe@example.com',
     })
 
-    return (course_uuid, member_uuid)
+    yield (course_uuid, member_uuid)
+
+    delete_course(course_uuid)
+    delete_member(member_uuid)
 
 
-def test_create_new_attendance_no_resolution():
+@pytest.fixture
+def setup_user():
+    user_uuid = seed_user('johndoe@example.com')
+    yield user_uuid
+    delete_user(user_uuid)
+
+
+def test_create_new_attendance_no_resolution(setup_course_and_member):
     # Given there are no pre-existing attendances
     seed_attendances([])
 
     # And there is a single course
     # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
-    (course_uuid, member_uuid) = seed_course_and_member()
+    course_uuid, member_uuid = setup_course_and_member
 
     # When I post a new attendance
     post = {
-        'studentUuid': str(member_uuid),
+        'memberUuid': str(member_uuid),
         'courseUuid': str(course_uuid),
         'date': '2023-10-15',
     }
@@ -45,7 +58,7 @@ def test_create_new_attendance_no_resolution():
 
     # And When I query for the attendance I just created
     response = requests.post(f'{API_ROOT}/attendance/query', json={
-        'student_uuids': [str(member_uuid)],
+        'member_uuids': [str(member_uuid)],
         'courseUuid': str(course_uuid),
         'dateEarliest': '2023-10-15',
         'dateLatest': '2023-10-15',
@@ -57,17 +70,17 @@ def test_create_new_attendance_no_resolution():
     assert post.items() <= result[0].items()
 
 
-def test_create_new_attendance_paid():
+def test_create_new_attendance_paid(setup_course_and_member):
     # Given there are no pre-existing attendances
     seed_attendances([])
 
     # And there is a single course
     # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
-    (course_uuid, member_uuid) = seed_course_and_member()
+    course_uuid, member_uuid = setup_course_and_member
 
     # When I post a new attendance with a resolution of "paid"
     post = {
-        'studentUuid': str(member_uuid),
+        'memberUuid': str(member_uuid),
         'courseUuid': str(course_uuid),
         'date': '2023-10-15',
         'resolution': 'paid',
@@ -82,7 +95,7 @@ def test_create_new_attendance_paid():
 
     # And When I query for the attendance I just created
     response = requests.post(f'{API_ROOT}/attendance/query', json={
-        'student_uuids': [str(member_uuid)],
+        'member_uuids': [str(member_uuid)],
         'courseUuid': str(course_uuid),
         'dateEarliest': '2023-10-15',
         'dateLatest': '2023-10-15',
@@ -94,17 +107,17 @@ def test_create_new_attendance_paid():
     assert post.items() <= result[0].items()
 
 
-def test_create_new_attendance_comp():
+def test_create_new_attendance_comp(setup_course_and_member):
     # Given there are no pre-existing attendances
     seed_attendances([])
 
     # And there is a single course
     # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
-    (course_uuid, member_uuid) = seed_course_and_member()
+    course_uuid, member_uuid = setup_course_and_member
 
     # When I post a new attendance with a resolution of "comp"
     post = {
-        'studentUuid': str(member_uuid),
+        'memberUuid': str(member_uuid),
         'courseUuid': str(course_uuid),
         'date': '2023-10-15',
         'resolution': 'comp',
@@ -119,7 +132,7 @@ def test_create_new_attendance_comp():
 
     # And When I query for the attendance I just created
     response = requests.post(f'{API_ROOT}/attendance/query', json={
-        'student_uuids': [str(member_uuid)],
+        'member_uuids': [str(member_uuid)],
         'courseUuid': str(course_uuid),
         'dateEarliest': '2023-10-15',
         'dateLatest': '2023-10-15',
@@ -131,20 +144,20 @@ def test_create_new_attendance_comp():
     assert post.items() <= result[0].items()
 
 
-def test_create_attendance_ineligible_member():
+def test_create_attendance_ineligible_member(setup_course_and_member):
     # Given there are no pre-existing attendances
     seed_attendances([])
 
     # And there is a single course
     # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
-    (course_uuid, member_uuid) = seed_course_and_member()
+    course_uuid, member_uuid = setup_course_and_member
 
     # When I post three attendances
     i = 1
     responses = []
     while i <= 3:
         responses.append(requests.post(API_URL, json={
-            'studentUuid': str(member_uuid),
+            'memberUuid': str(member_uuid),
             'courseUuid': str(course_uuid),
             'date': '2023-10-0' + str(i),
         }, headers=headers()))
@@ -154,20 +167,20 @@ def test_create_attendance_ineligible_member():
     result = responses[2].json()
     assert responses[2].status_code == 422
     assert result.get(
-        'detail') == 'Unlicenced student has no remaining trial sessions'
+        'detail') == 'Unlicenced member has no remaining trial sessions'
 
 
-def test_non_staff_user_creates_own_attendance():
+def test_non_staff_user_creates_own_attendance(setup_course_and_member):
     # Given there are no pre-existing attendances
     seed_attendances([])
 
     # And there is a single course
     # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
-    (course_uuid, member_uuid) = seed_course_and_member()
+    course_uuid, member_uuid = setup_course_and_member
 
     # When I post a new attendance
     post = {
-        'studentUuid': str(member_uuid),
+        'memberUuid': str(member_uuid),
         'courseUuid': str(course_uuid),
         'date': '2023-10-15',
     }
@@ -181,7 +194,7 @@ def test_non_staff_user_creates_own_attendance():
 
     # And When I query for the attendance I just created
     response = requests.post(f'{API_ROOT}/attendance/query', json={
-        'student_uuids': [str(member_uuid)],
+        'member_uuids': [str(member_uuid)],
         'courseUuid': str(course_uuid),
         'dateEarliest': '2023-10-15',
         'dateLatest': '2023-10-15',
@@ -191,3 +204,74 @@ def test_non_staff_user_creates_own_attendance():
     result = response.json()
     assert len(result) > 0
     assert post.items() <= result[0].items()
+
+
+def test_member_create_new_attendance_no_resolution(setup_course_and_member, setup_user):
+    # Given there are no pre-existing attendances
+    seed_attendances([])
+
+    # And there is a single course
+    # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
+    course_uuid, member_uuid = setup_course_and_member
+
+    # And the member has an account
+    user_uuid = setup_user
+
+    # When I post a new attendance AS A MEMBER
+    post = {
+        'memberUuid': str(member_uuid),
+        'courseUuid': str(course_uuid),
+        'date': '2023-10-15',
+    }
+    response = requests.post(
+        API_URL, json=post, headers=headers({'userUuid': str(user_uuid)}, admin=False))
+
+    # Then the post returns success
+    assert response.status_code == 200
+
+    # And contains the attenance I just created
+    assert post.items() <= response.json().items()
+
+    # And When I query for the attendance I just created
+    response = requests.post(f'{API_ROOT}/attendance/query', json={
+        'member_uuids': [str(member_uuid)],
+        'courseUuid': str(course_uuid),
+        'dateEarliest': '2023-10-15',
+        'dateLatest': '2023-10-15',
+    }, headers=headers())
+
+    # Then that same attendance is included in the response
+    result = response.json()
+    assert len(result) > 0
+    assert post.items() <= result[0].items()
+
+
+def test_member_create_attendance_different_user_fails(setup_course_and_member, setup_user):
+    # Given there are no pre-existing attendances
+    seed_attendances([])
+
+    # And there is a single course
+    # And there is a member in that course
+    course_uuid, _ = setup_course_and_member
+
+    # And the member has an account
+    user_uuid = setup_user
+
+    # And there is another member in the same course
+    second_member_uuid = seed_member({
+        'name': 'Someone else',
+        'course': {'uuid': str(course_uuid)},
+        'email': 'someoneelse@example.com',
+    })
+
+    # When I, as the first member, try and log attendance for the second member
+    post = {
+        'memberUuid': str(second_member_uuid),
+        'courseUuid': str(course_uuid),
+        'date': '2023-10-15',
+    }
+    response = requests.post(API_URL, json=post, headers=headers(
+        {'userUuid': str(user_uuid)}, admin=False))
+
+    # Then the post should return a 403 Forbidden
+    assert response.status_code == 403

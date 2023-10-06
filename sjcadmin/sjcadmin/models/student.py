@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, date
 from django.db import models
-from django.utils import timezone
 from ...sjcauth.models import User
 from uuid import UUID, uuid4
 
@@ -102,7 +101,7 @@ class Student(models.Model):
         Licence, on_delete=models.SET_NULL, null=True, blank=True)
     allowed_trial_sessions = models.IntegerField()
 
-    join_date = models.DateField(null=False, default=timezone.now)
+    join_date = models.DateField(null=False, default=date.today)
 
     _sessions_attended = 0
 
@@ -149,8 +148,8 @@ class Student(models.Model):
         return objects
 
     @classmethod
-    def fetch_by_uuid(cls, uuid: str, tenant_uuid: str):
-        o = cls.objects.get(pk=uuid, tenant_uuid=tenant_uuid)
+    def fetch_by_uuid(cls, uuid: str, tenant_uuid: str = None):
+        o = cls.objects.get(pk=uuid, tenant_uuid=tenant_uuid) if tenant_uuid else cls.objects.get(pk=uuid)
 
         o._unused_payments = list(o.payment_set.filter(
             _used=False).order_by('-_datetime'))

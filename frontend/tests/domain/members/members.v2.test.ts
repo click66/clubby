@@ -1,12 +1,14 @@
 import { http } from '../../../src/utils/http'
 import { Member } from '../../../src/domain/Member'
 import {
+    createMember,
     getMember,
     getMembersByCourses,
 } from '../../../src/domain/members/members'
 import { V2MemberFactory } from '../../../src/domain/MemberFactory'
 import makeMockHttp from '../mock-http'
 import { ConnectivityError, DomainObjectCreationError } from '../../../src/errors'
+import { NewMember } from '../../../src/domain/members/types'
 
 const mockHttp = makeMockHttp(http)
 
@@ -108,7 +110,7 @@ describe('members module', () => {
                 'address': null,
                 'phone': null,
                 'email': null,
-                'rem_trial_sessions': 2,
+                'remainingTrialSessions': 2,
                 'courses': [{ 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
                 'joinDate': '2023-10-03',
                 'addedBy': 'member2@gmail.com',
@@ -118,6 +120,32 @@ describe('members module', () => {
             mockHttp.onPost('/members/query', { courses }).reply(200, responseData)
 
             return expect(getMembersByCourses(http, memberFactory)({ courses })).resolves.toStrictEqual([expect.any(Member), expect.any(Member)])
+        })
+    })
+
+    describe('createMember', () => {
+        test('creates a new member', () => {
+            const newMember: NewMember = { name: 'John Doe', course: { uuid: '618b38f6-98bd-404b-b273-81ddbe84c429' } }
+            const responseData = {
+                'uuid': 'a4037611-14eb-4506-a6a7-11409923f683',
+                'active': true,
+                'name': 'John Doe',
+                'dateOfBirth': null,
+                'address': null,
+                'phone': null,
+                'email': null,
+                'remainingTrialSessions': 2,
+                'courses': [{ 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
+                'joinDate': '2023-10-03',
+                'addedBy': 'member@gmail.com',
+                'unusedPayments': [{ 'course': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
+            }
+
+            mockHttp.onPost('/members/create', newMember).reply(200, responseData)
+
+            return createMember(http, memberFactory)(newMember).then((result) => {
+                expect(result.isInCourse({ uuid: '618b38f6-98bd-404b-b273-81ddbe84c429' })).toBeTruthy()
+            })
         })
     })
 })

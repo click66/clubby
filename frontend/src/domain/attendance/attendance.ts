@@ -7,7 +7,7 @@ const isoDate = (date: Date) => date.toISOString().split('T')[0]
 function saveNewAttendance(http: HttpInstance, { attendee, session, resolution = null, paymentOption }: NewAttendance) {
     return Promise.all(session.courses.reduce((acc: Promise<any>[], course) => {
         acc.push(http.post('/attendance/create', {
-            studentUuid: attendee.uuid,
+            memberUuid: attendee.uuid,
             courseUuid: course.uuid,
             date: isoDate(session.date),
             resolution,
@@ -27,7 +27,7 @@ function saveNewAttendance(http: HttpInstance, { attendee, session, resolution =
 function deleteAttendance(http: HttpInstance, { attendee, course, date }: { attendee: Attendee, course: Course, date: Date }) {
     return http.post('/attendance/delete', {
         courseUuid: course.uuid,
-        studentUuids: [attendee.uuid],
+        memberUuids: [attendee.uuid],
         dateEarliest: isoDate(date),
         dateLatest: isoDate(date),
     })
@@ -90,14 +90,14 @@ export function getAttendance(http: HttpInstance) {
         const uuids = attendees.map((a) => a.uuid)
 
         return Promise.all(courses.map((course) => http.post('/attendance/query', {
-            studentUuids: uuids,
+            memberUuids: uuids,
             courseUuid: course.uuid,
             dateEarliest: isoDate(dateEarliest),
             dateLatest: isoDate(dateLatest),
         })))
             .then((responses) => responses.map((r) => r.data).flat())
             .then((data) => data.map((d): Attendance => ({
-                attendee: attendees.find((a) => a.uuid === d.studentUuid)!,
+                attendee: attendees.find((a) => a.uuid === d.memberUuid)!,
                 session: {
                     date: new Date(d.date),
                     courses: [courses.find((c) => c.uuid === d.courseUuid)!],

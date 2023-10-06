@@ -23,7 +23,7 @@ function MemberQuickAddAndAssign({ courses, onChange }: MemberQuickAddProps) {
     const submitNewMember = (data: MemberAndCourse) => {
         membersApi.createMember({
             name: data.name,
-            course: { uuid: data.productUuid, }
+            ...(data.productUuid ? { course: { uuid: data.productUuid, } } : {})
         }).then((member) => {
             onChange(member)
             notifySuccess('New member added')

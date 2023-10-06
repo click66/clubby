@@ -30,10 +30,9 @@ class HttpClient:
 
 
 async def attempt_attendance(client: HttpClient, request, attendance: Attendance, use_advanced_payment: bool):
-    async with client.post('/api/attendance/log', json={
-        'student_uuid': str(attendance.student_uuid),
-        'sess_date': attendance.date.isoformat(),
-        'product': str(attendance.course_uuid),
+    async with client.post(f'/api/members/{str(attendance.member_uuid)}/attendance/log', json={
+        'date': attendance.date.isoformat(),
+        'course': {'uuid': str(attendance.course_uuid)},
         'payment': attendance.resolution_type,
         'payment_option': 'now' if not use_advanced_payment else 'advanced',
     }, headers={'Authorization': request.headers.get('Authorization')}) as resp:
@@ -51,11 +50,10 @@ async def attempt_attendance(client: HttpClient, request, attendance: Attendance
             raise DomainError(default_error)
 
 
-async def delete_attendance(client: HttpClient, request, student_uuid: UUID, date: date, course_uuid: UUID):
-    await client.post('/api/attendance/clear', json={
-        'student_uuid': str(student_uuid),
-        'sess_date': date.isoformat(),
-        'product': str(course_uuid),
+async def delete_attendance(client: HttpClient, request, member_uuid: UUID, date: date, course_uuid: UUID):
+    await client.post(f'/api/members/{str(member_uuid)}/attendance/delete', json={
+        'date': date.isoformat(),
+        'course': {'uuid': str(course_uuid)},
     }, headers={'Authorization': request.headers.get('Authorization')})
 
 

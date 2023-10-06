@@ -12,6 +12,7 @@ export interface Attendee extends IMember {
     readonly uuid: string
     readonly name: string
     readonly remainingTrialSessions: number
+    readonly courses: Course[]
 
     isInCourse(course: Course): boolean
     hasLicence(): boolean

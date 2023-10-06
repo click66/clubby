@@ -15,9 +15,12 @@ export interface Licence {
 
 export interface Course {
     uuid: string,
+    label?: string,
 }
 
 export interface Member extends IMember {
+    readonly courses: Course[]
+
     withCourse(course: Course): Member
     withoutCourse(course: Course): Member
     withProfile(profile: Profile): Member

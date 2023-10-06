@@ -12,14 +12,9 @@ import { renderLogAttendanceModal } from './LogAttendanceModal'
 import EscapeLink from './EscapeLink'
 import { Attendance, Attendee } from '../domain/attendance/types'
 import { attendanceApi } from '../domain/attendance/provider'
+import coursesApi from '../domain/courses/provider'
 import { membersApi } from '../domain/members/provider'
-
-interface Course {
-    uuid: string
-    label: string
-
-    happensOnDay(dayNo: number): boolean
-}
+import { Course } from '../domain/courses/types'
 
 interface RegisterProps {
     courses: Course[]
@@ -83,7 +78,7 @@ function generatePrevious30Dates(courses: Course[], squash: boolean): Session[] 
     courses = courses.filter((c) => c.uuid != undefined)
 
     while (result.length < 30 && daysCount < 365) {
-        const matchingCourses = courses.filter((c) => c.happensOnDay((currentDate.getDay() + 6) % 7))    // For some reason I didn't index Sunday as 0
+        const matchingCourses = courses.filter((c) => coursesApi.courseHappensOnDay(c, (currentDate.getDay() + 6) % 7))    // For some reason I didn't index Sunday as 0
 
         if (matchingCourses.length > 0) {
             if (squash) {
@@ -288,13 +283,13 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
     const lookupMemberAttendance = (member: Attendee) => registerData.current.get(member.uuid) ?? null
 
     const storeAttendance = (data: Attendance[]) => data.reduce((acc: RegisterMap, attendance: Attendance) => {
-        const studentUuid = attendance.attendee.uuid
+        const memberUuid = attendance.attendee.uuid
         const date = attendance.session.date
 
-        acc.set(studentUuid, acc.get(studentUuid) || new Map())
+        acc.set(memberUuid, acc.get(memberUuid) || new Map())
         attendance.session.courses.forEach((course) => {
-            acc.get(studentUuid)!.set(course.uuid, acc.get(studentUuid)!.get(course.uuid) || new Map())
-            acc.get(studentUuid)!.get(course.uuid)!.set(isoDate(date), attendance)
+            acc.get(memberUuid)!.set(course.uuid, acc.get(memberUuid)!.get(course.uuid) || new Map())
+            acc.get(memberUuid)!.get(course.uuid)!.set(isoDate(date), attendance)
         })
         return acc
     }, registerData.current)

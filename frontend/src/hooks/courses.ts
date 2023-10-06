@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'
-import { fetchCourses } from '../services/courses'
-import { CourseCollection } from '../models/Course'
+import courses from '../domain/courses/provider'
+import { Course } from '../domain/courses/types'
 
-function useCourses(): CourseCollection {
-    const [courses, setCourses] = useState<CourseCollection>(new Map())
+function useCourses(): Map<string, Course> {
+    const [courseCollection, setCourseCollection] = useState<Map<string, Course>>(new Map())
 
     useEffect(() => {
-        fetchCourses().then(setCourses)
+        courses.getCourses()
+            .then((courses: Course[]) => new Map<string, Course>(courses.map((c) => [c.uuid, c])))
+            .then(setCourseCollection)
     }, [])
 
-    return courses
+    return courseCollection
 }
 
 export default useCourses

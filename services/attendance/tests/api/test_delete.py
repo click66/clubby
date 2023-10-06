@@ -12,12 +12,12 @@ def test_delete_single():
     # Given there is a single attendance with a paid resolution
     seed_attendances([Attendance(date='2023-10-15',
                                course_uuid='2580ff60-4e9e-4cc7-8296-df82c91a73e5',
-                               student_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
+                               member_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
                                resolution=Resolution(paid=True))])
 
     # When I post to delete any attandance within encompassing dates
     post = {
-        'studentUuids': ['a6255bd3-02e9-40b7-a4d6-52cdaab7dbea'],
+        'memberUuids': ['a6255bd3-02e9-40b7-a4d6-52cdaab7dbea'],
         'courseUuid': '2580ff60-4e9e-4cc7-8296-df82c91a73e5',
         'dateEarliest': '2023-10-01',
         'dateLatest': '2023-10-30',
@@ -29,7 +29,7 @@ def test_delete_single():
 
     # And When I query for the attendance I just delete
     response = requests.post(f'{API_ROOT}/attendance/query', json={
-        'studentUuids': ['a6255bd3-02e9-40b7-a4d6-52cdaab7dbea'],
+        'memberUuids': ['a6255bd3-02e9-40b7-a4d6-52cdaab7dbea'],
         'courseUuid': '2580ff60-4e9e-4cc7-8296-df82c91a73e5',
         'dateEarliest': '2023-10-15',
         'dateLatest': '2023-10-15',
@@ -45,17 +45,17 @@ def test_delete_multiple():
     seed_attendances([
         Attendance(date='2023-10-15',
                    course_uuid='2580ff60-4e9e-4cc7-8296-df82c91a73e5',
-                   student_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
+                   member_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
                    ),
         Attendance(date='2023-10-30',
                    course_uuid='2580ff60-4e9e-4cc7-8296-df82c91a73e5',
-                   student_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
+                   member_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
                    )
     ])
 
     # When I post to delete any attandance within encompassing dates
     post = {
-        'studentUuids': ['a6255bd3-02e9-40b7-a4d6-52cdaab7dbea'],
+        'memberUuids': ['a6255bd3-02e9-40b7-a4d6-52cdaab7dbea'],
         'courseUuid': '2580ff60-4e9e-4cc7-8296-df82c91a73e5',
         'dateEarliest': '2023-10-01',
         'dateLatest': '2023-10-30',
@@ -67,7 +67,7 @@ def test_delete_multiple():
 
     # And When I query for any attendance within the encompassing dates
     response = requests.post(f'{API_ROOT}/attendance/query', json={
-        'studentUuids': ['a6255bd3-02e9-40b7-a4d6-52cdaab7dbea'],
+        'memberUuids': ['a6255bd3-02e9-40b7-a4d6-52cdaab7dbea'],
         'courseUuid': '2580ff60-4e9e-4cc7-8296-df82c91a73e5',
         'dateEarliest': '2023-10-01',
         'dateLatest': '2023-10-30',
@@ -83,21 +83,21 @@ def test_delete_some():
     seed_attendances([
         Attendance(date='2023-10-15',
                    course_uuid='2580ff60-4e9e-4cc7-8296-df82c91a73e5',
-                   student_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
+                   member_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
                    ),
         Attendance(date='2023-10-30',
                    course_uuid='2580ff60-4e9e-4cc7-8296-df82c91a73e5',
-                   student_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
+                   member_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
                    ),
         Attendance(date='2023-11-10',
                    course_uuid='2580ff60-4e9e-4cc7-8296-df82c91a73e5',
-                   student_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
+                   member_uuid='a6255bd3-02e9-40b7-a4d6-52cdaab7dbea',
                    )
     ])
 
     # When I post to delete any attandance within encompassing dates, excluding one
     post = {
-        'studentUuids': ['a6255bd3-02e9-40b7-a4d6-52cdaab7dbea'],
+        'memberUuids': ['a6255bd3-02e9-40b7-a4d6-52cdaab7dbea'],
         'courseUuid': '2580ff60-4e9e-4cc7-8296-df82c91a73e5',
         'dateEarliest': '2023-10-01',
         'dateLatest': '2023-10-30',
@@ -109,7 +109,7 @@ def test_delete_some():
 
     # And When I query for any attendance within the encompassing dates
     response = requests.post(f'{API_ROOT}/attendance/query', json={
-        'studentUuids': ['a6255bd3-02e9-40b7-a4d6-52cdaab7dbea'],
+        'memberUuids': ['a6255bd3-02e9-40b7-a4d6-52cdaab7dbea'],
         'courseUuid': '2580ff60-4e9e-4cc7-8296-df82c91a73e5',
         'dateEarliest': '2023-10-01',
         'dateLatest': '2023-11-30',

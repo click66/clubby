@@ -19,10 +19,8 @@ export function getMembersByCourses(http: HttpInstance, factory: MemberFactory) 
 }
 
 export function createMember(http: HttpInstance, factory: MemberFactory) {
-    return ({ name, course = null }: NewMember): Promise<Member> => http.post('/members/add', {
-        studentName: name,
-        product: course?.uuid,
-    }).then(({ data }) => factory.makeMember(data))
+    return (data: NewMember): Promise<Member> => http.post('/members/create', data)
+        .then(({ data }) => factory.makeMember(data))
 }
 
 export function signUpForCourse(http: HttpInstance) {
@@ -57,7 +55,7 @@ export function activate(http: HttpInstance) {
 }
 
 export function permanentlyDelete(http: HttpInstance) {
-    return ({ member }: { member: Member }) => http.post(`/members/delete/${member.uuid}`)
+    return ({ member }: { member: Member }) => http.post(`/members/${member.uuid}/delete`)
 }
 
 export function addLicence(http: HttpInstance) {

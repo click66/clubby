@@ -10,13 +10,12 @@ import useCourses from '../../hooks/courses'
 import { notifyError, notifySuccess } from '../../utils/notifications'
 import { useContext, useState } from 'react'
 import { MemberContext } from '../../contexts/MemberContext'
-import { Course as BaseCourse, CourseCollection } from '../../models/Course'
 import { Check, Plus, X } from 'react-bootstrap-icons'
 import EscapeLink from '../../components/EscapeLink'
 import { Course, Member } from '../../domain/members/types'
 import { membersApi } from '../../domain/members/provider'
 
-function SignUpForm({ close, courses, onSubmit }: { close: () => void, courses: BaseCourse[], onSubmit: (course: Course) => void }) {
+function SignUpForm({ close, courses, onSubmit }: { close: () => void, courses: Course[], onSubmit: (course: Course) => void }) {
     return (
         <Formik
             initialValues={{
@@ -50,21 +49,22 @@ function SignUpForm({ close, courses, onSubmit }: { close: () => void, courses: 
     )
 }
 
-function SignedUpFor({ courses, doSignUp, member, undoSignUp }: { courses: CourseCollection, doSignUp: (course: Course) => void, member: Member, undoSignUp: (course: Course) => void }) {
+function SignedUpFor({ doSignUp, member, undoSignUp }: { doSignUp: (course: Course) => void, member: Member, undoSignUp: (course: Course) => void }) {
+    const courses = useCourses()
     const [signUpFormOpen, setSignUpFormOpen] = useState(false)
 
-    const memberCourses = [...courses.values()].filter((course) => member.isInCourse(course))
-    const eligibleCourses = [...courses.values()].filter((course) => !member.isInCourse(course))
+    const memberCourses = member.courses
+    const eligibleCourses = [...courses.values()].filter((c) => !member.isInCourse(c))
 
     return (
         <>
             <h2>Signed Up For</h2>
             {
                 memberCourses.length == 0 && !signUpFormOpen ? <p>Nothing (yet!)</p> : <ul>
-                    {memberCourses.map(({ uuid, label }) => (
-                        <li className="signedUpCourse pb-1" key={uuid}>
-                            <Link to={`/attendance/${uuid}`}>{label}</Link>
-                            <Button variant="danger" className="remove text-light" onClick={() => undoSignUp({ uuid })}><X /></Button>
+                    {memberCourses.map((course) => (
+                        <li className="signedUpCourse pb-1" key={course.uuid}>
+                            <Link to={`/attendance/${course.uuid}`}>{course.label}</Link>
+                            <Button variant="danger" className="remove text-light" onClick={() => undoSignUp(course)}><X /></Button>
                         </li>
                     ))}
                 </ul>
@@ -91,10 +91,8 @@ function SignedUpFor({ courses, doSignUp, member, undoSignUp }: { courses: Cours
 function MemberProfile() {
     const navigate = useNavigate()
     const [member, setMember] = useContext(MemberContext)
-    const courses = useCourses()
 
     if (member) {
-
         const doSignUp = (course: Course) => membersApi.signUpForCourse({ member, course }).then(setMember)
             .then(() => {
                 notifySuccess('Member has been signed up for course.')
@@ -135,22 +133,23 @@ function MemberProfile() {
                                                     .then(() => {
                                                         notifySuccess("Member profile saved")
                                                     })
+                                                    .catch(notifyError)
                                                 break
                                             case "deactivate":
                                                 membersApi.deactivate({ member }).then(setMember).then(() => {
                                                     notifySuccess("Member has been deactivated")
-                                                })
+                                                }).catch(notifyError)
                                                 break
                                             case "activate":
                                                 membersApi.activate({ member }).then(setMember).then(() => {
                                                     notifySuccess("Member has been activated")
-                                                })
+                                                }).catch(notifyError)
                                                 break
                                             case "delete":
                                                 membersApi.permanentlyDelete({ member }).then(() => {
                                                     notifySuccess("Member deleted")
                                                     navigate("/members")
-                                                })
+                                                }).catch(notifyError)
                                                 break
                                         }
                                         setSubmitting(false)
@@ -237,7 +236,7 @@ function MemberProfile() {
                                 </div>
                                 <div className="memberProfileCourses col-lg-3 col-sm-12 mb-3">
                                     <div className="pb-2">
-                                        <SignedUpFor courses={courses} member={member} doSignUp={doSignUp} undoSignUp={undoSignUp} />
+                                        <SignedUpFor member={member} doSignUp={doSignUp} undoSignUp={undoSignUp} />
                                     </div>
                                     <div className="actions">
                                         <EscapeLink to="/coures">Manage Courses</EscapeLink>

@@ -72,7 +72,7 @@ def role_required(allowed_roles):
         if 'superadmin' in allowed_roles and user.is_superuser:
             return True
         
-        if 'member' in allowed_roles and not user.is_staff and not user.is_superuser:
+        if 'member' in allowed_roles and user.is_member_user:
             return True
         
         return False

@@ -43,7 +43,7 @@ class User(AbstractUser):
     email = models.EmailField('email address', unique=True)
     _uuid = models.UUIDField(
         db_column='uuid', unique=True, default=uuid4, editable=False)
-    tenant_uuid = models.UUIDField()
+    tenant_uuid = models.UUIDField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -60,3 +60,7 @@ class User(AbstractUser):
     @property
     def uuid(self):
         return self._uuid
+    
+    @property
+    def is_member_user(self) -> bool:
+        return not self.is_staff and not self.is_superuser

@@ -14,7 +14,7 @@ def test_empty_query():
 
     # When I query for all attendances in a given timespan
     response = requests.post(API_URL, json={
-        'studentUuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
+        'memberUuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
         'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date_earliest': '2022-10-10',
         'date_latest': '2024-10-10',
@@ -29,14 +29,14 @@ def test_empty_query():
 
 def test_expected_attendance_schema_complementary():
     # Given the database contains a single complementary attendance
-    seed_attendances([Attendance(student_uuid='17f935dd-c1ef-4672-a666-0fccbbdeffa9',
+    seed_attendances([Attendance(member_uuid='17f935dd-c1ef-4672-a666-0fccbbdeffa9',
                                course_uuid='d96ca318-f35e-475e-8015-4418cc13b343',
                                date='2023-10-15',
                                resolution=Resolution(complementary=True))])
 
     # When I query for all attendances in a given timespan
     response = requests.post(API_URL, json={
-        'studentUuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
+        'memberUuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
         'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date_earliest': '2022-10-10',
         'date_latest': '2024-10-10',
@@ -49,7 +49,7 @@ def test_expected_attendance_schema_complementary():
     result = response.json()
     assert len(result) > 0
     assert {
-        'studentUuid': '17f935dd-c1ef-4672-a666-0fccbbdeffa9',
+        'memberUuid': '17f935dd-c1ef-4672-a666-0fccbbdeffa9',
         'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date': '2023-10-15',
         'resolution': 'comp',
@@ -58,14 +58,14 @@ def test_expected_attendance_schema_complementary():
 
 def test_expected_attendance_schema_paid():
     # Given the database contains a single complementary attendance
-    seed_attendances([Attendance(student_uuid='17f935dd-c1ef-4672-a666-0fccbbdeffa9',
+    seed_attendances([Attendance(member_uuid='17f935dd-c1ef-4672-a666-0fccbbdeffa9',
                                course_uuid='d96ca318-f35e-475e-8015-4418cc13b343',
                                date='2023-10-15',
                                resolution=Resolution(paid=True))])
 
     # When I query for all attendances in a given timespan
     response = requests.post(API_URL, json={
-        'studentUuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
+        'memberUuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
         'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date_earliest': '2022-10-10',
         'date_latest': '2024-10-10',
@@ -78,7 +78,7 @@ def test_expected_attendance_schema_paid():
     result = response.json()
     assert len(result) > 0
     assert {
-        'studentUuid': '17f935dd-c1ef-4672-a666-0fccbbdeffa9',
+        'memberUuid': '17f935dd-c1ef-4672-a666-0fccbbdeffa9',
         'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date': '2023-10-15',
         'resolution': 'paid',
@@ -87,13 +87,13 @@ def test_expected_attendance_schema_paid():
 
 def test_no_resolution():
     # Given the database contains a single complementary attendance
-    seed_attendances([Attendance(student_uuid='17f935dd-c1ef-4672-a666-0fccbbdeffa9',
+    seed_attendances([Attendance(member_uuid='17f935dd-c1ef-4672-a666-0fccbbdeffa9',
                                course_uuid='d96ca318-f35e-475e-8015-4418cc13b343',
                                date='2023-10-15')])
 
     # When I query for all attendances in a given timespan
     response = requests.post(API_URL, json={
-        'studentUuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
+        'memberUuids': ['17f935dd-c1ef-4672-a666-0fccbbdeffa9'],
         'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date_earliest': '2022-10-10',
         'date_latest': '2024-10-10',
@@ -106,7 +106,7 @@ def test_no_resolution():
     result = response.json()
     assert len(result) > 0
     assert {
-        'studentUuid': '17f935dd-c1ef-4672-a666-0fccbbdeffa9',
+        'memberUuid': '17f935dd-c1ef-4672-a666-0fccbbdeffa9',
         'courseUuid': 'd96ca318-f35e-475e-8015-4418cc13b343',
         'date': '2023-10-15',
         'resolution': None,

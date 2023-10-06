@@ -11,14 +11,14 @@ class CamelModel(BaseModel):
 
 
 class AttendanceQuery(CamelModel):
-    student_uuids: list[UUID]
+    member_uuids: list[UUID]
     course_uuid: UUID
     date_earliest: date
     date_latest: date
 
 
 class AttendanceBase(CamelModel):
-    student_uuid: UUID
+    member_uuid: UUID
     course_uuid: UUID
     date: date
 

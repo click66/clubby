@@ -69,9 +69,9 @@ async def startup():
 
 @app.post('/attendance/query')
 async def get_attendance(query: AttendanceQuery, request: Request, http_client: aiohttp.ClientSession = Depends(monolith_client)) -> list[AttendanceRead]:
-    await check_permissions(http_client, request, query.student_uuids)
+    await check_permissions(http_client, request, query.member_uuids)
 
-    return session.scalars(select(Attendance).where(Attendance.student_uuid.in_(query.student_uuids),
+    return session.scalars(select(Attendance).where(Attendance.member_uuid.in_(query.member_uuids),
                                                     Attendance.course_uuid == query.course_uuid,
                                                     Attendance.date >= query.date_earliest,
                                                     Attendance.date <= query.date_latest)).all()
@@ -79,9 +79,9 @@ async def get_attendance(query: AttendanceQuery, request: Request, http_client: 
 
 @app.post('/attendance/create')
 async def post_attendance(post: AttendancePost, request: Request, http_client: aiohttp.ClientSession = Depends(monolith_client)) -> AttendanceRead:
-    await check_permissions(http_client, request, [post.student_uuid])
+    await check_permissions(http_client, request, [post.member_uuid])
 
-    create = Attendance(student_uuid=post.student_uuid,
+    create = Attendance(member_uuid=post.member_uuid,
                         course_uuid=post.course_uuid,
                         date=post.date)
 
@@ -96,7 +96,7 @@ async def post_attendance(post: AttendancePost, request: Request, http_client: a
     except DomainError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
-    session.query(Attendance).filter(Attendance.student_uuid == post.student_uuid,
+    session.query(Attendance).filter(Attendance.member_uuid == post.member_uuid,
                                      Attendance.course_uuid == post.course_uuid,
                                      Attendance.date == post.date).delete()
 
@@ -113,9 +113,9 @@ async def post_attendance(post: AttendancePost, request: Request, http_client: a
 
 @app.post('/attendance/delete')
 async def delete_by_query(query: AttendanceQuery, request: Request, http_client: aiohttp.ClientSession = Depends(monolith_client)) -> Response:
-    await check_permissions(http_client, request, query.student_uuids)
+    await check_permissions(http_client, request, query.member_uuids)
 
-    session.query(Attendance).filter(Attendance.student_uuid.in_(query.student_uuids),
+    session.query(Attendance).filter(Attendance.member_uuid.in_(query.member_uuids),
                                      Attendance.course_uuid == query.course_uuid,
                                      Attendance.date >= query.date_earliest,
                                      Attendance.date <= query.date_latest).delete()
@@ -126,8 +126,8 @@ async def delete_by_query(query: AttendanceQuery, request: Request, http_client:
         session.rollback()
         raise
 
-    for student_uuid in query.student_uuids:
+    for member_uuid in query.member_uuids:
         await delete_attendance(
-            http_client, request, student_uuid, query.date_earliest, query.course_uuid)
+            http_client, request, member_uuid, query.date_earliest, query.course_uuid)
 
     return Response(status_code=204)

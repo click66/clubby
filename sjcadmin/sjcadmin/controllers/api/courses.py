@@ -16,7 +16,7 @@ from ...models.session import Session
 @handle_error
 def post_add_course(request):
     data = json.loads(request.body)
-    c = Course.make(label=data.get('courseName'), days=data.get('courseDay'))
+    c = Course.make(label=data.get('label'), days=data.get('days'))
     c.tenant_uuid = request.user.tenant_uuid
     c.save()
 
@@ -24,7 +24,7 @@ def post_add_course(request):
         'uuid': c.uuid,
         'label': c.label,
         'days': c.days,
-        'next_session_date': 'Unknown',
+        'nextSession': '1970-01-01',
     }})
 
 
@@ -40,7 +40,7 @@ def post_delete_course(request, pk):
 
     c.delete()
 
-    return JsonResponse({'success': {'uuid': c.uuid}})
+    return JsonResponse({'success': None}, status=204)
 
 
 @login_required_401
@@ -52,7 +52,7 @@ def get_courses(request):
         'uuid': c.uuid,
         'label': c.label,
         'days': c.days,
-        'next_session_date': Session.gen_next(date.today(), c).date,
+        'nextSession': Session.gen_next(date.today(), c).date,
     }, Course.objects.filter(_days__len__gt=0, tenant_uuid=request.user.tenant_uuid))), safe=False)
 
 
@@ -73,5 +73,5 @@ def get_course(request, pk):
         'uuid': c.uuid,
         'label': c.label,
         'days': c.days,
-        'next_session_date': Session.gen_next(date.today(), c).date,
+        'nextSession': Session.gen_next(date.today(), c).date,
     })

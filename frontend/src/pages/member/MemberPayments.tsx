@@ -4,10 +4,10 @@ import { MemberContext } from '../../contexts/MemberContext'
 import { addPayment, fetchPaymentsByMember } from '../../services/payments'
 import useCourses from '../../hooks/courses'
 import MemberTabs from '../../components/MemberTabs'
-import { Course } from '../../models/Course'
 import { Button, Modal } from 'react-bootstrap'
 import { Field, Form, Formik } from 'formik'
 import { notifyError, notifySuccess } from '../../utils/notifications'
+import { Course } from '../../domain/courses/types'
 
 type Payment = {
     datetime: Date

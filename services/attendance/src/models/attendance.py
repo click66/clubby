@@ -44,7 +44,7 @@ class Attendance(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     date: Mapped[date]
     course_uuid: Mapped[UUID]
-    student_uuid: Mapped[UUID]
+    member_uuid: Mapped[UUID]
     resolution_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey('sjcattendance_resolution.id'), name='resolution')
 

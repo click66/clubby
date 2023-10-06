@@ -14,7 +14,7 @@ describe('attendSession', () => {
 
     function mockAttendanceCreate(attendee: Attendee, course: Course, useAdvancedPayment: boolean = false) {
         const requestBody = {
-            studentUuid: attendee.uuid,
+            memberUuid: attendee.uuid,
             courseUuid: course.uuid,
             date: '2023-10-15',
             resolution: null,
@@ -22,7 +22,7 @@ describe('attendSession', () => {
         }
 
         const responseBody = {
-            'studentUuid': attendee.uuid,
+            'memberUuid': attendee.uuid,
             'courseUuid': course.uuid,
             'date': '2023-10-15',
             'resolution': null,
@@ -57,7 +57,7 @@ describe('attendSession', () => {
         const spy = jest.spyOn(http, 'post')
         return attendSession(http)({ session, attendee }).then(() => {
             expect(spy).toHaveBeenCalledWith('/attendance/create', expect.objectContaining({
-                studentUuid: attendee.uuid,
+                memberUuid: attendee.uuid,
                 courseUuid: course.uuid,
                 date: '2023-10-15',
                 resolution: null,
@@ -329,14 +329,14 @@ describe('unattendSession', () => {
 
         mockHttp.onPost('/attendance/delete', {
             courseUuid: '782732e2-1b1f-4291-821c-c73400164473',
-            studentUuids: ['7d64ac24-50f2-4210-bcfe-822f82f942bd'],
+            memberUuids: ['7d64ac24-50f2-4210-bcfe-822f82f942bd'],
             dateEarliest: '2023-10-15',
             dateLatest: '2023-10-15',
         }).reply(204)
 
         mockHttp.onPost('/attendance/delete', {
             courseUuid: '1562d983-fa70-47b0-8915-3b7e9f22c024',
-            studentUuids: ['7d64ac24-50f2-4210-bcfe-822f82f942bd'],
+            memberUuids: ['7d64ac24-50f2-4210-bcfe-822f82f942bd'],
             dateEarliest: '2023-10-15',
             dateLatest: '2023-10-15',
         }).reply(204)
@@ -384,21 +384,21 @@ describe('getAttendance', () => {
         // And the server holds 1 attendance for each student for that course
         mockHttp.onPost('/attendance/query').reply(200, [
             {
-                'studentUuid': attendee1.uuid,
+                'memberUuid': attendee1.uuid,
                 'courseUuid': course.uuid,
                 'date': '2023-07-17',
                 'resolution': null,
                 'id': 904
             },
             {
-                'studentUuid': attendee2.uuid,
+                'memberUuid': attendee2.uuid,
                 'courseUuid': course.uuid,
                 'date': '2023-07-13',
                 'resolution': 'paid',
                 'id': 894
             },
             {
-                'studentUuid': attendee3.uuid,
+                'memberUuid': attendee3.uuid,
                 'courseUuid': course.uuid,
                 'date': '2023-07-13',
                 'resolution': 'comp',

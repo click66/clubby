@@ -1,8 +1,6 @@
 import { http } from '../../../src/utils/http'
 import { Member } from '../../../src/domain/Member'
-import { NewMember } from '../../../src/domain/members/types'
 import {
-    createMember,
     getMember,
     getMembers,
 } from '../../../src/domain/members/members'
@@ -125,34 +123,6 @@ describe('members module', () => {
             mockHttp.onGet('/members').reply(200, responseData)
 
             return expect(getMembers(http, memberFactory)()).resolves.toStrictEqual([expect.any(Member), expect.any(Member)])
-        })
-    })
-
-    describe('createMember', () => {
-        test('creates a new member', () => {
-            const newMember: NewMember = { name: 'John Doe', course: { uuid: '618b38f6-98bd-404b-b273-81ddbe84c429' } }
-            const responseData = {
-                'uuid': 'a4037611-14eb-4506-a6a7-11409923f683',
-                'active': true,
-                'name': 'John Doe',
-                'dob': null,
-                'address': null,
-                'phone': null,
-                'email': null,
-                'membership': 'trial',
-                'allowed_trial_sessions': 2,
-                'rem_trial_sessions': 2,
-                'signed_up_for': ['618b38f6-98bd-404b-b273-81ddbe84c429'],
-                'member_since': '2023-10-03',
-                'added_by': 'member@gmail.com',
-                'unused_payments': [{ 'course_uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
-            }
-
-            mockHttp.onPost('/members/add', { studentName: newMember.name, product: newMember.course?.uuid }).reply(200, responseData)
-
-            return createMember(http, memberFactory)(newMember).then((result) => {
-                expect(result.isInCourse({ uuid: '618b38f6-98bd-404b-b273-81ddbe84c429'})).toBeTruthy()
-            })
         })
     })
 })

@@ -13,7 +13,7 @@ export const membersApi = {
     getMembersByCourses: members.getMembersByCourses(http, v2Factory),
 
     getMembers: members.getMembers(http, v1Factory),
-    createMember: members.createMember(http, v1Factory),
+    createMember: members.createMember(http, v2Factory),
     signUpForCourse: members.signUpForCourse(http),
     removeFromCourse: members.removeFromCourse(http),
     updateProfile: members.updateProfile(http),

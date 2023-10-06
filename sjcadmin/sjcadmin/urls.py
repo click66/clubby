@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.urls import include, path
 
-from .controllers.api import attendance as api_attendance, courses as api_courses, members_old as api_members_old
+from .controllers.api import courses as api_courses, members_old as api_members_old
 from .controllers.api import admin as api_admin, auth as api_auth, members as api_members
 
 urlpatterns = [
@@ -10,13 +10,21 @@ urlpatterns = [
     path('api/auth/refresh', api_auth.refresh_token),
     path('api/auth/change_password', api_auth.change_password),
 
-    path('api/members/<uuid:pk>', api_members.member),
+    path('api/members/<uuid:member_uuid>', api_members.member),
+    path('api/members/<uuid:member_uuid>/delete', api_members.delete),
     path('api/members/query', api_members.query),
+    path('api/members/create', api_members.create),
+
+    path('api/members/<uuid:member_uuid>/attendance/log',
+         api_members.log_attendance),
+    path('api/members/<uuid:member_uuid>/attendance/delete',
+         api_members.delete_attendance),
+
+    path('api/courses/<uuid:pk>/delete', api_courses.post_delete_course),
 
     #####
 
     path('api/members', api_members_old.get_members),
-    path('api/members/add', api_members_old.post_add_member),
     path('api/members/<uuid:pk>/profile',
          api_members_old.post_update_member_profile),
     path('api/members/delete/<uuid:pk>', api_members_old.post_delete_member),
@@ -39,10 +47,6 @@ urlpatterns = [
 
     path('api/payments/query', api_members_old.post_query_member_payments),
 
-    path('api/attendance', api_attendance.get_attendance),
-    path('api/attendance/log', api_attendance.post_log_attendance),
-    path('api/attendance/clear', api_attendance.post_clear_attendance),
-
     path('api/courses', api_courses.get_courses),
     path('api/courses/<uuid:pk>', api_courses.get_course),
     path('api/courses/add', api_courses.post_add_course),
@@ -52,6 +56,9 @@ urlpatterns = [
     path('api/clubs', api_admin.get_clubs),
     path('api/clubs/create', api_admin.create_club),
     path('api/clubs/<uuid:club_uuid>/create_user', api_admin.create_club_user),
+    path('api/clubs/<uuid:club_uuid>/users/create', api_admin.create_club_user),
+    path('api/users/create', api_admin.create_member_user),
+    path('api/users/<uuid:user_uuid>/delete', api_admin.delete_user),
 ]
 
 if settings.DEBUG:

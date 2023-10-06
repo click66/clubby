@@ -15,7 +15,7 @@ def make_token(data: dict, key_path: str):
         return jwt.encode(data, privkey, algorithm='RS256')
 
 
-def headers(data: dict = {'userUuid': 'f838b5a3-0190-4ff1-a53a-54b870d1cf6a'}, admin=True, expired=False, key_path = PRIV_PATH):
+def headers(data: dict = {'userUuid': 'f838b5a3-0190-4ff1-a53a-54b870d1cf6a'}, admin=True, expired=False, key_path=PRIV_PATH):
     data['isStaff'] = admin
-    data['expires'] = time() + 86400
+    data['expires'] = time() + (-86400 if expired else 86400)
     return {'Authorization': f'Bearer {make_token(data, key_path)}'}
