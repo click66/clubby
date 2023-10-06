@@ -12,12 +12,12 @@ describe('attendSession', () => {
         mockHttp.reset()
     })
 
-    function mockAttendanceCreate(attendee: Attendee, course: Course, useAdvancedPayment: boolean = false) {
+    function mockAttendanceCreate(attendee: Attendee, course: Course, useAdvancedPayment: boolean = false, resolution?: string) {
         const requestBody = {
             memberUuid: attendee.uuid,
             courseUuid: course.uuid,
             date: '2023-10-15',
-            resolution: null,
+            resolution: resolution ?? null,
             useAdvancedPayment: useAdvancedPayment,
         }
 
@@ -212,10 +212,10 @@ describe('attendSession', () => {
             unusedPayments: [{ course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' } }],
         })
 
-        mockAttendanceCreate(attendee, session.courses[0], true)
+        mockAttendanceCreate(attendee, session.courses[0], true, 'paid')
 
         // When the attendee attends the session and declares they have paid in advance
-        return attendSession(http)({ session, attendee, paymentOption: 'advance' }).then((result) => {
+        return attendSession(http)({ session, attendee, resolution: 'paid', paymentOption: 'advance' }).then((result) => {
             // Then that payment is no longer available
             expect(result.attendee.hasUsablePaymentForCourse(session.courses[0])).toBeFalsy()
         })
@@ -241,10 +241,10 @@ describe('attendSession', () => {
             ],
         })
 
-        mockAttendanceCreate(attendee, session.courses[0], true)
+        mockAttendanceCreate(attendee, session.courses[0], true, 'paid')
 
         // When the attendee attends the session and declares they have paid in advance
-        return attendSession(http)({ session, attendee, paymentOption: 'advance' }).then((result) => {
+        return attendSession(http)({ session, attendee, resolution: 'paid', paymentOption: 'advance' }).then((result) => {
             // Then the payment is no longer available afterwards
             expect(result.attendee.hasUsablePaymentForCourse(session.courses[0])).toBeTruthy()
         })
@@ -254,7 +254,7 @@ describe('attendSession', () => {
         // Given a session occurs on 2023-10-15
         const session = { date: new Date('2023-10-15'), courses: [{ uuid: '782732e2-1b1f-4291-821c-c73400164473' }] }
 
-        // And the attendee has no usable payment for the course
+        // And the attendee has a usable payment the course
         const attendee = new Member({
             uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
             name: 'John Doe',
@@ -270,6 +270,32 @@ describe('attendSession', () => {
         // When the attendee attends the session and declares they have paid in advance
         // Then an error will be thrown
         return expect(attendSession(http)({ session, attendee, paymentOption: 'advance' })).rejects.toThrowError(DomainError)
+    })
+
+    test('Only take a payment if attendee is paying', () => {
+        // Given a session occurs on 2023-10-15
+        const session = { date: new Date('2023-10-15'), courses: [{ uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }] }
+
+        // And the attendee has a usable payment for the course
+        const attendee = new Member({
+            uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
+            remainingTrialSessions: 4,
+            courses: [
+                { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
+            ],
+            licence: { number: 12345, expiryDate: new Date('2023-11-15') },
+            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' } }],
+        })
+
+        mockAttendanceCreate(attendee, session.courses[0], true, 'comp')
+
+        // When the attendee attends the session and doesn't need to pay, EVEN if they have declared to pay in advance and has a payment
+        return attendSession(http)({ session, attendee, paymentOption: 'advance', resolution: 'comp' }).then((result) => {
+            // Then the payment will still be usable afterwards
+            expect(result.attendee.hasUsablePaymentForCourse(session.courses[0])).toBeTruthy()
+        })
     })
 
     test('Only take a payment if attendee declares they want to use it', () => {
@@ -288,7 +314,7 @@ describe('attendSession', () => {
             licence: { number: 12345, expiryDate: new Date('2023-11-15') },
             unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' } }],
         })
-        
+
         mockAttendanceCreate(attendee, session.courses[0], false)
 
         // When the attendee attends the session but does not want to use the payment

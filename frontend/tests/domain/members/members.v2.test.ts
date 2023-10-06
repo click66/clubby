@@ -1,9 +1,11 @@
 import { http } from '../../../src/utils/http'
 import { Member } from '../../../src/domain/Member'
 import {
+    addPayment,
     createMember,
     getMember,
     getMembersByCourses,
+    getPayments,
 } from '../../../src/domain/members/members'
 import { V2MemberFactory } from '../../../src/domain/MemberFactory'
 import makeMockHttp from '../mock-http'
@@ -34,7 +36,7 @@ describe('members module', () => {
                 'courses': [{ 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
                 'joinDate': '2023-10-03',
                 'addedBy': 'click66@gmail.com',
-                'unusedPayments': [{ 'course': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
+                'unusedPayments': [{ 'course': { 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' } }],
             }
 
             mockHttp.onGet(`/members/${uuid}`).reply(200, responseData)
@@ -100,7 +102,7 @@ describe('members module', () => {
                 'courses': [{ 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
                 'joinDate': '2023-10-03',
                 'addedBy': 'member1@gmail.com',
-                'unusedPayments': [{ 'course': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
+                'unusedPayments': [{ 'course': { 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' } }],
             },
             {
                 'uuid': 'a4037611-14eb-4506-a6a7-11409923f683',
@@ -114,7 +116,7 @@ describe('members module', () => {
                 'courses': [{ 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
                 'joinDate': '2023-10-03',
                 'addedBy': 'member2@gmail.com',
-                'unusedPayments': [{ 'course': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
+                'unusedPayments': [{ 'course': { 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' } }],
             }]
 
             mockHttp.onPost('/members/query', { courses }).reply(200, responseData)
@@ -138,13 +140,87 @@ describe('members module', () => {
                 'courses': [{ 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
                 'joinDate': '2023-10-03',
                 'addedBy': 'member@gmail.com',
-                'unusedPayments': [{ 'course': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
+                'unusedPayments': [{ 'course': { 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' } }],
             }
 
             mockHttp.onPost('/members/create', newMember).reply(200, responseData)
 
             return createMember(http, memberFactory)(newMember).then((result) => {
                 expect(result.isInCourse({ uuid: '618b38f6-98bd-404b-b273-81ddbe84c429' })).toBeTruthy()
+            })
+        })
+    })
+
+    describe('getPayments', () => {
+        test('reads the payments against the member', () => {
+            const member = new Member({
+                uuid: '618b38f6-98bd-404b-b273-81ddbe84c429',
+                name: 'John Doe',
+                email: 'johndoe@gmail.com',
+                dateOfBirth: new Date('1991-01-05'),
+                phone: '555-0123',
+                address: '123 Fake St',
+                active: true,
+                remainingTrialSessions: 2,
+                courses: [],
+            })
+
+            const responseData = [
+                {
+                    'course': {
+                        'uuid': 'e5e1349d-540c-4f99-b9c2-f225fcf33388',
+                        'label': 'Adult Jitsu'
+                    },
+                    'datetime': '2023-10-02T13:59:03.940926Z',
+                    'used': true,
+                },
+                {
+                    'course': {
+                        'uuid': 'e5e1349d-540c-4f99-b9c2-f225fcf33388',
+                        'label': 'Adult Jitsu'
+                    },
+                    'datetime': '2023-10-06T13:59:03.940926Z',
+                    'used': false,
+                }
+            ]
+
+            mockHttp.onGet(`/members/${member.uuid}/payments`).reply(200, responseData)
+
+            return expect(getPayments(http)(member)).resolves.toStrictEqual([
+                {
+                    course: { uuid: 'e5e1349d-540c-4f99-b9c2-f225fcf33388', label: 'Adult Jitsu' },
+                    datetime: new Date('2023-10-02T13:59:03.940926Z'),
+                    used: true,
+                },
+                {
+                    course: { uuid: 'e5e1349d-540c-4f99-b9c2-f225fcf33388', label: 'Adult Jitsu' },
+                    datetime: new Date('2023-10-06T13:59:03.940926Z'),
+                    used: false,
+                }
+            ])
+        })
+    })
+
+    describe('addPayment', () => {
+        test('makes request to add payment', () => {
+            const member = new Member({
+                uuid: '618b38f6-98bd-404b-b273-81ddbe84c429',
+                name: 'John Doe',
+                email: 'johndoe@gmail.com',
+                dateOfBirth: new Date('1991-01-05'),
+                phone: '555-0123',
+                address: '123 Fake St',
+                active: true,
+                remainingTrialSessions: 2,
+                courses: [],
+            })
+            const course = { uuid: 'e5e1349d-540c-4f99-b9c2-f225fcf33388' }
+
+            mockHttp.onPost(`/members/${member.uuid}/payments/add`).reply(200)
+
+            const spy = jest.spyOn(http, 'post')
+            return addPayment(http)(member, course).then(() => {
+                expect(spy).toHaveBeenCalledWith(`/members/${member.uuid}/payments/add`, { course })
             })
         })
     })

@@ -1,6 +1,8 @@
 import { DomainObjectCreationError } from '../errors'
 import { Member, MemberOptions } from './Member'
 
+import { z } from 'zod'
+
 function v1Adapter(data: any): MemberOptions {
     return {
         uuid: data.uuid,
@@ -24,28 +26,37 @@ function v1Adapter(data: any): MemberOptions {
     }
 }
 
-function v2Adapter(data: any): MemberOptions {
-    return {
-        uuid: data.uuid,
-        name: data.name,
-        active: data.active,
-        email: data.email,
-        phone: data.phone,
-        address: data.address,
-        dateOfBirth: new Date(data.dateOfBirth),
-        joinDate: new Date(data.joinDate),
-        addedBy: data.addedBy,
-        remainingTrialSessions: data.remainingTrialSessions,
-        licence: data.licence ? {
-            number: data.licence.number,
-            expiryDate: new Date(data.licence.expiryDate),
-        } : undefined,
-        unusedPayments: data.unusedPayments.map(
-            ({ course }: { course: string }) => ({ course: { uuid: course }}),
-        ),
-        courses: data.courses,
-    }
-}
+export const courseSchema = z.object({
+    uuid: z.string().uuid(),
+    label: z.string().optional(),
+})
+
+const paymentSchema = z.object({
+    course: courseSchema,
+    datetime: z.string().datetime().optional(),
+    used: z.boolean().optional(),
+})
+
+const licenceSchema = z.object({
+    number: z.number(),
+    expiryDate: z.coerce.date(),
+})
+
+const memberOptionsV2Schema = z.object({
+    uuid: z.string().uuid(),
+    name: z.string(),
+    email: z.string().optional().nullable(),
+    dateOfBirth: z.coerce.date().nullable(),
+    phone: z.string().optional().nullable(),
+    address: z.string().optional().nullable(),    
+    active: z.boolean(),
+    remainingTrialSessions: z.number(),
+    licence: licenceSchema.optional().nullable(),
+    unusedPayments: z.array(paymentSchema),
+    courses: z.array(courseSchema),
+    addedBy: z.string(),
+    joinDate: z.coerce.date(),
+})
 
 export class V1MemberFactory {
     makeMember(data: any): Member {
@@ -61,7 +72,7 @@ export class V1MemberFactory {
 export class V2MemberFactory {
     makeMember(data: any): Member {
         try {
-            return new Member(v2Adapter(data))
+            return new Member(memberOptionsV2Schema.parse(data))
         } catch {
             throw new DomainObjectCreationError('Unable to deserialise Member; response did not match expected schema.')
         }

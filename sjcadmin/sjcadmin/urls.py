@@ -20,6 +20,10 @@ urlpatterns = [
     path('api/members/<uuid:member_uuid>/attendance/delete',
          api_members.delete_attendance),
 
+    path('api/members/<uuid:member_uuid>/payments', api_members.payments),
+    path('api/members/<uuid:member_uuid>/payments/add',
+         api_members.add_payment),
+
     path('api/courses/<uuid:pk>/delete', api_courses.post_delete_course),
 
     #####
@@ -41,11 +45,6 @@ urlpatterns = [
          api_members_old.post_mark_member_inactive),
     path('api/members/<uuid:pk>/activate',
          api_members_old.post_mark_member_active),
-
-    path('api/members/<uuid:pk>/payments/add',
-         api_members_old.post_add_member_payment),
-
-    path('api/payments/query', api_members_old.post_query_member_payments),
 
     path('api/courses', api_courses.get_courses),
     path('api/courses/<uuid:pk>', api_courses.get_course),

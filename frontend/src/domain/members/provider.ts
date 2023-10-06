@@ -21,4 +21,6 @@ export const membersApi = {
     activate: members.activate(http),
     permanentlyDelete: members.permanentlyDelete(http),
     addLicence: members.addLicence(http),
+    getPayments: members.getPayments(http),
+    addPayment: members.addPayment(http),
 }

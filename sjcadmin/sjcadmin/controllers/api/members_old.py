@@ -252,37 +252,3 @@ def post_remove_member_from_course(request, pk):
 
 
 # Payments API
-
-@login_required_401
-@role_required(['staff'])
-@require_http_methods(['POST'])
-@handle_error
-def post_add_member_payment(request, pk):
-    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
-    data = json.loads(request.body)
-    product_id = data.get('product')
-    c = Course.objects.get(_uuid=product_id)
-
-    s.take_payment(Payment.make(timezone.now(), c))
-    s.save()
-
-    return JsonResponse({'success': None})
-
-
-@login_required_401
-@role_required(['staff'])
-@require_http_methods(['POST'])
-@handle_error
-def post_query_member_payments(request):
-    data = json.loads(request.body)
-    memberUuid = data.get('memberUuid')
-    s = Student.fetch_by_uuid(memberUuid, tenant_uuid=request.user.tenant_uuid)
-
-    last_30_used_payments = s.get_last_payments(30)
-    unused_payments = s.get_unused_payments()
-
-    return JsonResponse({'success': list(map(lambda p: {
-        'datetime': p.time,
-        'courseUuid': p.course.uuid if p.course else None,
-        'used': p.used,
-    }, last_30_used_payments + unused_payments))})

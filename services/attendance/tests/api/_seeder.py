@@ -36,6 +36,15 @@ def seed_member(member: dict) -> UUID:
                               ).json().get('uuid'))
 
 
+def seed_member_payment(member_uuid: str, course_uuid: str):
+    requests.post(f'http://monolith.southamptonjiujitsu.local:8000/api/members/{member_uuid}/payments/add',
+                             json={
+                                 'course': {'uuid': str(course_uuid)},
+                             }, headers=headers({
+                                 'userUuid': USER_UUID,
+                             }))
+
+
 def seed_course(course: dict) -> UUID:
     return UUID(requests.post('http://monolith.southamptonjiujitsu.local:8000/api/courses/add',
                               json=course,

@@ -1,23 +1,13 @@
 import { useContext, useEffect, useState } from 'react'
 import MemberHeader from '../../components/MemberHeader'
 import { MemberContext } from '../../contexts/MemberContext'
-import { addPayment, fetchPaymentsByMember } from '../../services/payments'
 import useCourses from '../../hooks/courses'
 import MemberTabs from '../../components/MemberTabs'
 import { Button, Modal } from 'react-bootstrap'
 import { Field, Form, Formik } from 'formik'
 import { notifyError, notifySuccess } from '../../utils/notifications'
-import { Course } from '../../domain/courses/types'
-
-type Payment = {
-    datetime: Date
-    courseUuid: string
-    used: boolean
-}
-
-type Member = {
-    uuid: string
-}
+import { membersApi } from '../../domain/members/provider'
+import { Member, Payment } from '../../domain/members/types'
 
 function PaymentTable({ payments, showNextSession = false }: { payments: Payment[], showNextSession?: boolean }) {
     const courses = useCourses()
@@ -33,9 +23,9 @@ function PaymentTable({ payments, showNextSession = false }: { payments: Payment
                     </tr>
                 </thead>
                 <tbody>
-                    {payments.map((p): [Payment, (Course | undefined)] => [p, courses.get(p.courseUuid)]).map(([p, c], index) => (
+                    {payments.map(({ course, datetime }, index) => (
                         <tr key={index}>
-                            <td>{p.datetime.toLocaleString('en-US', {
+                            <td>{datetime.toLocaleString('en-US', {
                                 year: 'numeric',
                                 month: 'short',
                                 day: 'numeric',
@@ -43,8 +33,8 @@ function PaymentTable({ payments, showNextSession = false }: { payments: Payment
                                 minute: '2-digit',
                                 second: '2-digit',
                             })}</td>
-                            <td>{c ? c.label : 'Any'}</td>
-                            {showNextSession ? <td>{c ? c.nextSession?.toLocaleDateString() : ''}</td> : ''}
+                            <td>{course ? course.label : 'Any'}</td>
+                            {showNextSession ? <td>{course && courses.has(course.uuid) ? courses.get(course.uuid)?.nextSession?.toLocaleDateString() : ''}</td> : ''}
                         </tr>
                     ))}
                 </tbody>
@@ -60,7 +50,7 @@ function Payments({ member, newPayments }: { member: Member, newPayments: Paymen
 
     useEffect(() => {
         if (member.uuid !== undefined) {
-            fetchPaymentsByMember(member).then((payments) => {
+            membersApi.getPayments(member).then((payments) => {
                 setUnusedPayments(payments.filter((p) => !p.used))
                 setHistoricalPayments(payments.filter((p) => p.used))
                 setLoaded(true)
@@ -117,14 +107,15 @@ function MemberPayments() {
                             setSubmitting(false)
                             return
                         }
+
                         const payment = {
-                            courseUuid: values.courseUuid,
+                            course: { uuid: values.courseUuid, label: courses.get(values.courseUuid)?.label } as { uuid: string, label?: string },
                             datetime: new Date(),
                             used: false,
                         }
 
                         setNewPayments([payment].concat(newPayments))
-                        addPayment({ ...payment, memberUuid: member.uuid }).then(() => {
+                        membersApi.addPayment(member, payment.course).then(() => {
                             notifySuccess('Payment recorded')
                         }).catch(notifyError)
                         setSubmitting(false)
@@ -140,7 +131,7 @@ function MemberPayments() {
                                 <div className="mb-3 row">
                                     <div className="col-sm-12">
                                         <Field as="select" className="form-select" name="courseUuid">
-                                            <option>Select course</option>
+                                            <option value="">Select course</option>
                                             {memberCourses.map((c) => (
                                                 c ? <option key={c.uuid} value={c.uuid}>{c.label}</option> : ''
                                             ))}

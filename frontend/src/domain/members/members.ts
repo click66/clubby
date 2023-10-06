@@ -1,5 +1,5 @@
 import { HttpInstance } from '../../utils/http'
-import { Course, Licence, Member, MemberFactory, NewMember, Profile } from './types'
+import { Course, Licence, Member, MemberFactory, NewMember, Payment, Profile } from './types'
 
 const isoDate = (date: Date) => date.toISOString().split('T')[0]
 
@@ -63,4 +63,14 @@ export function addLicence(http: HttpInstance) {
         `/members/${member.uuid}/licences/add`,
         { ...licence, expiryDate: isoDate(licence.expiryDate) },
     ).then(() => member.withLicence(licence))
+}
+
+export function getPayments(http: HttpInstance) {
+    return (member: Member): Promise<Payment[]> => http.get(`/members/${member.uuid}/payments`)
+        .then(({ data }) => data.map((d: any) => ({ ...d, datetime: new Date(d.datetime) })))
+}
+
+export function addPayment(http: HttpInstance) {
+    return (member: Member, course: Course): Promise<Payment> => http.post(`/members/${member.uuid}/payments/add`, { course })
+        .then(({ data }) => data)
 }

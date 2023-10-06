@@ -14,8 +14,14 @@ export interface Licence {
 }
 
 export interface Course {
-    uuid: string,
-    label?: string,
+    uuid: string
+    label?: string
+}
+
+export interface Payment {
+    course: Course
+    datetime: Date
+    used: boolean
 }
 
 export interface Member extends IMember {

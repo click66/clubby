@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-from ._seeder import delete_user, delete_course, delete_member, seed_course, seed_attendances, seed_member, seed_user
+from ._seeder import delete_user, delete_course, delete_member, seed_course, seed_attendances, seed_member, seed_member_payment, seed_user
 from ._jwt import headers
 
 API_ROOT = 'http://localhost:8000'
@@ -105,6 +105,54 @@ def test_create_new_attendance_paid(setup_course_and_member):
     result = response.json()
     assert len(result) > 0
     assert post.items() <= result[0].items()
+
+
+def test_create_new_attendance_paid_in_advance_no_advance_payment(setup_course_and_member):
+    # Given there are no pre-existing attendances
+    seed_attendances([])
+
+    # And there is a single course
+    # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
+    course_uuid, member_uuid = setup_course_and_member
+
+    # When I post a new attendance with a resolution of "paid"
+    post = {
+        'memberUuid': str(member_uuid),
+        'courseUuid': str(course_uuid),
+        'date': '2023-10-15',
+        'resolution': 'paid',
+        'useAdvancedPayment': True,
+    }
+    response = requests.post(API_URL, json=post, headers=headers())
+
+    # Then the post is rejected with an appropriate error
+    assert response.status_code == 422
+    assert response.json().get('detail') == 'Usable payment was not found on account'
+
+
+def test_create_new_attendance_paid_in_advance(setup_course_and_member):
+    # Given there are no pre-existing attendances
+    seed_attendances([])
+
+    # And there is a single course
+    # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
+    course_uuid, member_uuid = setup_course_and_member
+
+    # And that member has one payment for the relevant course
+    seed_member_payment(member_uuid, course_uuid)
+
+    # When I post a new attendance with a resolution of "paid"
+    post = {
+        'memberUuid': str(member_uuid),
+        'courseUuid': str(course_uuid),
+        'date': '2023-10-15',
+        'resolution': 'paid',
+        'useAdvancedPayment': True,
+    }
+    response = requests.post(API_URL, json=post, headers=headers())
+
+    # Then the post is successful
+    assert response.status_code == 200
 
 
 def test_create_new_attendance_comp(setup_course_and_member):

@@ -61,7 +61,7 @@ export function attendSession(http: HttpInstance) {
                 (acc: Attendance, course: Course) => {
                     acc.attendee = acc.attendee
                         .withRemainingTrialSessions(acc.attendee.remainingTrialSessions - (replace || acc.attendee.remainingTrialSessions === 0 ? 0 : 1))
-                    acc.attendee = paymentOption === 'advance' ? acc.attendee.withTakenPayment({ course }) : acc.attendee
+                    acc.attendee = resolution === 'paid' && paymentOption === 'advance' ? acc.attendee.withTakenPayment({ course }) : acc.attendee
                     return acc
                 },
                 attendance,

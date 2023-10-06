@@ -22,10 +22,10 @@ interface Profile {
 export interface MemberOptions {
     readonly uuid: string
     readonly name: string
-    readonly email?: string
-    readonly dateOfBirth?: Date
-    readonly phone?: string
-    readonly address?: string
+    readonly email?: string | null
+    readonly dateOfBirth?: Date | null
+    readonly phone?: string | null
+    readonly address?: string | null
     readonly active: boolean
     readonly remainingTrialSessions: number
     readonly courses: Course[]
@@ -38,17 +38,17 @@ export interface MemberOptions {
 export interface IMember {
     readonly uuid: string
     readonly name: string
-    readonly email: string | undefined
-    readonly dateOfBirth: Date | undefined
-    readonly phone: string | undefined
-    readonly address: string | undefined
+    readonly email: string | null
+    readonly dateOfBirth: Date | null
+    readonly phone: string | null
+    readonly address: string | null
     readonly active: boolean
     readonly remainingTrialSessions: number
     readonly courses: Course[]
     readonly licenceNo?: number | undefined
     readonly licenceExpiry?: Date | undefined
-    readonly addedBy: string | undefined
-    readonly joinDate: Date | undefined
+    readonly addedBy?: string
+    readonly joinDate?: Date
 
     isInCourse(course: Course): boolean
     hasLicence(): boolean
@@ -68,25 +68,25 @@ export interface IMember {
 export class Member implements IMember {
     public readonly uuid: string
     public readonly name: string
-    public readonly email: string | undefined
-    public readonly dateOfBirth: Date | undefined
-    public readonly phone: string | undefined
-    public readonly address: string | undefined
+    public readonly email: string | null
+    public readonly dateOfBirth: Date | null
+    public readonly phone: string | null
+    public readonly address: string | null
     public readonly active: boolean
     public readonly remainingTrialSessions: number
     public readonly courses: Course[]
     private readonly licence: Licence | null
     public readonly unusedPayments: Payment[]
-    public readonly addedBy: string | undefined
-    public readonly joinDate: Date | undefined
+    public readonly addedBy?: string
+    public readonly joinDate?: Date
 
     constructor(options: MemberOptions) {
         this.uuid = options.uuid
         this.name = options.name
-        this.email = options.email
-        this.dateOfBirth = options.dateOfBirth
-        this.phone = options.phone
-        this.address = options.address
+        this.email = options.email ?? null
+        this.dateOfBirth = options.dateOfBirth ?? null
+        this.phone = options.phone ?? null
+        this.address = options.address ?? null
         this.active = options.active
         this.remainingTrialSessions = options.remainingTrialSessions
         this.courses = options.courses
@@ -159,7 +159,7 @@ export class Member implements IMember {
 
         return this.withProperty('unusedPayments', payments)
     }
-    
+
     withCourse(course: Course): Member {
         return this.withProperty('courses', [...this.courses, course])
     }

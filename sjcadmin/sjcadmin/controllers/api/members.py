@@ -36,7 +36,9 @@ class LicenceSerializer(BaseSerialiser):
 
 
 class PaymentSerializer(BaseSerialiser):
-    course = serializers.PrimaryKeyRelatedField(read_only=True)
+    course = CourseSerializer()
+    datetime = serializers.DateTimeField(required=False, source='time')
+    used = serializers.BooleanField(required=False)
 
 
 class MemberSerializer(BaseSerialiser):
@@ -220,3 +222,47 @@ def delete_attendance(request, member_uuid):
     Attendance.clear(member, date=data.get('date'))
 
     return Response(None, 204)
+
+
+@login_required_401
+@role_required(['member', 'staff'])
+@api_view(['POST'])
+@handle_error
+def add_payment(request, member_uuid):
+    data = PaymentSerializer(data=request.data)
+    if not data.is_valid():
+        return Response(data.errors, status=400)
+
+    data = data.validated_data
+
+    member = Member.fetch_by_uuid(member_uuid) if request.user.is_member_user else Member.fetch_by_uuid(
+        member_uuid, tenant_uuid=request.user.tenant_uuid)
+
+    if request.user.is_member_user and not member.is_user(request.user):
+        return Response({'error': 'Member is not authorised'}, 403)
+
+    course = Course.objects.get(_uuid=data.get(
+        'course').get('uuid'), tenant_uuid=member.tenant_uuid)
+
+    payment = Payment.make(timezone.now(), course)
+    member.take_payment(payment)
+    member.save()
+
+    return Response(PaymentSerializer(payment).data)
+
+
+@login_required_401
+@role_required(['member', 'staff'])
+@api_view(['GET'])
+@handle_error
+def payments(request, member_uuid):
+    member = Member.fetch_by_uuid(member_uuid) if request.user.is_member_user else Member.fetch_by_uuid(
+        member_uuid, tenant_uuid=request.user.tenant_uuid)
+
+    if request.user.is_member_user and not member.is_user(request.user):
+        return Response({'error': 'Member is not authorised'}, 403)
+
+    last_30_used_payments = member.get_last_payments(30)
+    unused_payments = member.get_unused_payments()
+
+    return Response(list(map(lambda p: PaymentSerializer(p).data, last_30_used_payments + unused_payments)))
