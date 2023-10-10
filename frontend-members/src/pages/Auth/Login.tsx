@@ -3,6 +3,8 @@ import { useContext, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { UserContext } from '../../contexts/UserContext'
 import { authentication } from '../../authentication'
+import Success from '../../components/Alerts/Success'
+import Danger from '../../components/Alerts/Danger'
 
 export default function Login() {
     const location = useLocation()
@@ -13,18 +15,8 @@ export default function Login() {
 
     return (
         <>
-            {error !== null ? (
-                <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 w-full" role="alert">
-                    <div className="font-medium">Registration failed</div>
-                    <div>{error.message}</div>
-                </div>
-            ) : ''}
-            {state?.activationSuccess === true ?
-                <div className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 w-full" role="alert">
-                    <div className="font-medium">Account Activation Successful!</div>
-                    <div>Please sign in to access your account.</div>
-                </div>
-                : ''}
+            {error !== null ? <Danger>{error.message}</Danger> : ''}
+            {state?.activationSuccess === true ? <Success title="Account Activation Successful!">Please sign in to access your account.</Success> : ''}
             <div className="flex items-center justify-center">
                 <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
                     <h2 className="text-2xl font-semibold mb-6 text-center">Login</h2>

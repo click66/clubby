@@ -13,8 +13,8 @@ function successOrError(r: AxiosResponse) {
 
 function handleError(e: AxiosError) {
     const data = e.response?.data as any
-    if (e instanceof AxiosError && data.hasOwnProperty('error')) {
-        throw new DomainError(data.error)
+    if (e instanceof AxiosError && (data.hasOwnProperty('error') || data.hasOwnProperty('detail'))) {
+        throw new DomainError(data?.error || data?.detail)
     }
     throw new ConnectivityError('Please check your internet connection or try again later.')
 }

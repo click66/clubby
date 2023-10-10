@@ -1,23 +1,13 @@
-import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { Navigate, useLocation, useParams } from 'react-router'
 import Spinner from '../../components/Spinner'
-
-const API_URL = import.meta.env.VITE_AUTH_API_URL
-
-interface UserActivation {
-    uuid: string
-    code: string
-}
-
-function activateUser(data: UserActivation) {
-    return axios.create({ baseURL: API_URL }).post(`/activate/${data.uuid}`, data).then((data) => console.log(data))
-}
+import { authentication } from '../../authentication'
+import Danger from '../../components/Alerts/Danger'
 
 export default function Activate() {
     const [successful, setSuccessful] = useState<boolean>(false)
     const [pending, setPending] = useState<boolean>(true)
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<Error | null>(null)
     const search = useLocation().search
     const code = new URLSearchParams(search).get('code')
     const { uuid } = useParams()
@@ -25,12 +15,11 @@ export default function Activate() {
     useEffect(() => {
         if (uuid && code) {
             setPending(true)
-            activateUser({ uuid, code }).then(() => {
+            authentication.activate({ uuid, code }).then(() => {
                 setSuccessful(true)
-                setPending(false)
-            }).catch(setError)
+            }).catch(setError).finally(() => { setPending(false) })
         }
-    })
+    }, [])
 
     if (code === null) {
         return <Navigate to="/auth/register" />
@@ -45,7 +34,7 @@ export default function Activate() {
     }
 
     if (error) {
-        return error
+        return <Danger title="Account Activation Failed">{error.message}</Danger>
     }
 
     return <Navigate to="/" replace />

@@ -2,6 +2,7 @@ import { ErrorMessage, Field, Form, Formik } from 'formik'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { authentication } from '../../authentication'
+import Danger from '../../components/Alerts/Danger'
 
 const APP_DOMAIN = import.meta.env.VITE_APP_DOMAIN
 
@@ -26,12 +27,7 @@ export default function Register() {
 
     return (
         <>
-            {error !== null ? (
-                <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 w-full" role="alert">
-                    <div className="font-medium">Registration failed</div>
-                    <div>{error.message}</div>
-                </div>
-            ) : ''}
+            {error !== null ? <Danger title="Registration Failed">{error.message}</Danger> : ''}
             <div className="flex items-center justify-center">
                 <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
                     <h2 className="text-2xl font-semibold mb-6 text-center">Register</h2>

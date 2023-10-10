@@ -33,6 +33,11 @@ export interface NewUser {
     confirmPassword: string
 }
 
+interface UserActivation {
+    uuid: string
+    code: string
+}
+
 export const tokens = {
     getAuthorisationToken: () => cookies.get('jwt_authorisation'),
     getRefreshToken: () => cookies.get('jwt_refreshtoken'),
@@ -76,6 +81,7 @@ function getUser(): Promise<User | null> {
 
 export const authentication = {
     register: (domain: string, data: NewUser) => http.post('/register', { ...data, domain }),
+    activate: (data: UserActivation) => http.post(`/activate/${data.uuid}`, data),
     login: (data: Login): Promise<User | null> => getLoginToken(data)
         .then(tokens.setToken)
         .then(() => {
