@@ -23,8 +23,8 @@ export default function Login() {
 
                     <Formik
                         initialValues={{
-                            'email': '',
-                            'password': '',
+                            email: '',
+                            password: '',
                         }}
                         onSubmit={(values, { setSubmitting }) => {
                             setSubmitting(true)

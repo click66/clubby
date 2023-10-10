@@ -18,7 +18,7 @@ function CalendarDate() {
     )
 }
 
-export default function Bookings() {
+export default function Calendar() {
     return (
         <>
             <div className="w-full">

@@ -59,7 +59,7 @@ export default function Register() {
                                         validate={(value: string) => value === '' ? 'Required' : null}
                                         required
                                     />
-                                    <ErrorMessage name="email" component="div" className="form-text text-error text-sm pt-1" />
+                                    <ErrorMessage name="email" component="div" className="form-text text-error text-xs italic pt-1" />
                                 </div>
 
                                 <div className="mb-4">
@@ -74,7 +74,7 @@ export default function Register() {
                                         validate={(value: string) => value === '' ? 'Required' : null}
                                         required
                                     />
-                                    <ErrorMessage name="password" component="div" className="form-text text-error text-sm pt-1" />
+                                    <ErrorMessage name="password" component="div" className="form-text text-error text-xs italic pt-1" />
                                 </div>
 
                                 <div className="mb-4">
@@ -89,7 +89,7 @@ export default function Register() {
                                         required
                                         validate={(value: string) => validateConfirmPassword(values.password, value)}
                                     />
-                                    <ErrorMessage name="confirmPassword" component="div" className="form-text text-error text-sm pt-1" />
+                                    <ErrorMessage name="confirmPassword" component="div" className="form-text text-error text-xs italic pt-1" />
                                 </div>
 
                                 <button

@@ -2,7 +2,7 @@ import { CalendarDaysIcon, ClockIcon, RectangleGroupIcon, UserIcon } from '@hero
 import { BrowserRouter, NavLink as Link, LinkProps, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
-import Bookings from './pages/Bookings'
+import Calendar from './pages/Calendar'
 import History from './pages/History'
 import { useContext, useState } from 'react'
 import { UserContext, UserContextProvider } from './contexts/UserContext'
@@ -78,13 +78,13 @@ function Navigation() {
             <li className="flex-1 text-center p-4">
               <PortalLink to="/profile">
                 <UserIcon className="h-5 w-5 mb-1" />
-                Profile
+                Profiles
               </PortalLink>
             </li>
             <li className="flex-1 text-center p-4">
-              <PortalLink to="bookings">
+              <PortalLink to="calendar">
                 <CalendarDaysIcon className="h-5 w-5 mb-1" />
-                Bookings
+                Calendar
               </PortalLink>
             </li>
             <li className="flex-1 text-center p-4">
@@ -133,7 +133,7 @@ function App() {
                 <Route path="/" element={<LoginGuard />}>
                   <Route index path="dashboard" element={<Dashboard />} />
                   <Route path="profile" element={<Profile />} />
-                  <Route path="bookings" element={<Bookings />} />
+                  <Route path="calendar" element={<Calendar />} />
                   <Route path="history" element={<History />} />
                 </Route>
                 <Route path="/auth/*" element={<AuthRoutes />} />

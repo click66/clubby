@@ -15,17 +15,19 @@ export interface Login {
 }
 
 const loginTokenSchema = z.object({
-    'token': z.string(),
-    'expires': z.number(),
-    'refreshToken': z.string().nullable(),
+    token: z.string(),
+    expires: z.number(),
+    refreshToken: z.string().nullable(),
 })
 
 export type LoginToken = z.infer<typeof loginTokenSchema>
 
-export type User = {
-    uuid: string
-    name: string
-}
+const userSchema = z.object({
+    uuid: z.string().uuid(),
+    name: z.string(),
+})
+
+export type User = z.infer<typeof userSchema>
 
 export interface NewUser {
     email: string
@@ -73,7 +75,7 @@ function refreshLoginToken(refreshToken: string): Promise<LoginToken> {
 function getUser(): Promise<User | null> {
     const authorisationToken = tokens.getAuthorisationToken()
     if (authorisationToken) {
-        return http.get('/me', { headers: { 'Authorization': `Bearer ${authorisationToken}` } })
+        return http.get('/me', { headers: { 'Authorization': `Bearer ${authorisationToken}` } }).then(({ data }) => userSchema.parse(data))
     }
 
     return Promise.reject(new AuthenticationError('No stored access token can be retrieved.'))

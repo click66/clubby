@@ -1,5 +1,7 @@
-import axios, { AxiosError, AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios'
 import { ConnectivityError, DomainError } from './errors'
+
+export type Http = AxiosInstance
 
 function successOrError(r: AxiosResponse) {
     let data = r.data
@@ -13,15 +15,14 @@ function successOrError(r: AxiosResponse) {
 
 function handleError(e: AxiosError) {
     const data = e.response?.data as any
-    if (e instanceof AxiosError && (data.hasOwnProperty('error') || data.hasOwnProperty('detail'))) {
+    if (e instanceof AxiosError && data && (data.hasOwnProperty('error') || data.hasOwnProperty('detail'))) {
         throw new DomainError(data?.error || data?.detail)
     }
     throw new ConnectivityError('Please check your internet connection or try again later.')
 }
 
-export function createHttp(baseURL: string) {
+export function createHttp(baseURL: string): Http {
     const http = axios.create({ baseURL })
-    // http.interceptors.request.use(appendAuthorisation(tokens), (error) => Promise.reject(error))
     http.interceptors.response.use(successOrError, handleError)
     return http
 }

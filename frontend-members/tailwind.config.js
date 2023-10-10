@@ -9,6 +9,7 @@ export default {
         accent: "#ddeff0",
         success: "#28a745",
         error: "#dc3545",
+        warning: '#ffc107',
       
         background: "#f8f9fa",
         text: "#495057",
