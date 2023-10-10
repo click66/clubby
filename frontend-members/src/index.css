@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  overflow-y: scroll;
+}
+
+#root {
+  height: 100%;
+}
+
+@font-face {
+  font-family: "open_sanslight";
+  src: url("assets/fonts/opensans-light-webfont.eot");
+  src: url("assets/fonts/opensans-light-webfont.eot?#iefix")
+      format("embedded-opentype"),
+    url("assets/fonts/opensans-light-webfont.woff2") format("woff2"),
+    url("assets/fonts/opensans-light-webfont.woff") format("woff"),
+    url("assets/fonts/opensans-light-webfont.ttf") format("truetype"),
+    url("assets/fonts/opensans-light-webfont.svg#open_sanslight")
+      format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "open_sanslight_italic";
+  src: url("assets/fonts/opensans-lightitalic-webfont.eot");
+  src: url("assets/fonts/opensans-lightitalic-webfont.eot?#iefix")
+      format("embedded-opentype"),
+    url("assets/fonts/opensans-lightitalic-webfont.woff2")
+      format("woff2"),
+    url("assets/fonts/opensans-lightitalic-webfont.woff") format("woff"),
+    url("assets/fonts/opensans-lightitalic-webfont.ttf")
+      format("truetype"),
+    url("assets/fonts/opensans-lightitalic-webfont.svg#open_sanslight_italic")
+      format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "open_sansregular";
+  src: url("assets/fonts/opensans-regular-webfont.eot");
+  src: url("assets/fonts/opensans-regular-webfont.eot?#iefix")
+      format("embedded-opentype"),
+    url("assets/fonts/opensans-regular-webfont.woff2") format("woff2"),
+    url("assets/fonts/opensans-regular-webfont.woff") format("woff"),
+    url("assets/fonts/opensans-regular-webfont.ttf") format("truetype"),
+    url("assets/fonts/opensans-regular-webfont.svg#open_sansregular")
+      format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "open_sanssemibold";
+  src: url("assets/fonts/opensans-semibold-webfont.eot");
+  src: url("assets/fonts/opensans-semibold-webfont.eot?#iefix")
+      format("embedded-opentype"),
+    url("assets/fonts/opensans-semibold-webfont.woff2") format("woff2"),
+    url("assets/fonts/opensans-semibold-webfont.woff") format("woff"),
+    url("assets/fonts/opensans-semibold-webfont.ttf") format("truetype"),
+    url("assets/fonts/opensans-semibold-webfont.svg#open_sanssemibold")
+      format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "tjjf";
+  src: url("assets/fonts/tjjf.woff") format("woff");
+}

@@ -60,7 +60,17 @@ class User(AbstractUser):
     @property
     def uuid(self):
         return self._uuid
-    
+
     @property
     def is_member_user(self) -> bool:
         return not self.is_staff and not self.is_superuser
+    
+    @property
+    def name(self) -> str:
+        name = self.first_name + self.last_name
+        return self.email if name == '' else name
+
+
+class ActivationCode(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    activation_code = models.CharField(max_length=255)

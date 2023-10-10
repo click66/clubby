@@ -5,10 +5,15 @@ from .controllers.api import courses as api_courses, members_old as api_members_
 from .controllers.api import admin as api_admin, auth as api_auth, members as api_members
 
 urlpatterns = [
-    path('api/auth/jwt', api_auth.get_jwt),
     path('api/auth/login', api_auth.login),
     path('api/auth/refresh', api_auth.refresh_token),
     path('api/auth/change_password', api_auth.change_password),
+    path('api/auth/me', api_auth.me),
+
+    path('api/auth/register', api_auth.register, name='register'),
+    path('api/auth/activate/<uuid:user_uuid>',
+         api_auth.activate_account, name='activate_account'),
+
 
     path('api/members/<uuid:member_uuid>', api_members.member),
     path('api/members/<uuid:member_uuid>/delete', api_members.delete),

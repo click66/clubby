@@ -9,8 +9,13 @@ services:
     depends_on:
       - gateway
     working_dir: /app
-    volumes:
-      - ./frontend:/app
+  
+  frontend-members:
+    image: node:latest
+    command: ["npm", "run", "dev"]
+    depends_on:
+      - gateway
+    working_dir: /app
 
   app:
     build:

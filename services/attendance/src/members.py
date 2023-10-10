@@ -34,7 +34,7 @@ async def attempt_attendance(client: HttpClient, request, attendance: Attendance
         'date': attendance.date.isoformat(),
         'course': {'uuid': str(attendance.course_uuid)},
         'payment': attendance.resolution_type,
-        'payment_option': 'now' if not use_advanced_payment else 'advance',
+        'paymentOption': 'now' if not use_advanced_payment else 'advance',
     }, headers={'Authorization': request.headers.get('Authorization')}) as resp:
         default_error = 'Member attendance request was rejected'
         try:

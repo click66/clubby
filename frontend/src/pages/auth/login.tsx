@@ -42,7 +42,7 @@ function Login({ loggedIn, setLoggedIn }: { loggedIn: boolean, setLoggedIn: (val
         http.post(`${API_URL}/login`, { email, password })
             .then(successOrError)
             .then(({ data }) => {
-                login(data.token, data.expires, data.refresh_token)
+                login(data.token, data.expires, data.refreshToken)
                 setLoggedIn(true)
                 navigate('/')
             }).catch(notifyError)

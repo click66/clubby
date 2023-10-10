@@ -1,7 +1,5 @@
 from uuid import UUID
 
-import humps
-from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from rest_framework import serializers
@@ -12,12 +10,8 @@ from ._middleware import handle_error, login_required_401, role_required
 from ...models.attendance import Attendance
 from ...models.student import Student as Member, Payment
 from ...models.course import Course
+from ...schemas import BaseSerialiser
 from ....sjcauth.models import User
-
-
-class BaseSerialiser(serializers.Serializer):
-    def to_representation(self, instance):
-        return humps.camelize(super().to_representation(instance))
 
 
 class CourseSerializer(BaseSerialiser):

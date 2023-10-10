@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import { ConnectivityError } from '../errors'
+import { ConnectivityError, DomainError } from '../errors'
 
 export type HttpInstance = AxiosInstance
 
@@ -24,7 +24,7 @@ function appendAuthorisation(tokens: TokenContainer) {
 function successOrError(r: AxiosResponse) {
     let data = r.data
     if (data && data.hasOwnProperty('error')) {
-        return Promise.reject(new Error(data.error))
+        return Promise.reject(new DomainError(data.error))
     }
 
     r.data = data?.success ?? data

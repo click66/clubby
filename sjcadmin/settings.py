@@ -44,6 +44,7 @@ ALLOWED_HOSTS = [
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8080',
+    'http://localhost:8081',
     'http://admin.southamptonjiujitsu.local:8000',
     'http://members.southamptonjiujitsu.local:8000',
     'http://monolith.southamptonjiujitsu.local:8000',
@@ -82,6 +83,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
+    "http://localhost:8081",
     "http://admin.southamptonjiujitsu.local:8080",
     "http://admin.southamptonjiujitsu.local:8000",
     "https://admin.southamptonjiujitsu.com",
