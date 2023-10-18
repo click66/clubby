@@ -19,6 +19,12 @@ interface Profile {
     address: string
 }
 
+interface Subscription {
+    expiryDate: Date
+    type: 'time'
+    course: Course
+}
+
 export interface MemberOptions {
     readonly uuid: string
     readonly name: string
@@ -28,6 +34,7 @@ export interface MemberOptions {
     readonly address?: string | null
     readonly active: boolean
     readonly remainingTrialSessions: number
+    readonly subscriptions?: Subscription[]
     readonly courses: Course[]
     readonly licence?: Licence | null
     readonly unusedPayments?: Payment[]
@@ -55,6 +62,7 @@ export interface IMember {
     isLicenceExpired(now: Date): boolean
     activeTrial(): boolean
     hasUsablePaymentForCourse(course: Course): boolean
+    hasSubscriptionForCourse(course: Course, date: Date): boolean
 
     withRemainingTrialSessions(count: number): IMember
     withTakenPayment(paymentToRemove: Payment): IMember
@@ -77,6 +85,7 @@ export class Member implements IMember {
     public readonly courses: Course[]
     private readonly licence: Licence | null
     public readonly unusedPayments: Payment[]
+    private readonly subscriptions: Subscription[]
     public readonly addedBy?: string
     public readonly joinDate?: Date
 
@@ -92,6 +101,7 @@ export class Member implements IMember {
         this.courses = options.courses
         this.licence = options.licence ?? null
         this.unusedPayments = options.unusedPayments ?? []
+        this.subscriptions = options.subscriptions ?? []
         this.addedBy = options.addedBy
         this.joinDate = options.joinDate
     }
@@ -110,6 +120,7 @@ export class Member implements IMember {
                 courses: this.courses,
                 licence: this.licence,
                 unusedPayments: this.unusedPayments,
+                subscriptions: this.subscriptions,
                 addedBy: this.addedBy,
                 joinDate: this.joinDate,
             },
@@ -144,6 +155,11 @@ export class Member implements IMember {
 
     hasUsablePaymentForCourse(course: Course): boolean {
         return this.unusedPayments.some((payment) => payment.course.uuid === course.uuid)
+    }
+
+    hasSubscriptionForCourse(course: Course, date: Date): boolean {
+        // TODO filter to unexpired
+        return this.subscriptions.some((subscription) => subscription.course.uuid === course.uuid && subscription.expiryDate > date)
     }
 
     withRemainingTrialSessions(count: number): IMember {

@@ -12,6 +12,7 @@ function saveNewAttendance(http: HttpInstance, { attendee, session, resolution =
             date: isoDate(session.date),
             resolution,
             useAdvancedPayment: paymentOption === 'advance',
+            useSubscription: paymentOption === 'subscription',
         }))
         return acc
     }, [] as Promise<any>[])).then((data) => ({
@@ -48,6 +49,10 @@ export function attendSession(http: HttpInstance) {
 
         if (paymentOption === 'advance' && session.courses.some((course) => !attendee.hasUsablePaymentForCourse(course))) {
             return Promise.reject(new DomainError('Attendee has no usable advance payment.'))
+        }
+
+        if (paymentOption === 'subscription' && session.courses.some((course) => !attendee.hasSubscriptionForCourse(course, session.date))) {
+            return Promise.reject(new DomainError('Attendee has no usable subscription.'))
         }
 
         return saveNewAttendance(http, {

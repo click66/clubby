@@ -37,6 +37,12 @@ const paymentSchema = z.object({
     used: z.boolean().optional(),
 })
 
+const subscriptionSchema = z.object({
+    course: courseSchema,
+    type: z.enum(['time']),
+    expiryDate: z.coerce.date(),
+})
+
 const licenceSchema = z.object({
     number: z.number(),
     expiryDate: z.coerce.date(),
@@ -53,6 +59,7 @@ const memberOptionsV2Schema = z.object({
     remainingTrialSessions: z.number(),
     licence: licenceSchema.optional().nullable(),
     unusedPayments: z.array(paymentSchema),
+    subscriptions: z.array(subscriptionSchema).optional(),
     courses: z.array(courseSchema),
     addedBy: z.string(),
     joinDate: z.coerce.date(),
