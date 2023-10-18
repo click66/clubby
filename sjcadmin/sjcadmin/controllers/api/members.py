@@ -135,7 +135,7 @@ def query(request):
         tenant_uuid=request.user.tenant_uuid,
     )
 
-    return Response(list(map(lambda m: MemberSerializer(m).data, members)))
+    return Response(list(map(lambda m: MemberSerializer(m, context={'today': date.today()}).data, members)))
 
 
 @handle_error
@@ -165,7 +165,7 @@ def create(request):
         member.sign_up(course)
         member.save()
 
-    return Response(MemberSerializer(member).data)
+    return Response(MemberSerializer(member, context={'today': date.today()}).data)
 
 
 @handle_error

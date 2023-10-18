@@ -52,6 +52,7 @@ export interface IMember {
     readonly active: boolean
     readonly remainingTrialSessions: number
     readonly courses: Course[]
+    readonly subscriptions: Subscription[]
     readonly licenceNo?: number | undefined
     readonly licenceExpiry?: Date | undefined
     readonly addedBy?: string
@@ -85,7 +86,7 @@ export class Member implements IMember {
     public readonly courses: Course[]
     private readonly licence: Licence | null
     public readonly unusedPayments: Payment[]
-    private readonly subscriptions: Subscription[]
+    public readonly subscriptions: Subscription[]
     public readonly addedBy?: string
     public readonly joinDate?: Date
 

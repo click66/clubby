@@ -5,7 +5,7 @@ import { notifyError, notifySuccess } from '../utils/notifications'
 import { MemberQuickAddButton } from './MemberQuickAdd'
 import { Fragment, memo, useCallback, useEffect, useRef, useState } from 'react'
 import { Badge } from 'react-bootstrap'
-import { Cash } from 'react-bootstrap-icons'
+import { ArrowClockwise, Cash } from 'react-bootstrap-icons'
 import MemberBadge from './MemberBadge'
 import { DomainError } from '../errors'
 import { renderLogAttendanceModal } from './LogAttendanceModal'
@@ -106,9 +106,14 @@ const columns = [
         cell: ({ getValue, row, table }) => (
             <div className="memberRowHeader">
                 <span className="memberName">{getValue()}</span>
-                <span className="memberIcons">{table.options.meta?.courses
-                    .map((c: Course) => row.original.hasUsablePaymentForCourse(c as { uuid: string }))
-                    .includes(true) ? <Cash /> : ''}</span>
+                <span className="memberIcons">
+                    {table.options.meta?.courses
+                        .map((c: Course) => row.original.hasUsablePaymentForCourse(c as { uuid: string }))
+                        .includes(true) ? <Cash /> : ''}
+                    {table.options.meta?.courses
+                        .map((c: Course) => row.original.hasSubscriptionForCourse(c as { uuid: string }, new Date()))
+                        .includes(true) ? <ArrowClockwise /> : ''}
+                </span>
             </div>
         ),
         sortDescFirst: false,

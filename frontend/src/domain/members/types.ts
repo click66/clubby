@@ -27,6 +27,7 @@ export interface Payment {
 export interface Subscription {
     course: Course
     expiryDate: Date
+    type: 'time'
 }
 
 export interface Member extends IMember {

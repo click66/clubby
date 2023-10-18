@@ -8,11 +8,18 @@ export interface Payment {
     course: Course
 }
 
+export interface Subscription {
+    course: Course
+    expiryDate: Date
+    type: 'time'
+}
+
 export interface Attendee extends IMember {
     readonly uuid: string
     readonly name: string
     readonly remainingTrialSessions: number
     readonly courses: Course[]
+    readonly subscriptions: Subscription[]
 
     isInCourse(course: Course): boolean
     hasLicence(): boolean
