@@ -1,3 +1,4 @@
+from datetime import date
 from uuid import UUID
 
 import humps
@@ -74,6 +75,13 @@ class MemberSerializer(BaseSerialiser):
     unused_payments = PaymentSerializer(
         many=True, read_only=True, source='get_unused_payments')
 
+    subscriptions = serializers.SerializerMethodField()
+
+    def get_subscriptions(self, obj: Member):
+        today = self.context['today']
+        subscriptions = obj.get_unexpired_subscriptions(today)
+        return list(map(lambda s: SubscriptionSerializer(s).data, subscriptions))
+
 
 class NewMemberSerializer(BaseSerialiser):
     name = serializers.CharField()
@@ -90,7 +98,7 @@ class AttendanceSerializer(BaseSerialiser):
         choices=['now', 'advance', 'subscription'], required=False)
 
 
-@handle_error
+# @handle_error
 @login_required_401
 @role_required(['member', 'staff'])
 @api_view(['GET'])
@@ -100,7 +108,7 @@ def member(request, member_uuid: UUID):
     if request.user.is_member_user and not m.is_user(request.user):
         return Response({'error': 'Member is not authorised.'}, 403)
 
-    return Response(MemberSerializer(m).data)
+    return Response(MemberSerializer(m, context={'today': date.today()}).data)
 
 
 @handle_error

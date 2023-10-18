@@ -24,8 +24,14 @@ export interface Payment {
     used: boolean
 }
 
+export interface Subscription {
+    course: Course
+    expiryDate: Date
+}
+
 export interface Member extends IMember {
     readonly courses: Course[]
+    readonly subscriptions: Subscription[]
 
     withCourse(course: Course): Member
     withoutCourse(course: Course): Member

@@ -1,5 +1,5 @@
 import { HttpInstance } from '../../utils/http'
-import { Course, Licence, Member, MemberFactory, NewMember, Payment, Profile } from './types'
+import { Course, Licence, Member, MemberFactory, NewMember, Payment, Profile, Subscription } from './types'
 
 const isoDate = (date: Date) => date.toISOString().split('T')[0]
 
@@ -72,5 +72,18 @@ export function getPayments(http: HttpInstance) {
 
 export function addPayment(http: HttpInstance) {
     return (member: Member, course: Course): Promise<Payment> => http.post(`/members/${member.uuid}/payments/add`, { course })
+        .then(({ data }) => data)
+}
+
+export function getSubscriptions(http: HttpInstance) {
+    return (member: Member): Promise<Payment[]> => http.get(`/members/${member.uuid}/subscriptions`)
+        .then(({ data }) => data.map((d: any) => ({ ...d, expiryDate: new Date(d.expiryDate) })))
+}
+
+export function addSubscription(http: HttpInstance) {
+    return ({ member, subscription }: { member: Member, subscription: Subscription }): Promise<Subscription> => http.post(
+        `/members/${member.uuid}/subscriptions/add`,
+        subscription,
+    )
         .then(({ data }) => data)
 }

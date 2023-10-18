@@ -17,10 +17,12 @@
     margin-top: 10px;
     border-top: 1px solid #ccc;
 
-    @media (min-width: 501px) {
-      padding-top: inherit;
-      margin-top: inherit;
-      border-top: none;
+    &:first-child {
+      @media (min-width: 501px) {
+        padding-top: inherit;
+        margin-top: inherit;
+        border-top: none;
+      }
     }
 
     .actions {

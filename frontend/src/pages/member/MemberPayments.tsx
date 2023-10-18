@@ -7,7 +7,55 @@ import { Button, Modal } from 'react-bootstrap'
 import { Field, Form, Formik } from 'formik'
 import { notifyError, notifySuccess } from '../../utils/notifications'
 import { membersApi } from '../../domain/members/provider'
-import { Member, Payment } from '../../domain/members/types'
+import { Member, Payment, Subscription } from '../../domain/members/types'
+
+function SubscriptionTable({ subscriptions }: { subscriptions: Subscription[] }) {
+    return (
+        <>
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Expires</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {subscriptions.map(({ course, expiryDate }, index) => (
+                        <tr key={index}>
+                            <td>{course ? course.label : 'Any'}</td>
+                            <td>{expiryDate.toLocaleString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit',
+                            })}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </>
+    )
+}
+
+function Subscriptions({ member }: { member: Member }) {
+    const [loaded, setLoaded] = useState<boolean>(false)
+
+    useEffect(() => {
+        setLoaded(true)
+    }, [])
+
+    return (
+        <div className={!loaded ? "loading" : ""}>
+            <div className="mb-3 text-end">
+                <Button variant="primary" onClick={() => { }}>Add Subscription</Button>
+            </div>
+            <h2>Active Subscriptions</h2>
+            {member.subscriptions.length === 0 ? <p className="text-center">No active subscriptions</p> : <SubscriptionTable subscriptions={member.subscriptions} />}
+        </div>
+    )
+}
 
 function PaymentTable({ payments, showNextSession = false }: { payments: Payment[], showNextSession?: boolean }) {
     const courses = useCourses()
@@ -18,7 +66,7 @@ function PaymentTable({ payments, showNextSession = false }: { payments: Payment
                 <thead>
                     <tr>
                         <th>Payment Taken</th>
-                        <th>For class</th>
+                        <th>Course</th>
                         {showNextSession ? <th>Next redeemable session</th> : ''}
                     </tr>
                 </thead>
@@ -49,13 +97,11 @@ function Payments({ member, newPayments }: { member: Member, newPayments: Paymen
     const [loaded, setLoaded] = useState(false)
 
     useEffect(() => {
-        if (member.uuid !== undefined) {
-            membersApi.getPayments(member).then((payments) => {
-                setUnusedPayments(payments.filter((p) => !p.used))
-                setHistoricalPayments(payments.filter((p) => p.used))
-                setLoaded(true)
-            })
-        }
+        membersApi.getPayments(member).then((payments) => {
+            setUnusedPayments(payments.filter((p) => !p.used))
+            setHistoricalPayments(payments.filter((p) => p.used))
+            setLoaded(true)
+        })
     }, [])
 
     const newAndUnusedPayments = newPayments.concat(unusedPayments)
@@ -91,6 +137,10 @@ function MemberPayments() {
                                     <Button variant="primary" onClick={() => { setFormOpen(true) }} disabled={memberCourses.length === 0}>Add Payment</Button>
                                 </div>
                                 <Payments member={member} newPayments={newPayments} />
+                            </div>
+                            <div className="hbar"></div>
+                            <div className="col-sm-12 col-md-10 col-lg-8 mt-2">
+                                <Subscriptions member={member} />
                             </div>
                         </div>
                     </div>
