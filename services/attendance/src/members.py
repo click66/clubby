@@ -29,12 +29,16 @@ class HttpClient:
         return self.session
 
 
-async def attempt_attendance(client: HttpClient, request, attendance: Attendance, use_advanced_payment: bool):
+async def attempt_attendance(client: HttpClient, request, attendance: Attendance, use_advanced_payment: bool, use_subscription: bool):
+    payment_option = 'advance' if use_advanced_payment \
+        else 'subscription' if use_subscription \
+        else 'now'
+
     async with client.post(f'/api/members/{str(attendance.member_uuid)}/attendance/log', json={
         'date': attendance.date.isoformat(),
         'course': {'uuid': str(attendance.course_uuid)},
         'payment': attendance.resolution_type,
-        'payment_option': 'now' if not use_advanced_payment else 'advance',
+        'payment_option': payment_option,
     }, headers={'Authorization': request.headers.get('Authorization')}) as resp:
         default_error = 'Member attendance request was rejected'
         try:

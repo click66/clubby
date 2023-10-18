@@ -83,6 +83,19 @@ class Payment(models.Model):
         return course.uuid == self._course.uuid
 
 
+class Subscription(models.Model):
+    student = models.ForeignKey(
+        'Student', null=False, on_delete=models.CASCADE)
+    expiry_date = models.DateField(null=True)
+    type = models.TextField(blank=False, null=False, default='time')
+    course = models.ForeignKey('Course', null=True, on_delete=models.CASCADE)
+    
+    @classmethod
+    def make(cls, type: str, expiry_date: datetime, course: Course):
+        subscription = cls(expiry_date=expiry_date, course=course, type=type)
+        return subscription
+
+
 class Student(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     _creator = models.UUIDField(null=True, db_column='creator_id')
@@ -118,6 +131,7 @@ class Student(models.Model):
     _unused_payments = []
     _new_payments = []
     _unused_and_new_payments = []
+    _new_subscriptions = []
 
     @classmethod
     def fetch_all(cls, tenant_uuid: str):
@@ -125,6 +139,7 @@ class Student(models.Model):
             .select_related('licence')\
             .prefetch_related('note_set')\
             .prefetch_related('payment_set')\
+            .prefetch_related('subscription_set')\
             .prefetch_related('attendance_set')\
             .prefetch_related('_courses')\
             .filter(tenant_uuid=tenant_uuid)
@@ -167,6 +182,8 @@ class Student(models.Model):
         o._new_courses = []
         o._removed_courses = []
 
+        o._new_subscriptions = []
+
         return o
 
     @classmethod
@@ -205,6 +222,7 @@ class Student(models.Model):
             .select_related('licence')\
             .prefetch_related('note_set')\
             .prefetch_related(models.Prefetch('payment_set', queryset=Payment.objects.order_by('-_datetime')))\
+            .prefetch_related('subscription_set')\
             .annotate(_sessions_attended=models.Count('attendance'))\
             .prefetch_related('_courses')\
             .all()
@@ -262,6 +280,8 @@ class Student(models.Model):
         student._new_notes = []
         student._new_courses = []
         student._removed_courses = []
+        student._new_subscriptions = []
+        student._new_payments = []
 
         return student
 
@@ -273,8 +293,15 @@ class Student(models.Model):
         for payment in self._new_payments:
             payment.save()
         self.payment_set.add(*self._new_payments)
+        self._new_payments = []
+
         for payment in self._unused_payments:
             payment.save()
+
+        for subscription in self._new_subscriptions:
+            subscription.save()
+        self.subscription_set.add(*self._new_subscriptions)
+        self._new_subscriptions = []
 
         if self.has_licence():
             self.licence.save()
@@ -377,6 +404,13 @@ class Student(models.Model):
         payment._student = self
         self._new_payments.insert(0, payment)
         self._unused_and_new_payments.insert(0, payment)
+    
+    def has_subscription(self, course, date: date) -> bool:
+        return any(subscription.course.uuid == course.uuid and subscription.expiry_date > date for subscription in self.subscription_set.all())
+
+    def subscribe(self, subscription: Subscription):
+        subscription.student = self
+        self._new_subscriptions.insert(0, subscription)
 
     def get_last_payments(self, n):
         return sorted(self._used_payments, key=lambda x: x.time, reverse=True)[0:n]

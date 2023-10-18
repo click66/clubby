@@ -46,7 +46,7 @@ class Attendance(models.Model):
         existing = Attendance.objects.filter(student=student, date=date)
         student.decrement_attendance(existing.count())
         existing.delete()
-    
+
     @property
     def course(self):
         return self._course
@@ -71,11 +71,14 @@ class Attendance(models.Model):
         self.complementary = True
         self.paid = False
 
-    def pay(self):
+    def pay(self, use_subscription=False):
         prepayment = self.student.has_prepaid(self._course)
-        if not prepayment:  # Student has not prepaid
-            raise NoPaymentFound('Usable payment was not found on account')
+        subscription = self.student.has_subscription(self._course, self.date)
+        if not prepayment and not subscription:  # Student has not prepaid and as no usable subscription
+            raise NoPaymentFound(
+                'Usable payment method was not found on account')
 
         self.complementary = False
         self.paid = True
-        prepayment.mark_used()
+        if prepayment and not use_subscription:
+            prepayment.mark_used()

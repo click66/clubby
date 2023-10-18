@@ -24,6 +24,10 @@ urlpatterns = [
     path('api/members/<uuid:member_uuid>/payments/add',
          api_members.add_payment),
 
+    path('api/members/<uuid:member_uuid>/subscriptions', api_members.subscriptions),
+    path('api/members/<uuid:member_uuid>/subscriptions/add',
+         api_members.add_subscription),
+
     path('api/courses/<uuid:pk>/delete', api_courses.post_delete_course),
 
     #####

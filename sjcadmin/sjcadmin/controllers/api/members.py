@@ -10,12 +10,22 @@ from rest_framework.response import Response
 
 from ._middleware import handle_error, login_required_401, role_required
 from ...models.attendance import Attendance
-from ...models.student import Student as Member, Payment
+from ...models.student import Student as Member, Payment, Subscription
 from ...models.course import Course
 from ....sjcauth.models import User
 
 
 class BaseSerialiser(serializers.Serializer):
+    def to_internal_value(self, data):
+        snake_case_data = {}
+
+        # Convert camelCase keys to snake_case
+        for key, value in data.items():
+            snake_case_key = humps.decamelize(key)
+            snake_case_data[snake_case_key] = value
+
+        return super().to_internal_value(snake_case_data)
+
     def to_representation(self, instance):
         return humps.camelize(super().to_representation(instance))
 
@@ -39,6 +49,12 @@ class PaymentSerializer(BaseSerialiser):
     course = CourseSerializer()
     datetime = serializers.DateTimeField(required=False, source='time')
     used = serializers.BooleanField(required=False)
+
+
+class SubscriptionSerializer(BaseSerialiser):
+    course = CourseSerializer()
+    type = serializers.CharField()
+    expiry_date = serializers.DateField(required=False, allow_null=True)
 
 
 class MemberSerializer(BaseSerialiser):
@@ -71,7 +87,7 @@ class AttendanceSerializer(BaseSerialiser):
     payment = serializers.ChoiceField(
         choices=['complementary', 'comp', 'paid', 'attending'], allow_null=True, required=False)
     payment_option = serializers.ChoiceField(
-        choices=['now', 'advance'], required=False)
+        choices=['now', 'advance', 'subscription'], required=False)
 
 
 @handle_error
@@ -194,7 +210,8 @@ def log_attendance(request, member_uuid):
         case 'paid':
             if data.get('payment_option') == 'now':
                 member.take_payment(Payment.make(timezone.now(), course))
-            attendance.pay()
+            attendance.pay(use_subscription=(
+                data.get('payment_option') == 'subscription'))
 
     attendance.save()
     member.save()
@@ -266,3 +283,44 @@ def payments(request, member_uuid):
     unused_payments = member.get_unused_payments()
 
     return Response(list(map(lambda p: PaymentSerializer(p).data, last_30_used_payments + unused_payments)))
+
+
+@login_required_401
+@role_required(['member', 'staff'])
+@api_view(['POST'])
+@handle_error
+def add_subscription(request, member_uuid):
+    data = SubscriptionSerializer(data=request.data)
+    if not data.is_valid():
+        return Response(data.errors, status=400)
+
+    data = data.validated_data
+
+    member = Member.fetch_by_uuid(member_uuid) if request.user.is_member_user else Member.fetch_by_uuid(
+        member_uuid, tenant_uuid=request.user.tenant_uuid)
+
+    if request.user.is_member_user and not member.is_user(request.user):
+        return Response({'error': 'Member is not authorised'}, 403)
+
+    course = Course.objects.get(_uuid=data.get('course').get(
+        'uuid'), tenant_uuid=member.tenant_uuid)
+
+    subscription = Subscription.make('time', data.get('expiry_date'), course)
+    member.subscribe(subscription)
+    member.save()
+
+    return Response(SubscriptionSerializer(subscription).data)
+
+
+@login_required_401
+@role_required(['member', 'staff'])
+@api_view(['GET'])
+@handle_error
+def subscriptions(request, member_uuid):
+    member = Member.fetch_by_uuid(member_uuid) if request.user.is_member_user else Member.fetch_by_uuid(
+        member_uuid, tenant_uuid=request.user.tenant_uuid)
+
+    if request.user.is_member_user and not member.is_user(request.user):
+        return Response({'error': 'Member is not authorised'}, 403)
+
+    return Response(list(map(lambda s: SubscriptionSerializer(s).data, member.subscriptions)))

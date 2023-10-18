@@ -158,7 +158,6 @@ export class Member implements IMember {
     }
 
     hasSubscriptionForCourse(course: Course, date: Date): boolean {
-        // TODO filter to unexpired
         return this.subscriptions.some((subscription) => subscription.course.uuid === course.uuid && subscription.expiryDate > date)
     }
 
