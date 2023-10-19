@@ -1,3 +1,4 @@
+import { DomainError } from '../../errors'
 import { HttpInstance } from '../../utils/http'
 import { Course, Licence, Member, MemberFactory, NewMember, Payment, Profile, Subscription } from './types'
 
@@ -81,9 +82,21 @@ export function getSubscriptions(http: HttpInstance) {
 }
 
 export function addSubscription(http: HttpInstance) {
-    return ({ member, subscription }: { member: Member, subscription: Subscription }): Promise<Subscription> => http.post(
-        `/members/${member.uuid}/subscriptions/add`,
-        subscription,
-    )
-        .then(({ data }) => data)
+    return ({ member, subscription }: { member: Member, subscription: Subscription }): Promise<Member> => {
+        if (member.hasSubscriptionForCourse(subscription.course)) {
+            return Promise.reject(new DomainError('Member is already subscribed to this course. Cancel the existing subscription if you want to make a new one.'))
+        }
+
+        return http.post(
+            `/members/${member.uuid}/subscriptions/add`,
+            { ...subscription, expiryDate: isoDate(subscription.expiryDate) },
+        ).then(({ data }) => member.withSubscription({ ...data, expiryDate: new Date(data.expiryDate) }))
+    }
+}
+
+export function cancelSubscription(http: HttpInstance) {
+    return ({ member, course }: { member: Member, course: Course }): Promise<Member> => http.post(
+        `/members/${member.uuid}/subscriptions/cancel`,
+        { course },
+    ).then(() => member.withoutCourseSubscription(course))
 }

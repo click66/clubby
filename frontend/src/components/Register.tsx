@@ -38,7 +38,7 @@ interface AddAttendanceArgs {
     attendee: Attendee,
     session: Session,
     resolution: 'comp' | 'paid' | null,
-    paymentOption: 'advance' | 'now',
+    paymentOption: 'advance' | 'now' | 'subscription',
     replace?: boolean,
 }
 

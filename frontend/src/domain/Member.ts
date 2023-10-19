@@ -63,7 +63,7 @@ export interface IMember {
     isLicenceExpired(now: Date): boolean
     activeTrial(): boolean
     hasUsablePaymentForCourse(course: Course): boolean
-    hasSubscriptionForCourse(course: Course, date: Date): boolean
+    hasSubscriptionForCourse(course: Course, date?: Date): boolean
 
     withRemainingTrialSessions(count: number): IMember
     withTakenPayment(paymentToRemove: Payment): IMember
@@ -72,6 +72,8 @@ export interface IMember {
     withProfile(profile: Profile): IMember
     withActive(status: boolean): IMember
     withLicence(licence: Licence): IMember
+    withSubscription(subscription: Subscription): IMember
+    withoutCourseSubscription(course: Course): IMember
 }
 
 export class Member implements IMember {
@@ -158,8 +160,8 @@ export class Member implements IMember {
         return this.unusedPayments.some((payment) => payment.course.uuid === course.uuid)
     }
 
-    hasSubscriptionForCourse(course: Course, date: Date): boolean {
-        return this.subscriptions.some((subscription) => subscription.course.uuid === course.uuid && subscription.expiryDate > date)
+    hasSubscriptionForCourse(course: Course, date: Date|null = null): boolean {
+        return this.subscriptions.some((subscription) => subscription.course.uuid === course.uuid && (!date || subscription.expiryDate > date))
     }
 
     withRemainingTrialSessions(count: number): IMember {
@@ -200,4 +202,11 @@ export class Member implements IMember {
         return this.withProperty('licence', licence)
     }
 
+    withSubscription(subscription: Subscription): Member {
+        return this.withProperty('subscriptions', [...this.subscriptions, subscription])
+    }
+
+    withoutCourseSubscription(course: Course): Member {
+        return this.withProperty('subscriptions', this.subscriptions.filter((s) => s.course.uuid !== course.uuid))
+    }
 }

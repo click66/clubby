@@ -332,3 +332,28 @@ def subscriptions(request, member_uuid):
         return Response({'error': 'Member is not authorised'}, 403)
 
     return Response(list(map(lambda s: SubscriptionSerializer(s).data, member.subscriptions)))
+
+
+@login_required_401
+@role_required(['member', 'staff'])
+@api_view(['POST'])
+@handle_error
+def cancel_subscription(request, member_uuid):
+    data = CourseSerializer(data=request.data.get('course'))
+    if not data.is_valid():
+        return Response(data.errors, status=400)
+
+    data = data.validated_data
+
+    member = Member.fetch_by_uuid(member_uuid) if request.user.is_member_user else Member.fetch_by_uuid(
+        member_uuid, tenant_uuid=request.user.tenant_uuid)
+
+    if request.user.is_member_user and not member.is_user(request.user):
+        return Response({'error': 'Member is not authorised'}, 403)
+
+    course = Course.objects.get(_uuid=data.get(
+        'uuid'), tenant_uuid=member.tenant_uuid)
+
+    Subscription.objects.filter(student=member, course=course).delete()
+
+    return Response(None, 204)

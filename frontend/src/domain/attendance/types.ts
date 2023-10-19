@@ -25,7 +25,7 @@ export interface Attendee extends IMember {
     hasLicence(): boolean
     isLicenceExpired(now: Date): boolean
     hasUsablePaymentForCourse(course: Course): boolean
-    hasSubscriptionForCourse(course: Course, date: Date): boolean
+    hasSubscriptionForCourse(course: Course, date?: Date): boolean
     activeTrial(): boolean
 
     withRemainingTrialSessions(count: number): Attendee
