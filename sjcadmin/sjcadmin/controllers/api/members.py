@@ -1,3 +1,4 @@
+from datetime import date
 from uuid import UUID
 
 import humps
@@ -74,6 +75,13 @@ class MemberSerializer(BaseSerialiser):
     unused_payments = PaymentSerializer(
         many=True, read_only=True, source='get_unused_payments')
 
+    subscriptions = serializers.SerializerMethodField()
+
+    def get_subscriptions(self, obj: Member):
+        today = self.context['today']
+        subscriptions = obj.get_unexpired_subscriptions(today)
+        return list(map(lambda s: SubscriptionSerializer(s).data, subscriptions))
+
 
 class NewMemberSerializer(BaseSerialiser):
     name = serializers.CharField()
@@ -90,7 +98,7 @@ class AttendanceSerializer(BaseSerialiser):
         choices=['now', 'advance', 'subscription'], required=False)
 
 
-@handle_error
+# @handle_error
 @login_required_401
 @role_required(['member', 'staff'])
 @api_view(['GET'])
@@ -100,7 +108,7 @@ def member(request, member_uuid: UUID):
     if request.user.is_member_user and not m.is_user(request.user):
         return Response({'error': 'Member is not authorised.'}, 403)
 
-    return Response(MemberSerializer(m).data)
+    return Response(MemberSerializer(m, context={'today': date.today()}).data)
 
 
 @handle_error
@@ -127,7 +135,7 @@ def query(request):
         tenant_uuid=request.user.tenant_uuid,
     )
 
-    return Response(list(map(lambda m: MemberSerializer(m).data, members)))
+    return Response(list(map(lambda m: MemberSerializer(m, context={'today': date.today()}).data, members)))
 
 
 @handle_error
@@ -157,7 +165,7 @@ def create(request):
         member.sign_up(course)
         member.save()
 
-    return Response(MemberSerializer(member).data)
+    return Response(MemberSerializer(member, context={'today': date.today()}).data)
 
 
 @handle_error
@@ -324,3 +332,28 @@ def subscriptions(request, member_uuid):
         return Response({'error': 'Member is not authorised'}, 403)
 
     return Response(list(map(lambda s: SubscriptionSerializer(s).data, member.subscriptions)))
+
+
+@login_required_401
+@role_required(['member', 'staff'])
+@api_view(['POST'])
+@handle_error
+def cancel_subscription(request, member_uuid):
+    data = CourseSerializer(data=request.data.get('course'))
+    if not data.is_valid():
+        return Response(data.errors, status=400)
+
+    data = data.validated_data
+
+    member = Member.fetch_by_uuid(member_uuid) if request.user.is_member_user else Member.fetch_by_uuid(
+        member_uuid, tenant_uuid=request.user.tenant_uuid)
+
+    if request.user.is_member_user and not member.is_user(request.user):
+        return Response({'error': 'Member is not authorised'}, 403)
+
+    course = Course.objects.get(_uuid=data.get(
+        'uuid'), tenant_uuid=member.tenant_uuid)
+
+    Subscription.objects.filter(student=member, course=course).delete()
+
+    return Response(None, 204)

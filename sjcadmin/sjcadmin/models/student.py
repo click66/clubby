@@ -89,7 +89,7 @@ class Subscription(models.Model):
     expiry_date = models.DateField(null=True)
     type = models.TextField(blank=False, null=False, default='time')
     course = models.ForeignKey('Course', null=True, on_delete=models.CASCADE)
-    
+
     @classmethod
     def make(cls, type: str, expiry_date: datetime, course: Course):
         subscription = cls(expiry_date=expiry_date, course=course, type=type)
@@ -164,7 +164,8 @@ class Student(models.Model):
 
     @classmethod
     def fetch_by_uuid(cls, uuid: str, tenant_uuid: str = None):
-        o = cls.objects.get(pk=uuid, tenant_uuid=tenant_uuid) if tenant_uuid else cls.objects.get(pk=uuid)
+        o = cls.objects.get(
+            pk=uuid, tenant_uuid=tenant_uuid) if tenant_uuid else cls.objects.get(pk=uuid)
 
         o._unused_payments = list(o.payment_set.filter(
             _used=False).order_by('-_datetime'))
@@ -226,16 +227,16 @@ class Student(models.Model):
             .annotate(_sessions_attended=models.Count('attendance'))\
             .prefetch_related('_courses')\
             .all()
-        
+
         if course_uuids:
             queryset = queryset.filter(_courses__in=course_uuids)
 
         if tenant_uuid:
             queryset = queryset.filter(tenant_uuid=tenant_uuid)
-        
+
         if user:
             queryset = queryset.filter(profile_email=user.email)
-        
+
         for o in queryset:
             payments = o.payment_set.all()
             o._unused_payments = [p for p in payments if not p.used]
@@ -318,7 +319,7 @@ class Student(models.Model):
         self.profile_phone = profile.phone
         self.profile_email = profile.email
         self.profile_address = profile.address
-    
+
     def is_user(self, user: User) -> bool:
         return user.email == self.email
 
@@ -333,7 +334,7 @@ class Student(models.Model):
     @property
     def dob(self) -> str:
         return self.profile_dob
-    
+
     @property
     def date_of_birth(self) -> str:
         return self.profile_dob
@@ -404,9 +405,12 @@ class Student(models.Model):
         payment._student = self
         self._new_payments.insert(0, payment)
         self._unused_and_new_payments.insert(0, payment)
-    
+
     def has_subscription(self, course, date: date) -> bool:
         return any(subscription.course.uuid == course.uuid and subscription.expiry_date > date for subscription in self.subscription_set.all())
+
+    def get_unexpired_subscriptions(self, date: date) -> list:
+        return self.subscription_set.filter(expiry_date__gt=date)
 
     def subscribe(self, subscription: Subscription):
         subscription.student = self

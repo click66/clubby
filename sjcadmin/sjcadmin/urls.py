@@ -27,10 +27,12 @@ urlpatterns = [
     path('api/members/<uuid:member_uuid>/subscriptions', api_members.subscriptions),
     path('api/members/<uuid:member_uuid>/subscriptions/add',
          api_members.add_subscription),
+    path('api/members/<uuid:member_uuid>/subscriptions/cancel',
+         api_members.cancel_subscription),
 
     path('api/courses/<uuid:pk>/delete', api_courses.post_delete_course),
 
-    #####
+    # Legacy routes
 
     path('api/members', api_members_old.get_members),
     path('api/members/<uuid:pk>/profile',
