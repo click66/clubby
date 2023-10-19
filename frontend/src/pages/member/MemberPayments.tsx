@@ -69,7 +69,7 @@ function Subscriptions() {
     return (
         <div className={(!loaded || !member) ? 'loading' : ''}>
             <div className="mb-3 text-end">
-                <Button variant="primary" onClick={() => setFormOpen(true)}>Add Subscription</Button>
+                <Button variant="primary" disabled={(member?.courses || []).length === 0} onClick={() => setFormOpen(true)}>Add Subscription</Button>
             </div>
             <h2>Active Subscriptions</h2>
             {(member?.subscriptions || []).length === 0 ? <p className="text-center">No active subscriptions</p> : <SubscriptionTable />}
