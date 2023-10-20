@@ -41,7 +41,7 @@ export function removeFromCourse(http: HttpInstance) {
 export function updateProfile(http: HttpInstance) {
     return ({ member, profile }: { member: Member, profile: Profile }) => http.post(
         `/members/${member.uuid}/profile`,
-        { ...profile, dob: isoDate(profile.dateOfBirth) },
+        { ...profile, dob: profile.dateOfBirth ? isoDate(profile.dateOfBirth): null },
     ).then(() => member.withProfile(profile))
 }
 
@@ -72,8 +72,8 @@ export function getPayments(http: HttpInstance) {
 }
 
 export function addPayment(http: HttpInstance) {
-    return (member: Member, course: Course): Promise<Payment> => http.post(`/members/${member.uuid}/payments/add`, { course })
-        .then(({ data }) => data)
+    return (member: Member, course: Course): Promise<Member> => http.post(`/members/${member.uuid}/payments/add`, { course })
+        .then(({ data }) => member.withUnusedPayment({ ...data, datetime: new Date(data.datetime) }))
 }
 
 export function getSubscriptions(http: HttpInstance) {

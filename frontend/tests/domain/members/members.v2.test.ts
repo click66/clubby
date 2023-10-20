@@ -39,7 +39,7 @@ describe('members module', () => {
                 'courses': [{ 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
                 'joinDate': '2023-10-03',
                 'addedBy': 'click66@gmail.com',
-                'unusedPayments': [{ 'course': { 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' } }],
+                'unusedPayments': [{ 'course': { 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }, 'datetime': '2023-10-18T16:18:05.277614Z', 'used': false }],
             }
 
             mockHttp.onGet(`/members/${uuid}`).reply(200, responseData)
@@ -105,7 +105,7 @@ describe('members module', () => {
                 'courses': [{ 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
                 'joinDate': '2023-10-03',
                 'addedBy': 'member1@gmail.com',
-                'unusedPayments': [{ 'course': { 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' } }],
+                'unusedPayments': [{ 'course': { 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }, 'datetime': '2023-10-18T16:18:05.277614Z', 'used': false }],
             },
             {
                 'uuid': 'a4037611-14eb-4506-a6a7-11409923f683',
@@ -119,7 +119,7 @@ describe('members module', () => {
                 'courses': [{ 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
                 'joinDate': '2023-10-03',
                 'addedBy': 'member2@gmail.com',
-                'unusedPayments': [{ 'course': { 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' } }],
+                'unusedPayments': [{ 'course': { 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }, 'datetime': '2023-10-18T16:18:05.277614Z', 'used': false }],
             }]
 
             mockHttp.onPost('/members/query', { courses }).reply(200, responseData)
@@ -143,7 +143,7 @@ describe('members module', () => {
                 'courses': [{ 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' }],
                 'joinDate': '2023-10-03',
                 'addedBy': 'member@gmail.com',
-                'unusedPayments': [{ 'course': { 'uuid': '618b38f6-98bd-404b-b273-81ddbe84c429' } }],
+                'unusedPayments': [],
             }
 
             mockHttp.onPost('/members/create', newMember).reply(200, responseData)
@@ -219,7 +219,11 @@ describe('members module', () => {
             })
             const course = { uuid: 'e5e1349d-540c-4f99-b9c2-f225fcf33388' }
 
-            mockHttp.onPost(`/members/${member.uuid}/payments/add`).reply(200)
+            mockHttp.onPost(`/members/${member.uuid}/payments/add`).reply(200, {
+                course,
+                datetime: new Date(),
+                used: false,
+            })
 
             const spy = jest.spyOn(http, 'post')
             return addPayment(http)(member, course).then(() => {

@@ -4,7 +4,7 @@ export interface Profile {
     name: string
     email: string
     phone: string
-    dateOfBirth: Date
+    dateOfBirth: Date|null
     address: string
 }
 
@@ -33,12 +33,14 @@ export interface Subscription {
 export interface Member extends IMember {
     readonly courses: Course[]
     readonly subscriptions: Subscription[]
+    readonly unusedPayments: Payment[]
 
     withCourse(course: Course): Member
     withoutCourse(course: Course): Member
     withProfile(profile: Profile): Member
     withActive(status: boolean): Member
     withLicence(licence: Licence): Member
+    withUnusedPayment(payment: Payment): Member
 }
 
 export interface MemberFactory {

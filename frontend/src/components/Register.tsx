@@ -174,7 +174,7 @@ const MemberDetails = ({ member }: { member: Attendee }) => (
                         </li>
                     </> : ''
             }
-            <li><EscapeLink to={`/members/${member.uuid}/profile`} state={{ member }}>Manage</EscapeLink></li>
+            <li><EscapeLink to={`/members/${member.uuid}`} state={{ member }}>Manage</EscapeLink></li>
         </ul>
     </div>
 )

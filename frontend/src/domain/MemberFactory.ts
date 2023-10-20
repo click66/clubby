@@ -33,8 +33,8 @@ export const courseSchema = z.object({
 
 const paymentSchema = z.object({
     course: courseSchema,
-    datetime: z.string().datetime().optional(),
-    used: z.boolean().optional(),
+    datetime: z.string().datetime().transform((dt) => new Date(dt)),
+    used: z.boolean(),
 })
 
 const subscriptionSchema = z.object({

@@ -1,0 +1,45 @@
+.accordion {
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.accordion-title {
+    display: block;
+    cursor: pointer;
+
+    h2 {
+        margin: 0;
+    }
+}
+
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    overflow-y: auto;
+    transition: max-height 0.2s ease-in-out;
+
+    table {
+        font-size: 0.9em;
+
+        th,
+        td {
+            background-color: transparent
+        }
+    }
+}
+
+.accordion.open .accordion-content {
+    max-height: 500px;
+}
+
+.accordion-title::before {
+    content: "▼";
+    /* You can use any arrow character or icon here */
+    float: right;
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Rotate the arrow when the accordion is open */
+.accordion.open .accordion-title::before {
+    transform: rotate(180deg);
+}

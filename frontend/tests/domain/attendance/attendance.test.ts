@@ -217,7 +217,7 @@ describe('attendSession', () => {
                 { uuid: '782732e2-1b1f-4291-821c-c73400164473' },
             ],
             licence: { number: 12345, expiryDate: new Date('2023-11-15') },
-            unusedPayments: [{ course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' } }],
+            unusedPayments: [{ course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' } , datetime: new Date(), used: false}],
         })
 
         mockAttendanceCreate(attendee, session.courses[0], true, false, 'paid')
@@ -244,8 +244,8 @@ describe('attendSession', () => {
             ],
             licence: { number: 12345, expiryDate: new Date('2023-11-15') },
             unusedPayments: [
-                { course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' } },
-                { course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' } },
+                { course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' }, datetime: new Date(), used: false },
+                { course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' }, datetime: new Date(), used: false },
             ],
         })
 
@@ -272,7 +272,7 @@ describe('attendSession', () => {
                 { uuid: '782732e2-1b1f-4291-821c-c73400164473' },
             ],
             licence: { number: 12345, expiryDate: new Date('2023-11-15') },
-            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' } }],
+            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }, datetime: new Date(), used: false }],
         })
 
         // When the attendee attends the session and declares they have paid in advance
@@ -294,7 +294,7 @@ describe('attendSession', () => {
                 { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
             ],
             licence: { number: 12345, expiryDate: new Date('2023-11-15') },
-            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' } }],
+            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }, datetime: new Date(), used: false }],
         })
 
         mockAttendanceCreate(attendee, session.courses[0], true, false, 'comp')
@@ -320,7 +320,7 @@ describe('attendSession', () => {
                 { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
             ],
             licence: { number: 12345, expiryDate: new Date('2023-11-15') },
-            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' } }],
+            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }, datetime: new Date(), used: false }],
         })
 
         mockAttendanceCreate(attendee, session.courses[0], false)
@@ -401,7 +401,7 @@ describe('attendSession', () => {
                 { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
             ],
             licence: { number: 12345, expiryDate: new Date('2023-11-15') },
-            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' } }],
+            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }, datetime: new Date(), used: false }],
             subscriptions: [{
                 type: 'time',
                 expiryDate: new Date('2023-11-30'),

@@ -174,7 +174,7 @@ function Payments({ member, newPayments }: { member: Member, newPayments: Paymen
     useEffect(() => {
         membersApi.getPayments(member).then((payments) => {
             setUnusedPayments(payments.filter((p) => !p.used))
-            setHistoricalPayments(payments.filter((p) => p.used))
+            setHistoricalPayments(payments.filter((p) => p.used).slice(0, 5))
             setLoaded(true)
         })
     }, [])
@@ -187,7 +187,7 @@ function Payments({ member, newPayments }: { member: Member, newPayments: Paymen
             {newAndUnusedPayments.length === 0 ? <p className="text-center">No unused payments</p> : <PaymentTable payments={newAndUnusedPayments} showNextSession={true} />}
             <h2>Historical Payments</h2>
             {historicalPayments.length === 0 ? <p className="text-center">No historical payments</p> : <PaymentTable payments={historicalPayments} />}
-            <p className="fst-italic">Showing maximum last 30 payments.</p>
+            <p className="fst-italic">Showing maximum last 5 payments.</p>
         </div>
     )
 }

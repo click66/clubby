@@ -4,6 +4,8 @@ interface Course {
 
 interface Payment {
     course: Course
+    datetime: Date
+    used: boolean
 }
 
 interface Licence {
@@ -50,6 +52,7 @@ export interface IMember {
     readonly phone: string | null
     readonly address: string | null
     readonly active: boolean
+    readonly unusedPayments: Payment[]
     readonly remainingTrialSessions: number
     readonly courses: Course[]
     readonly subscriptions: Subscription[]
@@ -67,6 +70,7 @@ export interface IMember {
 
     withRemainingTrialSessions(count: number): IMember
     withTakenPayment(paymentToRemove: Payment): IMember
+    withUnusedPayment(payment: Payment): IMember
     withCourse(course: Course): IMember
     withoutCourse(course: Course): IMember
     withProfile(profile: Profile): IMember
@@ -176,6 +180,10 @@ export class Member implements IMember {
         }
 
         return this.withProperty('unusedPayments', payments)
+    }
+
+    withUnusedPayment(payment: Payment): IMember {
+        return this.withProperty('unusedPayments', [...this.unusedPayments, payment])
     }
 
     withCourse(course: Course): Member {
