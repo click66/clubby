@@ -34,12 +34,10 @@
 
 .accordion-title::before {
     content: "▼";
-    /* You can use any arrow character or icon here */
     float: right;
     transition: transform 0.2s ease-in-out;
 }
 
-/* Rotate the arrow when the accordion is open */
 .accordion.open .accordion-title::before {
     transform: rotate(180deg);
 }

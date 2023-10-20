@@ -4,7 +4,7 @@ include:
 
 services:
   frontend:
-    image: node:latest
+    image: node:20-alpine
     command: ["npm", "run", "dev"]
     depends_on:
       - gateway
