@@ -72,7 +72,7 @@ function Courses() {
                     <Link className="rounded-3 text-dark bg-white p-3 report-link" to={`/attendance/${course.uuid}`}>
                         <div>
                             <span className="ps-3 title">{course.label}</span>
-                            <span className="ps-3 description">{course.days.length === 0 ? 'One-offo' : render_days(course.days).join(', ')}</span>
+                            <span className="ps-3 description">{course.days.length === 0 ? 'One-off' : render_days(course.days).join(', ')}</span>
                             <span className="ps-3 description">{course.nextSession !== null ? `(Next session ${formatDate(course.nextSession)})` : ''}</span>
                         </div>
                     </Link>
