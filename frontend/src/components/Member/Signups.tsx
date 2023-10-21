@@ -28,7 +28,7 @@ function SignupForm({ close, courses, onSubmit }: { close: () => void, courses: 
                         <div className="field">
                             <Field as="select" name="courseUuid" className="form-select">
                                 {courses.map((c) => (
-                                    <option key={c.uuid} value={c.uuid}>{c.label}</option>
+                                    <option key={c.uuid} value={c.uuid}>{c.label || 'Unnamed course'}</option>
                                 ))}
                             </Field>
                         </div>
@@ -69,7 +69,7 @@ export default function Signups() {
                 memberCourses.length == 0 && !signUpFormOpen ? <p>Nothing (yet!)</p> : <ul>
                     {memberCourses.map((course) => (
                         <li className="signedUpCourse pb-1" key={course.uuid}>
-                            <Link to={`/attendance/${course.uuid}`}>{course.label}</Link>
+                            <Link to={`/attendance/${course.uuid}`}>{course.label || 'Unnamed course'}</Link>
                             <Button variant="danger" className="remove text-light" onClick={() => undoSignUp(course)}><X /></Button>
                         </li>
                     ))}

@@ -45,7 +45,7 @@ function FinalActions() {
                 }}>Reactivate Member</Button>)}
             <Button type="submit" variant="danger" className="text-light" onClick={() => {
                 confirmModal({
-                    title: "Delete Member",
+                    title: "Confirm Member Deletion",
                     body: "Are you sure? This will delete this member's record and all associated attendance records.",
                     onConfirm: () => membersApi.permanentlyDelete({ member })
                         .then(() => navigate('/members'))

@@ -31,7 +31,7 @@ function Attendance() {
 
     return (
         <>
-            <h1>Attendance {selectedCourse ? <span className="text-secondary">({selectedCourse.label})</span> : ''}</h1>
+            <h1>Attendance {selectedCourse ? <span className="text-secondary">({selectedCourse.label || 'Unnamed course'})</span> : ''}</h1>
             <div className="rounded-3 bg-white p-3 text-dark fullTable" id="copy">
                 {
                     !selectedCourse && allCourses.length === 0 ? (

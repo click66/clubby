@@ -32,9 +32,7 @@ export default function TakePayment({ formOpen, setFormOpen }: { formOpen: boole
 
                     membersApi.addPayment(member, payment.course)
                         .then(setMember)
-                        .then(() => {
-                            notifySuccess('Payment recorded')
-                        })
+                        .then(() => notifySuccess('Payment recorded'))
                         .catch(notifyError)
                         .finally(() => {
                             setSubmitting(false)
@@ -42,20 +40,22 @@ export default function TakePayment({ formOpen, setFormOpen }: { formOpen: boole
                         })
                 }}
             >
-                {({ isSubmitting }) => (
+                {({ errors, isSubmitting }) => (
                     <Form>
                         <Modal.Header>
                             <Modal.Title>Add Payment</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             <div className="mb-3 row">
-                                <div className="col-sm-12">
-                                    <Field as="select" className="form-select" name="courseUuid">
-                                        <option value="">Select course</option>
+                                <label className="col-sm-4 col-form-label">Course</label>
+                                <div className="col-sm-8">
+                                    <Field as="select" className={`form-select ${errors.courseUuid && 'is-invalid'}`} name="courseUuid" validate={(value: string) => value === '' ? 'Please select a course' : null}>
+                                        <option value=""></option>
                                         {memberCourses.map((c) => (
                                             c ? <option key={c.uuid} value={c.uuid}>{c.label}</option> : ''
                                         ))}
                                     </Field>
+                                    {errors.courseUuid && <div className="invalid-feedback">{errors.courseUuid}</div>}
                                 </div>
                             </div>
                         </Modal.Body>

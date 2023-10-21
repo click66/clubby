@@ -235,7 +235,7 @@ function MemberProfile() {
                                                         }}>Reactivate Member</Button>)}
                                                     <Button type="submit" disabled={isSubmitting} variant="danger" className="text-light" onClick={() => {
                                                         confirmModal({
-                                                            title: "Delete Member",
+                                                            title: "Confirm Member Deletion",
                                                             body: "Are you sure? This will delete this member's record and all associated attendance records.",
                                                             onConfirm: () => {
                                                                 setFieldValue('action', 'delete', false)

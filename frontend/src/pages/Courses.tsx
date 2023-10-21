@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Modal from 'react-bootstrap/Modal'
 import { PlusCircleFill, XCircleFill } from 'react-bootstrap-icons'
-import { Form, Formik, Field } from 'formik'
+import { Form, Formik, Field, ErrorMessage } from 'formik'
 import confirmModal from '../components/ConfirmModal'
 import { notifyError, notifySuccess } from '../utils/notifications'
 import courses from '../domain/courses/provider'
@@ -25,13 +25,11 @@ function Courses() {
 
     const fetchAndSetCourses = () => courses.getCourses().then(setData)
 
-    const submitNewCourse = (data: NewCourse) => {
-        courses.addCourse(data).then((_) => {
-            notifySuccess('New course added')
-            fetchAndSetCourses()
-            closeAddForm()
-        }).catch(notifyError)
-    }
+    const submitNewCourse = (data: NewCourse) => courses.addCourse(data).then((_) => {
+        notifySuccess('New course added')
+        fetchAndSetCourses()
+        closeAddForm()
+    }).catch(notifyError)
 
     const deleteCourseAndRefresh = (_: React.MouseEvent, course: Course) => {
         confirmModal({
@@ -75,7 +73,7 @@ function Courses() {
                         <div>
                             <span className="ps-3 title">{course.label}</span>
                             <span className="ps-3 description">{render_days(course.days).join(', ')}</span>
-                            <span className="ps-3 description">{course.nextSession ? `(Next session ${formatDate(course.nextSession)})` : ''}</span>
+                            <span className="ps-3 description">{course.nextSession !== null ? `(Next session ${formatDate(course.nextSession)})` : ''}</span>
                         </div>
                     </Link>
                     <>
@@ -86,45 +84,6 @@ function Courses() {
                 </div>
             </div>
         </div>
-    )
-
-    const NewCourseForm = () => (
-        <>
-            <div className="mb-3 row">
-                <div className="col-sm-12">
-                    <Field autoFocus className="form-control" type="text" name="label" placeholder="Course Name"></Field>
-                </div>
-            </div>
-            <label>Run on days:</label>
-            <div className="form-check">
-                <Field className="form-check-input" type="checkbox" name="days" value="0" />
-                <label className="form-check-label">Monday</label>
-            </div>
-            <div className="form-check">
-                <Field className="form-check-input" type="checkbox" name="days" value="1" />
-                <label className="form-check-label">Tuesday</label>
-            </div>
-            <div className="form-check">
-                <Field className="form-check-input" type="checkbox" name="days" value="2" />
-                <label className="form-check-label">Wednesday</label>
-            </div>
-            <div className="form-check">
-                <Field className="form-check-input" type="checkbox" name="days" value="3" />
-                <label className="form-check-label">Thursday</label>
-            </div>
-            <div className="form-check">
-                <Field className="form-check-input" type="checkbox" name="days" value="4" />
-                <label className="form-check-label">Friday</label>
-            </div>
-            <div className="form-check">
-                <Field className="form-check-input" type="checkbox" name="days" value="5" />
-                <label className="form-check-label">Saturday</label>
-            </div>
-            <div className="form-check">
-                <Field className="form-check-input" type="checkbox" name="days" value="6" />
-                <label className="form-check-label">Sunday</label>
-            </div>
-        </>
     )
 
     const NewCourseFormActions = (props: { isSubmitting: boolean }) => (
@@ -158,17 +117,93 @@ function Courses() {
                 <Formik
                     initialValues={{
                         label: '',
+                        type: 'oneoff',
                         days: [],
+                        dates: [],
                     }}
-                    onSubmit={submitNewCourse}
+                    validate={(values) => {
+                        if (values.type === 'recurring' && values.days.length === 0) {
+                            return {
+                                days: 'Select at last one day'
+                            }
+                        }
+                        return {}
+                    }}
+                    onSubmit={(data, { setSubmitting }) => submitNewCourse({
+                        ...data,
+                        dates: (Array.isArray(data.dates) ? data.dates : [data.dates]).map((d) => new Date(d)),
+                    }).finally(() => setSubmitting(false))
+                    }
                 >
-                    {({ isSubmitting }) => (
+                    {({ errors, values, isSubmitting }) => (
                         <Form>
                             <Modal.Header closeButton>
                                 <Modal.Title>Add New Course</Modal.Title>
                             </Modal.Header>
                             <Modal.Body>
-                                <NewCourseForm />
+                                <div className="mb-3 row">
+                                    <label className="col-form-label col-sm-4">Course Name</label>
+                                    <div className="col-sm-8">
+                                        <Field autoFocus className="form-control" type="text" name="label" placeholder="Course Name"></Field>
+                                    </div>
+                                </div>
+                                <div className="row">
+                                    <label className="col-form-label col-sm-4">Course Schedule</label>
+                                    <div className="col-sm-4 col-6">
+                                        <div className="form-check">
+                                            <Field id="radioCourseTypeOneOff" className="form-check-input" type="radio" name="type" value="oneoff" />
+                                            <label htmlFor="radioCourseTypeOneOff" className="form-check-label">One-off</label>
+                                        </div>
+                                    </div>
+                                    <div className="col-sm-4 col-6">
+                                        <div className="form-check">
+                                            <Field id="radioCourseTypeRecurring" className="form-check-input" type="radio" name="type" value="recurring" />
+                                            <label htmlFor="radioCourseTypeRecurring" className="form-check-label">Recurring</label>
+                                        </div>
+                                    </div>
+                                    <div className="col-sm-8 offset-sm-4">
+                                        {values.type === 'recurring' ? (
+                                            <>
+                                                <div className={`${errors.days && 'is-invalid'}`}>
+                                                    <div className="form-check">
+                                                        <Field className="form-check-input" type="checkbox" name="days" value="0" />
+                                                        <label className="form-check-label">Monday</label>
+                                                    </div>
+                                                    <div className="form-check">
+                                                        <Field className="form-check-input" type="checkbox" name="days" value="1" />
+                                                        <label className="form-check-label">Tuesday</label>
+                                                    </div>
+                                                    <div className="form-check">
+                                                        <Field className="form-check-input" type="checkbox" name="days" value="2" />
+                                                        <label className="form-check-label">Wednesday</label>
+                                                    </div>
+                                                    <div className="form-check">
+                                                        <Field className="form-check-input" type="checkbox" name="days" value="3" />
+                                                        <label className="form-check-label">Thursday</label>
+                                                    </div>
+                                                    <div className="form-check">
+                                                        <Field className="form-check-input" type="checkbox" name="days" value="4" />
+                                                        <label className="form-check-label">Friday</label>
+                                                    </div>
+                                                    <div className="form-check">
+                                                        <Field className="form-check-input" type="checkbox" name="days" value="5" />
+                                                        <label className="form-check-label">Saturday</label>
+                                                    </div>
+                                                    <div className="form-check">
+                                                        <Field className="form-check-input" type="checkbox" name="days" value="6" />
+                                                        <label className="form-check-label">Sunday</label>
+                                                    </div>
+                                                </div>
+                                                <ErrorMessage name="days" component="div" className="error invalid-feedback" />
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Field className={`form-control ${errors.dates && 'is-invalid'}`} type="date" name="dates" validate={(value: string[]) => value.length === 0 ? 'Select a date for the one-off course' : null} />
+                                                <ErrorMessage name="dates" component="div" className="error invalid-feedback" />
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
                             </Modal.Body>
                             <Modal.Footer>
                                 <NewCourseFormActions isSubmitting={isSubmitting} />

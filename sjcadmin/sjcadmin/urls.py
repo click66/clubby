@@ -30,7 +30,10 @@ urlpatterns = [
     path('api/members/<uuid:member_uuid>/subscriptions/cancel',
          api_members.cancel_subscription),
 
-    path('api/courses/<uuid:pk>/delete', api_courses.post_delete_course),
+    path('api/courses', api_courses.courses),
+    path('api/courses/create', api_courses.create),
+    path('api/courses/<uuid:pk>/delete', api_courses.delete_course),
+    path('api/courses/<uuid:pk>', api_courses.get_course),
 
     # Legacy routes
 
@@ -51,11 +54,6 @@ urlpatterns = [
          api_members_old.post_mark_member_inactive),
     path('api/members/<uuid:pk>/activate',
          api_members_old.post_mark_member_active),
-
-    path('api/courses', api_courses.get_courses),
-    path('api/courses/<uuid:pk>', api_courses.get_course),
-    path('api/courses/add', api_courses.post_add_course),
-    path('api/courses/delete/<uuid:pk>', api_courses.post_delete_course),
 
     # Admin routes
     path('api/clubs', api_admin.get_clubs),
