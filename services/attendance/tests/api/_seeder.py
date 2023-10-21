@@ -57,12 +57,12 @@ def seed_member_subscription(member_uuid: str, course_uuid: str, expiry_date: st
 
 
 def seed_course(course: dict) -> UUID:
-    return UUID(requests.post('http://monolith.southamptonjiujitsu.local:8000/api/courses/add',
+    return UUID(requests.post('http://monolith.southamptonjiujitsu.local:8000/api/courses/create',
                               json=course,
                               headers=headers({
                                   'userUuid': USER_UUID,
                               }),
-                              ).json().get('success').get('uuid'))
+                              ).json().get('uuid'))
 
 
 def seed_user(email: str) -> UUID:
