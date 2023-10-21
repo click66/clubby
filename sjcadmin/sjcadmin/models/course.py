@@ -58,4 +58,4 @@ class Course(models.Model):
         return d in self.dates or d.weekday() in self._days
 
     def has_future_dates(self, today: datetime) -> bool:
-        return self._days or any(d > today for d in self.dates)
+        return self._days or any(d >= today for d in self.dates)
