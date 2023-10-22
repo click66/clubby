@@ -6,6 +6,7 @@ stages:
 include:
   - "frontend/.gitlab-ci.yml"
   - "services/attendance/.gitlab-ci.yml"
+  - "workers/backup/.gitlab-ci.yml"
   # - "workers/attendance/.gitlab-ci.yml"
 
 terraform:

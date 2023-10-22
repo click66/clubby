@@ -2,3 +2,9 @@ services:
   attendance-worker:
     volumes:
       - ./attendance:/app
+
+  backup-worker:
+    ports:
+      - 9000:8080
+    volumes:
+      - ./attendance:/app

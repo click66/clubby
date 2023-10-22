@@ -2,3 +2,8 @@ services:
   attendance-worker:
     build:
       context: ./attendance
+  
+  backup-worker:
+    build:
+      context: ./backup
+
