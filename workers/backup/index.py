@@ -30,15 +30,15 @@ def backup_database(database_name, db_password, db_user=None, schema='public'):
     try:
         logger.info(f'Attempting connection to {database_name}')
         db_user = database_name if db_user is None else db_user
-        conn = psycopg2.connect(
-            host=DB_HOST,
-            database=database_name,
-            user=db_user,
-            password=db_password,
-        )
-        logger.info(f'Successfully connected to {database_name}')
+        # conn = psycopg2.connect(
+        #     host=DB_HOST,
+        #     database=database_name,
+        #     user=db_user,
+        #     password=db_password,
+        # )
+        # logger.info(f'Successfully connected to {database_name}')
         logger.info(f'Running db dump...')
-        cmd = f'pg_dump -h {DB_HOST} -U {db_user} {database_name} -f /tmp/{database_name}.sql'
+        cmd = f'PGPASSWORD="{db_password}" pg_dump -h {DB_HOST} -U {db_user} {database_name} -f /tmp/{database_name}.sql'
         subprocess.run(cmd, shell=True, check=True)
 
         logger.info(f'Uploading dump to S3...')
@@ -51,5 +51,5 @@ def backup_database(database_name, db_password, db_user=None, schema='public'):
 
     finally:
         logger.info(f'Finished, closing connection to {database_name}')
-        if conn:
-            conn.close()
+        # if conn:
+        #     conn.close()
