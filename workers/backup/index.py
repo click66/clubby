@@ -1,13 +1,13 @@
-import os
 import boto3
 import logging
 import psycopg2
+import os
 import subprocess
 import urllib
+from datetime import datetime
 
 DB_HOST = '10.0.0.186'
 S3_BUCKET = os.environ.get('S3_BUCKET')
-S3_KEY = 'backup.sql'
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -23,7 +23,8 @@ def handler(event, context):
     backup_database('sjcattendance', db_password)
 
 
-def backup_database(database_name, db_password, db_user=None):
+def backup_database(database_name, db_password, db_user=None, schema='public'):
+    dt = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     try:
         conn = psycopg2.connect(
             host=DB_HOST,
@@ -37,7 +38,7 @@ def backup_database(database_name, db_password, db_user=None):
 
         s3 = boto3.client('s3')
         s3.upload_file(f'/tmp/{database_name}.sql',
-                       S3_BUCKET, f'{S3_KEY}/{database_name}.sql')
+                       S3_BUCKET, f'{dt}/{database_name}/{schema}.sql')
 
     except Exception as e:
         print(f'Error backing up {database_name} database: {str(e)}')
