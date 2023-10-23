@@ -38,8 +38,12 @@ def backup_database(database_name, db_password, db_user=None, schema='public'):
         # )
         # logger.info(f'Successfully connected to {database_name}')
         logger.info(f'Running db dump...')
-        cmd = f'PGPASSWORD="{db_password}" pg_dump -h {DB_HOST} -U {db_user} {database_name} -f /tmp/{database_name}.sql'
-        subprocess.run(cmd, shell=True, check=True)
+        cmd = f'pg_dump -h {DB_HOST} -U {db_user} {database_name} -f /tmp/{database_name}.sql'
+        proc = subprocess.Popen(cmd, shell=True, env={
+            **os.environ,
+            'PGPASSWORD': db_password,
+        })
+        proc.wait()
 
         logger.info(f'Uploading dump to S3...')
         s3 = boto3.client('s3')
