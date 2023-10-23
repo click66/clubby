@@ -16,7 +16,6 @@ logger.setLevel(logging.INFO)
 def handler(event, context):
     logger.info('Invoking handler')
     ssm = boto3.client('ssm')
-    logger.info(urllib.request.urlopen('https://clarksirl.com').read().decode('utf-8'))
     db_password = ssm.get_parameter(Name="sjcadmin_PGPASS", WithDecryption=True)[
         'Parameter']['Value']
 
