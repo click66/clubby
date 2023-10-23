@@ -15,9 +15,11 @@ logger.setLevel(logging.INFO)
 
 def handler(event, context):
     logger.info('Invoking handler')
+
     ssm = boto3.client('ssm')
     db_password = ssm.get_parameter(Name='sjcadmin_PGPASS', WithDecryption=True)[
         'Parameter']['Value']
+    logger.info('Parameters retrieved')
 
     backup_database('southamptonjiujitsu', db_password, db_user='sjcadmin')
     backup_database('sjcattendance', db_password)
@@ -26,23 +28,27 @@ def handler(event, context):
 def backup_database(database_name, db_password, db_user=None, schema='public'):
     dt = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     try:
+        logger.info(f'Attempting to connection to {database_name}')
         conn = psycopg2.connect(
             host=DB_HOST,
             database=database_name,
             user=database_name if db_user is None else db_user,
             password=db_password,
         )
-
+        logger.info(f'Successfully connected to {database_name}')
+        logger.info(f'Running db dump...')
         cmd = f'pg_dump -h {DB_HOST} -U {database_name} {database_name} -f /tmp/{database_name}.sql'
         subprocess.run(cmd, shell=True, check=True)
 
+        logger.info(f'Uploading dump to S3...')
         s3 = boto3.client('s3')
         s3.upload_file(f'/tmp/{database_name}.sql',
                        S3_BUCKET, f'{dt}/{database_name}/{schema}.sql')
 
     except Exception as e:
-        print(f'Error backing up {database_name} database: {str(e)}')
+        logger.info(f'Error backing up {database_name} database: {str(e)}')
 
     finally:
+        logger.info(f'Finished, closing connection to {database_name}')
         if conn:
             conn.close()
