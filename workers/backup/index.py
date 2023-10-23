@@ -3,18 +3,20 @@ import boto3
 import logging
 import psycopg2
 import subprocess
+import urllib
 
 DB_HOST = "10.0.0.186"
 S3_BUCKET = os.environ.get("S3_BUCKET")
 S3_KEY = "backup.sql"
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 def handler(event, context):
     logger.info('Invoking handler')
     ssm = boto3.client('ssm')
+    logger.info(urllib.request.urlopen('https://clarksirl.com').read().decode('utf-8'))
     db_password = ssm.get_parameter(Name="sjcadmin_PGPASS", WithDecryption=True)[
         'Parameter']['Value']
 
