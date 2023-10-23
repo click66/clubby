@@ -19,10 +19,10 @@ provider:
     role: arn:aws:iam::082624796438:role/ecsTaskExecutionRole
   vpc:
     securityGroupIds:
-      - sg-0db3ac901de14bb27
+      - sg-090824b062fc6c56e
     subnetIds:
       - subnet-0d0b20f2d69b33d1e
-
+      - subnet-0e766a58d8f498787
 
 functions:
   sjcadmin_backup:
