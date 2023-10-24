@@ -76,7 +76,6 @@ function generatePrevious30Dates(courses: Course[], squash: boolean): Session[] 
     let daysCount = 0
 
     courses = courses.filter((c) => c.uuid != undefined)
-console.log(courses)
     while (result.length < 30 && daysCount < 365) {
         // const matchingCourses = courses.filter((c) => coursesApi.courseHappensOnDay(c, (currentDate.getDay() + 6) % 7))    // For some reason I didn't index Sunday as 0
         const matchingCourses = courses.filter((c) => coursesApi.courseHappensOnDate(c, currentDate))

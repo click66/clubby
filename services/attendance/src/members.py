@@ -66,6 +66,6 @@ async def get_manageable_members(client: HttpClient, request, user_uuid: UUID):
         'user': str(user_uuid),
     }, headers={'Authorization': request.headers.get('Authorization')}) as resp:
         response = await resp.json()
-        if resp.status is not 200 or 'error' in response:
+        if resp.status != 200 or 'error' in response:
             return []
         return response

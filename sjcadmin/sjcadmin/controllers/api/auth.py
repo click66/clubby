@@ -35,7 +35,7 @@ def get_jwt(request):
         'expires': time.time() + (3 * 24 * 60 * 60),
     }, private_key, algorithm='RS256')
 
-    return JsonResponse({'success': {'token': token, 'expires': expires, 'refresh_token': refresh_token}})
+    return JsonResponse({'success': {'token': token, 'expires': expires, 'refreshToken': refresh_token}})
 
 
 @require_http_methods(['POST'])
