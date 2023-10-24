@@ -30,6 +30,8 @@ functions:
     environment:
       DB_HOST: '10.0.0.186'
       S3_BUCKET: ${self:custom.bucket}
+    events:
+      - schedule: cron(0 0 ? * 2 *)
 
 resources:
   Resources:
