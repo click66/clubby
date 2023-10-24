@@ -46,4 +46,4 @@ def backup_database(database_name, db_user=None, schema='public'):
         logger.info(f'Error backing up {database_name} database: {str(e)}')
 
     finally:
-        logger.info(f'Finished, closing connection to {database_name}')
+        logger.info(f'Finished {database_name} backup.')
