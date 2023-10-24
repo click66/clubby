@@ -14,7 +14,7 @@ deploy-backup-worker:
       - main
       - feature/backup
     changes:
-      - ./workers/backup/**/*
+      - workers/backup/**/*
   variables:
     AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
