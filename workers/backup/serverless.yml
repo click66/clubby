@@ -1,0 +1,39 @@
+service: sjcadmin-backup
+
+custom:
+  bucket: sjcadmin-backup
+
+provider:
+  name: aws
+  deploymentBucket:
+    name: serverless-eu-west-2-082624796438
+  ecr:
+    images:
+      db-backup:
+        path: ./
+  runtime: python3.9
+  region: eu-west-2
+  memorySize: 256
+  timeout: 30
+  iam:
+    role: arn:aws:iam::082624796438:role/ecsTaskExecutionRole
+  vpc:
+    securityGroupIds:
+      - sg-090824b062fc6c56e
+    subnetIds:
+      - subnet-0d0b20f2d69b33d1e
+      - subnet-0e766a58d8f498787
+
+functions:
+  sjcadmin_backup:
+    image: db-backup
+    environment:
+      DB_HOST: '10.0.0.186'
+      S3_BUCKET: ${self:custom.bucket}
+
+resources:
+  Resources:
+    BackupBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucket}
