@@ -1,4 +1,6 @@
-# First Run Setup
+# Clubby
+
+## First Run Setup
 
 ```bash
 docker compose up --build
@@ -10,9 +12,9 @@ docker compose exec app poetry run ./manage.py migrate
 docker compose exec attendance-service poetry run alembic upgrade head
 ```
 
-# Dev Environment
+## Dev Environment
 
-## Accessing admin and member sites
+### Accessing admin and member sites
 
 * Admin site: http://localhost:8080
 * Member site: http://localhost:8081
