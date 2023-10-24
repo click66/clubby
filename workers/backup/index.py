@@ -1,12 +1,10 @@
 import boto3
 import logging
-import psycopg2
 import os
 import subprocess
-import urllib
 from datetime import datetime
 
-DB_HOST = '10.0.0.186'
+DB_HOST = os.environ.get('DB_HOST')
 S3_BUCKET = os.environ.get('S3_BUCKET')
 
 logger = logging.getLogger()
@@ -16,27 +14,21 @@ logger.setLevel(logging.INFO)
 def handler(event, context):
     logger.info('Invoking handler')
 
-    ssm = boto3.client('ssm')
-    db_password = ssm.get_parameter(Name='sjcadmin_PGPASS', WithDecryption=True)[
-        'Parameter']['Value']
-    logger.info('Parameters retrieved')
-
-    backup_database('southamptonjiujitsu', db_password, db_user='sjcadmin')
-    backup_database('sjcattendance', db_password)
+    backup_database('southamptonjiujitsu', db_user='sjcadmin')
+    backup_database('sjcattendance')
 
 
-def backup_database(database_name, db_password, db_user=None, schema='public'):
+def backup_database(database_name, db_user=None, schema='public'):
     dt = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     try:
+        logger.info(f'Retrieving credentials for {database_name}')
+        ssm = boto3.client('ssm')
+        db_password = ssm.get_parameter(Name=f'sjcadmin_PGPASS_{database_name}', WithDecryption=True)[
+            'Parameter']['Value']
+        logger.info('Credentials retrieved')
+
         logger.info(f'Attempting connection to {database_name}')
         db_user = database_name if db_user is None else db_user
-        # conn = psycopg2.connect(
-        #     host=DB_HOST,
-        #     database=database_name,
-        #     user=db_user,
-        #     password=db_password,
-        # )
-        # logger.info(f'Successfully connected to {database_name}')
         logger.info(f'Running db dump...')
         cmd = f'pg_dump -h {DB_HOST} -U {db_user} {database_name} -f /tmp/{database_name}.sql'
         proc = subprocess.Popen(cmd, shell=True, env={
@@ -55,5 +47,3 @@ def backup_database(database_name, db_password, db_user=None, schema='public'):
 
     finally:
         logger.info(f'Finished, closing connection to {database_name}')
-        # if conn:
-        #     conn.close()

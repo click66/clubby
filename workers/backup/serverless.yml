@@ -28,7 +28,7 @@ functions:
   sjcadmin_backup:
     image: db-backup
     environment:
-      DB_USER: southamptonjiujitsu
+      DB_HOST: '10.0.0.186'
       S3_BUCKET: ${self:custom.bucket}
 
 resources:

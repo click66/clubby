@@ -12,16 +12,16 @@ gpgcheck=1 \n\
 RUN sed "s/rhel-\$releasever-\$basearch/rhel-7.5-x86_64/g" "/etc/yum.repos.d/pgdg.repo"
 RUN yum install postgresql14 -y
 
-RUN pip install psycopg2-binary
+# RUN pip install psycopg2-binary
 
-ENV PATH="/root/.local/bin:$PATH"
-RUN curl -sSL https://install.python-poetry.org | python3 -
+# ENV PATH="/root/.local/bin:$PATH"
+# RUN curl -sSL https://install.python-poetry.org | python3 -
 
 WORKDIR ${LAMBDA_TASK_ROUTE}
-COPY poetry.* pyproject.toml ./
+# COPY poetry.* pyproject.toml ./
 
-RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi --no-root
+# RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi --no-root
 
-COPY index.py ./
+COPY index.sh ./
 
 CMD ["index.handler"]

@@ -6,4 +6,5 @@ services:
   backup-worker:
     build:
       context: ./backup
-
+    environment:
+      DB_HOST: database
