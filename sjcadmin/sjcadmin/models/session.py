@@ -15,7 +15,7 @@ class Session:
         return Session(sess_date, course)
 
     @classmethod
-    def gen(cls, start: date, end: date, courses: list=None, exclusive=False):
+    def gen(cls, start: date, end: date, courses: list = None, exclusive=False):
         if courses is None:
             courses = []
 
@@ -40,6 +40,9 @@ class Session:
 
     @classmethod
     def gen_next(cls, start: date, course):
+        if not course.has_future_dates(start):
+            return None
+
         while not course.is_session_date(start):
             start += timedelta(days=1)
         return cls.make(sess_date=start, course=course)

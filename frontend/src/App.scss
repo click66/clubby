@@ -9,6 +9,12 @@ $bootstrap-icons-font-file: "#{$bootstrap-icons-font-dir}/#{$bootstrap-icons-fon
 
 @import "./assets/legacy.scss";
 
+.hbar {
+  width: 100%;
+  border-top: 1px solid #ccc;
+  margin: 5px auto;
+}
+
 h1 {
   font-size: 1.5em;
   font-family: "open_sanssemibold", "sans-serif";
@@ -21,7 +27,14 @@ h2 {
   font-weight: bold;
 }
 
+h3 {
+  font-size: 1em;
+  font-family: "open_sanssemibold", "sans-serif";
+  font-weight: bold;
+}
+
 nav ol.breadcrumb {
+
   a,
   a:hover {
     text-decoration: none;
@@ -62,7 +75,7 @@ nav ol.breadcrumb {
   min-height: 100%;
 }
 
-.containerInner > #copy.fullTable {
+.containerInner>#copy.fullTable {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -131,7 +144,7 @@ thead th.sortableHeader {
     content: "▼";
   }
 
-  > div {
+  >div {
     padding: 7px;
   }
 }
@@ -146,6 +159,7 @@ thead th.sortableHeader {
 }
 
 .actions {
+
   a,
   button {
     font-size: 0.9em;
@@ -163,7 +177,7 @@ thead th.sortableHeader {
   position: relative;
   height: 100%;
 
-  > * {
+  >* {
     display: none;
   }
 
@@ -190,12 +204,13 @@ thead th.sortableHeader {
     0% {
       transform: translate(-50%, -50%) rotate(0deg);
     }
+
     100% {
       transform: translate(-50%, -50%) rotate(360deg);
     }
   }
 
-  .fullTable > & {
+  .fullTable>& {
     &:before {
       width: 50px;
       height: 50px;

@@ -30,7 +30,7 @@
         "secrets": [
             {
                 "name": "PGPASS",
-                "valueFrom": "sjcadmin_PGPASS"
+                "valueFrom": "sjcadmin_PGPASS_sjcattendance"
             }
         ],
         "logConfiguration": {

@@ -2,3 +2,9 @@ services:
   attendance-worker:
     build:
       context: ./attendance
+  
+  backup-worker:
+    build:
+      context: ./backup
+    environment:
+      DB_HOST: database

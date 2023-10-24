@@ -6,7 +6,7 @@ import { V1MemberFactory, V2MemberFactory } from '../MemberFactory'
 const LEGACY_API_URL = import.meta.env.VITE_LEGACY_API_URL
 const http = createApiInstance(LEGACY_API_URL, tokens)
 const v1Factory = new V1MemberFactory()
-const v2Factory = new V2MemberFactory()
+const v2Factory = new V2MemberFactory(new Date())
 
 export const membersApi = {
     getMember: members.getMember(http, v2Factory),
@@ -23,4 +23,7 @@ export const membersApi = {
     addLicence: members.addLicence(http),
     getPayments: members.getPayments(http),
     addPayment: members.addPayment(http),
+    getSubscriptions: members.getSubscriptions(http),
+    addSubscription: members.addSubscription(http),
+    cancelSubscription: members.cancelSubscription(http),
 }

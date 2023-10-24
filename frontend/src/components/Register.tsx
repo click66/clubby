@@ -5,7 +5,7 @@ import { notifyError, notifySuccess } from '../utils/notifications'
 import { MemberQuickAddButton } from './MemberQuickAdd'
 import { Fragment, memo, useCallback, useEffect, useRef, useState } from 'react'
 import { Badge } from 'react-bootstrap'
-import { Cash } from 'react-bootstrap-icons'
+import { ArrowClockwise, Cash } from 'react-bootstrap-icons'
 import MemberBadge from './MemberBadge'
 import { DomainError } from '../errors'
 import { renderLogAttendanceModal } from './LogAttendanceModal'
@@ -38,7 +38,7 @@ interface AddAttendanceArgs {
     attendee: Attendee,
     session: Session,
     resolution: 'comp' | 'paid' | null,
-    paymentOption: 'advance' | 'now',
+    paymentOption: 'advance' | 'now' | 'subscription',
     replace?: boolean,
 }
 
@@ -76,9 +76,10 @@ function generatePrevious30Dates(courses: Course[], squash: boolean): Session[] 
     let daysCount = 0
 
     courses = courses.filter((c) => c.uuid != undefined)
-
+console.log(courses)
     while (result.length < 30 && daysCount < 365) {
-        const matchingCourses = courses.filter((c) => coursesApi.courseHappensOnDay(c, (currentDate.getDay() + 6) % 7))    // For some reason I didn't index Sunday as 0
+        // const matchingCourses = courses.filter((c) => coursesApi.courseHappensOnDay(c, (currentDate.getDay() + 6) % 7))    // For some reason I didn't index Sunday as 0
+        const matchingCourses = courses.filter((c) => coursesApi.courseHappensOnDate(c, currentDate))
 
         if (matchingCourses.length > 0) {
             if (squash) {
@@ -106,9 +107,14 @@ const columns = [
         cell: ({ getValue, row, table }) => (
             <div className="memberRowHeader">
                 <span className="memberName">{getValue()}</span>
-                <span className="memberIcons">{table.options.meta?.courses
-                    .map((c: Course) => row.original.hasUsablePaymentForCourse(c as { uuid: string }))
-                    .includes(true) ? <Cash /> : ''}</span>
+                <span className="memberIcons">
+                    {table.options.meta?.courses
+                        .map((c: Course) => row.original.hasUsablePaymentForCourse(c as { uuid: string }))
+                        .includes(true) ? <Cash /> : ''}
+                    {table.options.meta?.courses
+                        .map((c: Course) => row.original.hasSubscriptionForCourse(c as { uuid: string }, new Date()))
+                        .includes(true) ? <ArrowClockwise /> : ''}
+                </span>
             </div>
         ),
         sortDescFirst: false,
@@ -169,7 +175,7 @@ const MemberDetails = ({ member }: { member: Attendee }) => (
                         </li>
                     </> : ''
             }
-            <li><EscapeLink to={`/members/${member.uuid}/profile`} state={{ member }}>Manage</EscapeLink></li>
+            <li><EscapeLink to={`/members/${member.uuid}`} state={{ member }}>Manage</EscapeLink></li>
         </ul>
     </div>
 )

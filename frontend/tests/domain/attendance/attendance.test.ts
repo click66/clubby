@@ -9,16 +9,24 @@ const mockHttp = makeMockHttp(http)
 
 describe('attendSession', () => {
     afterEach(() => {
+        jest.clearAllMocks()
         mockHttp.reset()
     })
 
-    function mockAttendanceCreate(attendee: Attendee, course: Course, useAdvancedPayment: boolean = false, resolution?: string) {
+    function mockAttendanceCreate(
+        attendee: Attendee,
+        course: Course,
+        useAdvancedPayment: boolean = false,
+        useSubscription: boolean = false,
+        resolution?: string,
+    ) {
         const requestBody = {
             memberUuid: attendee.uuid,
             courseUuid: course.uuid,
             date: '2023-10-15',
             resolution: resolution ?? null,
             useAdvancedPayment: useAdvancedPayment,
+            useSubscription: useSubscription,
         }
 
         const responseBody = {
@@ -209,10 +217,10 @@ describe('attendSession', () => {
                 { uuid: '782732e2-1b1f-4291-821c-c73400164473' },
             ],
             licence: { number: 12345, expiryDate: new Date('2023-11-15') },
-            unusedPayments: [{ course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' } }],
+            unusedPayments: [{ course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' } , datetime: new Date(), used: false}],
         })
 
-        mockAttendanceCreate(attendee, session.courses[0], true, 'paid')
+        mockAttendanceCreate(attendee, session.courses[0], true, false, 'paid')
 
         // When the attendee attends the session and declares they have paid in advance
         return attendSession(http)({ session, attendee, resolution: 'paid', paymentOption: 'advance' }).then((result) => {
@@ -236,12 +244,12 @@ describe('attendSession', () => {
             ],
             licence: { number: 12345, expiryDate: new Date('2023-11-15') },
             unusedPayments: [
-                { course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' } },
-                { course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' } },
+                { course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' }, datetime: new Date(), used: false },
+                { course: { uuid: '782732e2-1b1f-4291-821c-c73400164473' }, datetime: new Date(), used: false },
             ],
         })
 
-        mockAttendanceCreate(attendee, session.courses[0], true, 'paid')
+        mockAttendanceCreate(attendee, session.courses[0], true, false, 'paid')
 
         // When the attendee attends the session and declares they have paid in advance
         return attendSession(http)({ session, attendee, resolution: 'paid', paymentOption: 'advance' }).then((result) => {
@@ -264,7 +272,7 @@ describe('attendSession', () => {
                 { uuid: '782732e2-1b1f-4291-821c-c73400164473' },
             ],
             licence: { number: 12345, expiryDate: new Date('2023-11-15') },
-            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' } }],
+            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }, datetime: new Date(), used: false }],
         })
 
         // When the attendee attends the session and declares they have paid in advance
@@ -286,10 +294,10 @@ describe('attendSession', () => {
                 { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
             ],
             licence: { number: 12345, expiryDate: new Date('2023-11-15') },
-            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' } }],
+            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }, datetime: new Date(), used: false }],
         })
 
-        mockAttendanceCreate(attendee, session.courses[0], true, 'comp')
+        mockAttendanceCreate(attendee, session.courses[0], true, false, 'comp')
 
         // When the attendee attends the session and doesn't need to pay, EVEN if they have declared to pay in advance and has a payment
         return attendSession(http)({ session, attendee, paymentOption: 'advance', resolution: 'comp' }).then((result) => {
@@ -302,7 +310,7 @@ describe('attendSession', () => {
         // Given a session occurs on 2023-10-15
         const session = { date: new Date('2023-10-15'), courses: [{ uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }] }
 
-        // And the attendee has no usable payment for the course
+        // And the attendee has a usable payment for the course
         const attendee = new Member({
             uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
             name: 'John Doe',
@@ -312,7 +320,7 @@ describe('attendSession', () => {
                 { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
             ],
             licence: { number: 12345, expiryDate: new Date('2023-11-15') },
-            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' } }],
+            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }, datetime: new Date(), used: false }],
         })
 
         mockAttendanceCreate(attendee, session.courses[0], false)
@@ -322,6 +330,166 @@ describe('attendSession', () => {
             // Then the payment will still be usable afterwards
             expect(result.attendee.hasUsablePaymentForCourse(session.courses[0])).toBeTruthy()
         })
+    })
+
+    test('Can use a subscription as a payment', () => {
+        // Subscriptions have expiration dates but allow a student to make an unlimited number of payments in that period
+
+        // Given a session occurs on 2023-10-15
+        const session = { date: new Date('2023-10-15'), courses: [{ uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }] }
+
+        // And the attendee has no usable payment for the course, but has a subscription
+        const attendee = new Member({
+            uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
+            remainingTrialSessions: 4,
+            courses: [
+                { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
+            ],
+            licence: { number: 12345, expiryDate: new Date('2023-11-15') },
+            subscriptions: [{
+                type: 'time',
+                expiryDate: new Date('2023-11-30'),
+                course: {
+                    uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024',
+                }
+            }],
+        })
+
+        // Then the attendee has no usable payments for the course
+        expect(attendee.hasUsablePaymentForCourse(session.courses[0])).toBeFalsy()
+
+        // But the attendee has a usable subscription
+        expect(attendee.hasSubscriptionForCourse(session.courses[0], session.date)).toBeTruthy()
+
+        // And an attendee can pay with their subscription until it's expired
+        mockAttendanceCreate(attendee, session.courses[0], false, true)
+        const spy = jest.spyOn(http, 'post')
+        return attendSession(http)({ session, attendee, paymentOption: 'subscription' })
+            .then(() => attendSession(http)({ session, attendee, paymentOption: 'subscription' }))
+            .then(() => attendSession(http)({ session, attendee, paymentOption: 'subscription' }))
+            .then(() => attendSession(http)({ session, attendee, paymentOption: 'subscription' }))
+            .then(() => attendSession(http)({ session, attendee, paymentOption: 'subscription' }))
+            .then(() => attendSession(http)({ session, attendee, paymentOption: 'subscription' }))
+            .then((result) => {
+                expect(result.attendee.hasSubscriptionForCourse(session.courses[0], session.date)).toBeTruthy()
+
+                expect(spy).toHaveBeenCalledTimes(6)
+                expect(spy).toHaveBeenCalledWith('/attendance/create', expect.objectContaining({
+                    memberUuid: attendee.uuid,
+                    courseUuid: session.courses[0].uuid,
+                    date: '2023-10-15',
+                    resolution: null,
+                    useAdvancedPayment: false,
+                    useSubscription: true,
+                }))
+            })
+    })
+
+    test('If attendee has subscription and payment, using the subscription will keep the payment', function () {
+        // Given a session occurs on 2023-10-15
+        const session = { date: new Date('2023-10-15'), courses: [{ uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }] }
+
+        // And the attendee has a usable payment for the course AND a subscription
+        const attendee = new Member({
+            uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
+            remainingTrialSessions: 4,
+            courses: [
+                { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
+            ],
+            licence: { number: 12345, expiryDate: new Date('2023-11-15') },
+            unusedPayments: [{ course: { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }, datetime: new Date(), used: false }],
+            subscriptions: [{
+                type: 'time',
+                expiryDate: new Date('2023-11-30'),
+                course: {
+                    uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024',
+                }
+            }],
+        })
+
+        mockAttendanceCreate(attendee, session.courses[0], false, true)
+
+        // When the attendee attends the session and pays with their subscription
+        return attendSession(http)({ session, attendee, paymentOption: 'subscription' }).then((result) => {
+            // Then the payment will still be usable afterwards
+            expect(result.attendee.hasUsablePaymentForCourse(session.courses[0])).toBeTruthy()
+        })
+    })
+
+    test('Cannot pay with subscription if attendee has no subscription', function () {
+        // Given a session occurs on 2023-10-15
+        const session = { date: new Date('2023-10-15'), courses: [{ uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }] }
+
+        // And the attendee has an expired subscription for that course
+        const attendee = new Member({
+            uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
+            remainingTrialSessions: 4,
+            courses: [
+                { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
+            ],
+            licence: { number: 12345, expiryDate: new Date('2023-11-15') },
+            subscriptions: [],
+        })
+
+        return expect(attendSession(http)({ session, attendee, paymentOption: 'subscription' })).rejects.toThrowError(DomainError)
+    })
+
+    test('Cannot pay with subscription if attendee has subscription for different course', function () {
+        // Given a session occurs on 2023-10-15
+        const session = { date: new Date('2023-10-15'), courses: [{ uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }] }
+
+        // And the attendee has an expired subscription for that course
+        const attendee = new Member({
+            uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
+            remainingTrialSessions: 4,
+            courses: [
+                { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
+            ],
+            licence: { number: 12345, expiryDate: new Date('2023-11-15') },
+            subscriptions: [{
+                type: 'time',
+                expiryDate: new Date('2022-11-30'),
+                course: {
+                    uuid: '29398789-2ff5-40e7-9dc0-0749e97a8b86',
+                }
+            }],
+        })
+
+        return expect(attendSession(http)({ session, attendee, paymentOption: 'subscription' })).rejects.toThrowError(DomainError)
+    })
+
+    test('Cannot use an expired subscription', function () {
+        // Given a session occurs on 2023-10-15
+        const session = { date: new Date('2023-10-15'), courses: [{ uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' }] }
+
+        // And the attendee has an expired subscription for that course
+        const attendee = new Member({
+            uuid: '7d64ac24-50f2-4210-bcfe-822f82f942bd',
+            name: 'John Doe',
+            active: true,
+            remainingTrialSessions: 4,
+            courses: [
+                { uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024' },
+            ],
+            licence: { number: 12345, expiryDate: new Date('2023-11-15') },
+            subscriptions: [{
+                type: 'time',
+                expiryDate: new Date('2022-11-30'),
+                course: {
+                    uuid: '1562d983-fa70-47b0-8915-3b7e9f22c024',
+                }
+            }],
+        })
+
+        return expect(attendSession(http)({ session, attendee, paymentOption: 'subscription' })).rejects.toThrowError(DomainError)
     })
 })
 

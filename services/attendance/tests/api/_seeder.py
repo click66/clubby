@@ -45,13 +45,24 @@ def seed_member_payment(member_uuid: str, course_uuid: str):
                              }))
 
 
+def seed_member_subscription(member_uuid: str, course_uuid: str, expiry_date: str):
+    requests.post(f'http://monolith.southamptonjiujitsu.local:8000/api/members/{member_uuid}/subscriptions/add',
+                             json={
+                                 'course': {'uuid': str(course_uuid)},
+                                 'type': 'time',
+                                 'expiryDate': expiry_date,
+                             }, headers=headers({
+                                 'userUuid': USER_UUID,
+                             }))
+
+
 def seed_course(course: dict) -> UUID:
-    return UUID(requests.post('http://monolith.southamptonjiujitsu.local:8000/api/courses/add',
+    return UUID(requests.post('http://monolith.southamptonjiujitsu.local:8000/api/courses/create',
                               json=course,
                               headers=headers({
                                   'userUuid': USER_UUID,
                               }),
-                              ).json().get('success').get('uuid'))
+                              ).json().get('uuid'))
 
 
 def seed_user(email: str) -> UUID:
@@ -64,6 +75,14 @@ def seed_user(email: str) -> UUID:
                                   'isStaff': True,
                               }),
                               ).json().get('success').get('uuid'))
+
+
+def read_member_payments(uuid: UUID):
+    return requests.get(f'http://monolith.southamptonjiujitsu.local:8000/api/members/{uuid}/payments',
+                        headers=headers({
+                            'userUuid': USER_UUID,
+                            'isStaff': True,
+                        })).json()
 
 
 def delete_user(uuid: UUID):

@@ -19,7 +19,7 @@ interface LogAttendanceModalProps {
     allowClearAttendance: boolean
     attendee: Attendee
     session: Session
-    addAttendance: ({ attendee, session, resolution, paymentOption }: { attendee: Attendee, session: Session, resolution: 'paid' | 'comp' | null, paymentOption: 'advance' | 'now' }) => void
+    addAttendance: ({ attendee, session, resolution, paymentOption }: { attendee: Attendee, session: Session, resolution: 'paid' | 'comp' | null, paymentOption: 'advance' | 'now' | 'subscription' }) => void
     removeAttendance: ({ attendee, session }: { attendee: Attendee, session: Session }) => void,
 }
 
@@ -28,6 +28,18 @@ function LogAttendanceModal({ attendee, session, allowClearAttendance, removeAtt
 
     const close = () => {
         setShow(false)
+    }
+
+    const hasPayment = session.courses.map((c) => attendee.hasUsablePaymentForCourse(c)).includes(true)
+    const hasSubscription = session.courses.map((c) => attendee.hasSubscriptionForCourse(c, new Date())).includes(true)
+    let defaultPaymentOption = 'now'
+
+    if (hasPayment) {
+        defaultPaymentOption = 'advance'
+    }
+
+    if (hasSubscription) {
+        defaultPaymentOption = 'subscription'
     }
 
     return (
@@ -40,7 +52,7 @@ function LogAttendanceModal({ attendee, session, allowClearAttendance, removeAtt
                 initialValues={{
                     action: '',
                     resolution: 'attending',
-                    paymentOption: session.courses.map((c) => attendee.hasUsablePaymentForCourse(c)).includes(true) ? 'advance' : 'now',
+                    paymentOption: defaultPaymentOption,
                 }}
                 onSubmit={(values, { setSubmitting }) => {
                     if (attendee && session) {
@@ -50,7 +62,7 @@ function LogAttendanceModal({ attendee, session, allowClearAttendance, removeAtt
                                     attendee,
                                     session,
                                     resolution: values.resolution === 'paid' || values.resolution === 'comp' ? values.resolution : null,
-                                    paymentOption: values.paymentOption === 'advance' ? 'advance' : 'now',
+                                    paymentOption: values.paymentOption === 'advance' ? 'advance' : values.paymentOption === 'subscription' ? 'subscription' : 'now',
                                 })
                                 break
                             case 'clear':
@@ -99,6 +111,7 @@ function LogAttendanceModal({ attendee, session, allowClearAttendance, removeAtt
                                         <div className="mt-3 form-floating">
                                             <Field as="select" className="form-select" name="paymentOption">
                                                 <option value="advance">Advance Payment</option>
+                                                <option value="subscription">Subscription</option>
                                                 <option value="now">New Payment</option>
                                             </Field>
                                             <label>Pay using...</label>

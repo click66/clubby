@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-from ._seeder import delete_user, delete_course, delete_member, seed_course, seed_attendances, seed_member, seed_member_payment, seed_user
+from ._seeder import delete_user, delete_course, delete_member, read_member_payments, seed_course, seed_attendances, seed_member, seed_member_payment, seed_member_subscription, seed_user
 from ._jwt import headers
 
 API_ROOT = 'http://localhost:8000'
@@ -34,7 +34,7 @@ def setup_user():
     delete_user(user_uuid)
 
 
-def test_create_new_attendance_no_resolution(setup_course_and_member):
+def test_no_resolution(setup_course_and_member):
     # Given there are no pre-existing attendances
     seed_attendances([])
 
@@ -70,7 +70,7 @@ def test_create_new_attendance_no_resolution(setup_course_and_member):
     assert post.items() <= result[0].items()
 
 
-def test_create_new_attendance_paid(setup_course_and_member):
+def test_paid(setup_course_and_member):
     # Given there are no pre-existing attendances
     seed_attendances([])
 
@@ -107,7 +107,7 @@ def test_create_new_attendance_paid(setup_course_and_member):
     assert post.items() <= result[0].items()
 
 
-def test_create_new_attendance_paid_in_advance_no_advance_payment(setup_course_and_member):
+def test_paid_in_advance_no_advance_payment(setup_course_and_member):
     # Given there are no pre-existing attendances
     seed_attendances([])
 
@@ -127,10 +127,10 @@ def test_create_new_attendance_paid_in_advance_no_advance_payment(setup_course_a
 
     # Then the post is rejected with an appropriate error
     assert response.status_code == 422
-    assert response.json().get('detail') == 'Usable payment was not found on account'
+    assert response.json().get('detail') == 'Usable payment method was not found on account'
 
 
-def test_create_new_attendance_paid_in_advance(setup_course_and_member):
+def test_paid_in_advance(setup_course_and_member):
     # Given there are no pre-existing attendances
     seed_attendances([])
 
@@ -155,7 +155,185 @@ def test_create_new_attendance_paid_in_advance(setup_course_and_member):
     assert response.status_code == 200
 
 
-def test_create_new_attendance_comp(setup_course_and_member):
+def test_paid_with_subscription(setup_course_and_member):
+    # Given there are no pre-existing attendances
+    seed_attendances([])
+
+    # And there is a single course
+    # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
+    course_uuid, member_uuid = setup_course_and_member
+
+    # And that member has a subscription for the relevant course
+    seed_member_subscription(member_uuid, course_uuid, expiry_date='2023-11-15')
+
+    # When I post a new attendance with a resolution of "paid", and an instruction to use a subscription
+    post = {
+        'memberUuid': str(member_uuid),
+        'courseUuid': str(course_uuid),
+        'date': '2023-10-15',
+        'resolution': 'paid',
+        'useAdvancedPayment': False,
+        'useSubscription': True,
+    }
+    response = requests.post(API_URL, json=post, headers=headers())
+
+    # Then the post is successful
+    assert response.status_code == 200
+
+    # And no new payments have been taken
+    payments = read_member_payments(member_uuid)
+    assert len(payments) == 0
+
+
+def test_paid_with_subscription_no_subscription(setup_course_and_member):
+    # Given there are no pre-existing attendances
+    seed_attendances([])
+
+    # And there is a single course
+    # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
+    course_uuid, member_uuid = setup_course_and_member
+
+    # When I post a new attendance with a resolution of "paid", and an instruction to use a subscription
+    post = {
+        'memberUuid': str(member_uuid),
+        'courseUuid': str(course_uuid),
+        'date': '2023-10-15',
+        'resolution': 'paid',
+        'useAdvancedPayment': False,
+        'useSubscription': True,
+    }
+    response = requests.post(API_URL, json=post, headers=headers())
+
+    # Then the post is rejected with an appropriate error
+    assert response.status_code == 422
+    assert response.json().get('detail') == 'Usable payment method was not found on account'
+
+
+def test_paid_with_subscription_expired_subscription(setup_course_and_member):
+    # Given there are no pre-existing attendances
+    seed_attendances([])
+
+    # And there is a single course
+    # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
+    course_uuid, member_uuid = setup_course_and_member
+
+    # And that member has a subscription for the relevant course, but it is expired
+    seed_member_subscription(member_uuid, course_uuid, expiry_date='2023-09-15')
+
+    # When I post a new attendance with a resolution of "paid", and an instruction to use a subscription
+    post = {
+        'memberUuid': str(member_uuid),
+        'courseUuid': str(course_uuid),
+        'date': '2023-10-15',
+        'resolution': 'paid',
+        'useAdvancedPayment': False,
+        'useSubscription': True,
+    }
+    response = requests.post(API_URL, json=post, headers=headers())
+
+    # Then the post is rejected with an appropriate error
+    assert response.status_code == 422
+    assert response.json().get('detail') == 'Usable payment method was not found on account'
+
+
+def test_has_subscription_pay_with_advanced_payment(setup_course_and_member):
+    # Given there are no pre-existing attendances
+    seed_attendances([])
+
+    # And there is a single course
+    # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
+    course_uuid, member_uuid = setup_course_and_member
+    
+    # And that member has a valid subscription for the relevant course
+    seed_member_subscription(member_uuid, course_uuid, expiry_date='2023-11-15')
+
+    # And that member has one advanced payment for the relevant course
+    seed_member_payment(member_uuid, course_uuid)
+    
+    # When I post a new attendance with a resolution of "paid", and an instruction to use a subscription
+    post = {
+        'memberUuid': str(member_uuid),
+        'courseUuid': str(course_uuid),
+        'date': '2023-10-15',
+        'resolution': 'paid',
+        'useAdvancedPayment': True,
+        'useSubscription': False,
+    }
+    response = requests.post(API_URL, json=post, headers=headers())
+
+    # Then the post is successful
+    assert response.status_code == 200
+
+    # And the payment has been taken
+    payments = read_member_payments(member_uuid)
+    assert payments[0].get('used') is True
+
+
+def test_has_advanced_payment_pay_with_subscription(setup_course_and_member):
+    # Given there are no pre-existing attendances
+    seed_attendances([])
+
+    # And there is a single course
+    # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
+    course_uuid, member_uuid = setup_course_and_member
+    
+    # And that member has a valid subscription for the relevant course
+    seed_member_subscription(member_uuid, course_uuid, expiry_date='2023-11-15')
+
+    # And that member has one advanced payment for the relevant course
+    seed_member_payment(member_uuid, course_uuid)
+    
+    # When I post a new attendance with a resolution of "paid", and an instruction to use a subscription
+    post = {
+        'memberUuid': str(member_uuid),
+        'courseUuid': str(course_uuid),
+        'date': '2023-10-15',
+        'resolution': 'paid',
+        'useAdvancedPayment': False,
+        'useSubscription': True,
+    }
+    response = requests.post(API_URL, json=post, headers=headers())
+
+    # Then the post is successful
+    assert response.status_code == 200
+
+    # And no new payments have been taken
+    payments = read_member_payments(member_uuid)
+    assert payments[0].get('used') is False
+
+
+def test_has_subscription_pay_now(setup_course_and_member):
+    # Given there are no pre-existing attendances
+    seed_attendances([])
+
+    # And there is a single course
+    # And there is one member who has 2 trial sessions (2 sessions is currently default implementation)
+    course_uuid, member_uuid = setup_course_and_member
+    
+    # And that member has a valid subscription for the relevant course
+    seed_member_subscription(member_uuid, course_uuid, expiry_date='2023-11-15')
+    
+    # When I post a new attendance with a resolution of "paid", and an instruction to use a subscription
+    post = {
+        'memberUuid': str(member_uuid),
+        'courseUuid': str(course_uuid),
+        'date': '2023-10-15',
+        'resolution': 'paid',
+        'useAdvancedPayment': False,
+        'useSubscription': False,
+    }
+    response = requests.post(API_URL, json=post, headers=headers())
+
+    # Then the post is successful
+    assert response.status_code == 200
+
+    # And a new payment has been taken
+    payments = read_member_payments(member_uuid)
+    assert len(payments) is 1
+    assert payments[0].get('used') is True
+    
+
+def test_comp(setup_course_and_member):
     # Given there are no pre-existing attendances
     seed_attendances([])
 
@@ -294,7 +472,7 @@ def test_member_create_new_attendance_no_resolution(setup_course_and_member, set
     assert post.items() <= result[0].items()
 
 
-def test_member_create_attendance_different_user_fails(setup_course_and_member, setup_user):
+def test_member_different_user_fails(setup_course_and_member, setup_user):
     # Given there are no pre-existing attendances
     seed_attendances([])
 

@@ -1,0 +1,43 @@
+.accordion {
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.accordion-title {
+    display: block;
+    cursor: pointer;
+
+    h2 {
+        margin: 0;
+    }
+}
+
+.accordion-content {
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-in-out;
+
+    table {
+        font-size: 0.9em;
+
+        th,
+        td {
+            background-color: transparent
+        }
+    }
+}
+
+.accordion.open .accordion-content {
+    max-height: 500px;
+}
+
+.accordion-title::before {
+    content: "▼";
+    float: right;
+    transition: transform 0.2s ease-in-out;
+}
+
+.accordion.open .accordion-title::before {
+    transform: rotate(180deg);
+}

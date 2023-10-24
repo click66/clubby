@@ -26,6 +26,7 @@ class AttendanceBase(CamelModel):
 class AttendancePost(AttendanceBase):
     resolution: Optional[Literal['paid', 'comp']] = None
     use_advanced_payment: Optional[bool] = False
+    use_subscription: Optional[bool] = False
 
 
 class AttendanceRead(AttendanceBase):

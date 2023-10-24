@@ -4,6 +4,8 @@ interface Course {
 
 interface Payment {
     course: Course
+    datetime: Date
+    used: boolean
 }
 
 interface Licence {
@@ -19,6 +21,12 @@ interface Profile {
     address: string
 }
 
+interface Subscription {
+    expiryDate: Date
+    type: 'time'
+    course: Course
+}
+
 export interface MemberOptions {
     readonly uuid: string
     readonly name: string
@@ -28,6 +36,7 @@ export interface MemberOptions {
     readonly address?: string | null
     readonly active: boolean
     readonly remainingTrialSessions: number
+    readonly subscriptions?: Subscription[]
     readonly courses: Course[]
     readonly licence?: Licence | null
     readonly unusedPayments?: Payment[]
@@ -43,8 +52,10 @@ export interface IMember {
     readonly phone: string | null
     readonly address: string | null
     readonly active: boolean
+    readonly unusedPayments: Payment[]
     readonly remainingTrialSessions: number
     readonly courses: Course[]
+    readonly subscriptions: Subscription[]
     readonly licenceNo?: number | undefined
     readonly licenceExpiry?: Date | undefined
     readonly addedBy?: string
@@ -55,14 +66,18 @@ export interface IMember {
     isLicenceExpired(now: Date): boolean
     activeTrial(): boolean
     hasUsablePaymentForCourse(course: Course): boolean
+    hasSubscriptionForCourse(course: Course, date?: Date): boolean
 
     withRemainingTrialSessions(count: number): IMember
     withTakenPayment(paymentToRemove: Payment): IMember
+    withUnusedPayment(payment: Payment): IMember
     withCourse(course: Course): IMember
     withoutCourse(course: Course): IMember
     withProfile(profile: Profile): IMember
     withActive(status: boolean): IMember
     withLicence(licence: Licence): IMember
+    withSubscription(subscription: Subscription): IMember
+    withoutCourseSubscription(course: Course): IMember
 }
 
 export class Member implements IMember {
@@ -77,6 +92,7 @@ export class Member implements IMember {
     public readonly courses: Course[]
     private readonly licence: Licence | null
     public readonly unusedPayments: Payment[]
+    public readonly subscriptions: Subscription[]
     public readonly addedBy?: string
     public readonly joinDate?: Date
 
@@ -92,6 +108,7 @@ export class Member implements IMember {
         this.courses = options.courses
         this.licence = options.licence ?? null
         this.unusedPayments = options.unusedPayments ?? []
+        this.subscriptions = options.subscriptions ?? []
         this.addedBy = options.addedBy
         this.joinDate = options.joinDate
     }
@@ -110,6 +127,7 @@ export class Member implements IMember {
                 courses: this.courses,
                 licence: this.licence,
                 unusedPayments: this.unusedPayments,
+                subscriptions: this.subscriptions,
                 addedBy: this.addedBy,
                 joinDate: this.joinDate,
             },
@@ -146,6 +164,10 @@ export class Member implements IMember {
         return this.unusedPayments.some((payment) => payment.course.uuid === course.uuid)
     }
 
+    hasSubscriptionForCourse(course: Course, date: Date|null = null): boolean {
+        return this.subscriptions.some((subscription) => subscription.course.uuid === course.uuid && (!date || subscription.expiryDate > date))
+    }
+
     withRemainingTrialSessions(count: number): IMember {
         return this.withProperty('remainingTrialSessions', count)
     }
@@ -158,6 +180,10 @@ export class Member implements IMember {
         }
 
         return this.withProperty('unusedPayments', payments)
+    }
+
+    withUnusedPayment(payment: Payment): IMember {
+        return this.withProperty('unusedPayments', [...this.unusedPayments, payment])
     }
 
     withCourse(course: Course): Member {
@@ -184,4 +210,11 @@ export class Member implements IMember {
         return this.withProperty('licence', licence)
     }
 
+    withSubscription(subscription: Subscription): Member {
+        return this.withProperty('subscriptions', [...this.subscriptions, subscription])
+    }
+
+    withoutCourseSubscription(course: Course): Member {
+        return this.withProperty('subscriptions', this.subscriptions.filter((s) => s.course.uuid !== course.uuid))
+    }
 }

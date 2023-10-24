@@ -1,37 +1,20 @@
-# First Run Setup
-In app container:
-```bash
-# Up database to latest version
-$ ./manage.py migrate
+# Clubby
 
-# Make user admin user exists
-$ ./manage.py createsuperuser
-```
-
-# Backups
-App is configured with django-dbbackup.
+## First Run Setup
 
 ```bash
-# Back up database
-$ ./manage.py dbbackup
+docker compose up --build
 
-# Restore database
-$ ./manage.py migrate
-$ ./manage.py dbrestore
+# Migrate main database
+docker compose exec app poetry run ./manage.py migrate
+
+# Migrate attendance database
+docker compose exec attendance-service poetry run alembic upgrade head
 ```
 
-# Dev Environment
+## Dev Environment
 
-## Accessing admin and member sides
+### Accessing admin and member sites
 
-By default, accessing `localhost:8000` will access the manager admin side of the site. In order to use both the admin and member sides of the site interchangeably, add aliases to your /etc/hosts file:
-
-```bash
-127.0.0.1 admin.southamptonjiujitsu.local
-127.0.0.1 members.southamptonjiujitsu.local
-```
-
-After this is done you can access the relevant sites using the following URLs in a browser (port number *is* required):
-
-* Admin site: `admin.southamptonjiujitsu.local:8000`
-* Members site: `members.southamptonjiujitsu.local:8000`
+* Admin site: http://localhost:8080
+* Member site: http://localhost:8081

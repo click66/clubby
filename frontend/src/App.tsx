@@ -22,6 +22,7 @@ import { useState } from 'react'
 import LoginGuard from './components/LoginGuard'
 import User from './pages/User'
 import Admin from './pages/Admin'
+import Member from './pages/member/Member'
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false)
@@ -82,6 +83,7 @@ function App() {
               </Route>
               <Route element={<StandardLayout bcParent={{ 'path': '/members', 'text': 'Members' }} />}>
                 <Route element={<MemberProvider children={<Outlet />} />}>
+                  <Route path="/members/:memberUuid" element={<Member />} />
                   <Route path="/members/:memberUuid/profile" element={<MemberProfile />} />
                   <Route path="/members/:memberUuid/licence" element={<MemberLicence />} />
                   <Route path="/members/:memberUuid/notes" element={<MemberNotes />} />

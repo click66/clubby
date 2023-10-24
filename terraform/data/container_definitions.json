@@ -24,7 +24,7 @@
         "secrets": [
             {
                 "name": "PGPASS",
-                "valueFrom": "sjcadmin_PGPASS"
+                "valueFrom": "sjcadmin_PGPASS_southamptonjiujitsu"
             },
             {
                 "name": "DJANGO_SECRET_KEY",

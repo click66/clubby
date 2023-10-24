@@ -92,7 +92,7 @@ async def post_attendance(post: AttendancePost, request: Request, http_client: a
             create.resolution = Resolution(complementary=True)
 
     try:
-        await attempt_attendance(http_client, request, create, post.use_advanced_payment)
+        await attempt_attendance(http_client, request, create, post.use_advanced_payment, post.use_subscription)
     except DomainError as e:
         raise HTTPException(status_code=422, detail=str(e))
 

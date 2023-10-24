@@ -10,6 +10,7 @@ class Course(models.Model):
     _uuid = models.UUIDField(
         primary_key=True, default=uuid4, editable=False, db_column='uuid')
     _label = models.CharField(null=True, max_length=30, db_column='label')
+    dates = ArrayField(models.DateField(), default=list)
     _days = ArrayField(
         models.IntegerField(),
         size=7,
@@ -34,10 +35,11 @@ class Course(models.Model):
         return self._label
 
     @classmethod
-    def make(cls, label: str, days: list[int]):
+    def make(cls, label: str, days: list[int], dates: list[datetime.date]):
         return cls(
             _label=label,
             _days=days,
+            dates=dates,
         )
 
     @property
@@ -53,4 +55,7 @@ class Course(models.Model):
         return self._days
 
     def is_session_date(self, d: datetime):
-        return d.weekday() in self._days
+        return d in self.dates or d.weekday() in self._days
+
+    def has_future_dates(self, today: datetime) -> bool:
+        return self._days or any(d >= today for d in self.dates)

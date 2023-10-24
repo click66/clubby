@@ -1,5 +1,6 @@
+import { DomainError } from '../../errors'
 import { HttpInstance } from '../../utils/http'
-import { Course, Licence, Member, MemberFactory, NewMember, Payment, Profile } from './types'
+import { Course, Licence, Member, MemberFactory, NewMember, Payment, Profile, Subscription } from './types'
 
 const isoDate = (date: Date) => date.toISOString().split('T')[0]
 
@@ -40,7 +41,7 @@ export function removeFromCourse(http: HttpInstance) {
 export function updateProfile(http: HttpInstance) {
     return ({ member, profile }: { member: Member, profile: Profile }) => http.post(
         `/members/${member.uuid}/profile`,
-        { ...profile, dob: isoDate(profile.dateOfBirth) },
+        { ...profile, dob: profile.dateOfBirth ? isoDate(profile.dateOfBirth): null },
     ).then(() => member.withProfile(profile))
 }
 
@@ -71,6 +72,31 @@ export function getPayments(http: HttpInstance) {
 }
 
 export function addPayment(http: HttpInstance) {
-    return (member: Member, course: Course): Promise<Payment> => http.post(`/members/${member.uuid}/payments/add`, { course })
-        .then(({ data }) => data)
+    return (member: Member, course: Course): Promise<Member> => http.post(`/members/${member.uuid}/payments/add`, { course })
+        .then(({ data }) => member.withUnusedPayment({ ...data, datetime: new Date(data.datetime) }))
+}
+
+export function getSubscriptions(http: HttpInstance) {
+    return (member: Member): Promise<Payment[]> => http.get(`/members/${member.uuid}/subscriptions`)
+        .then(({ data }) => data.map((d: any) => ({ ...d, expiryDate: new Date(d.expiryDate) })))
+}
+
+export function addSubscription(http: HttpInstance) {
+    return ({ member, subscription }: { member: Member, subscription: Subscription }): Promise<Member> => {
+        if (member.hasSubscriptionForCourse(subscription.course)) {
+            return Promise.reject(new DomainError('Member is already subscribed to this course. Cancel the existing subscription if you want to make a new one.'))
+        }
+
+        return http.post(
+            `/members/${member.uuid}/subscriptions/add`,
+            { ...subscription, expiryDate: isoDate(subscription.expiryDate) },
+        ).then(({ data }) => member.withSubscription({ ...data, expiryDate: new Date(data.expiryDate) }))
+    }
+}
+
+export function cancelSubscription(http: HttpInstance) {
+    return ({ member, course }: { member: Member, course: Course }): Promise<Member> => http.post(
+        `/members/${member.uuid}/subscriptions/cancel`,
+        { course },
+    ).then(() => member.withoutCourseSubscription(course))
 }

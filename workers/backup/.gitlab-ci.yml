@@ -1,0 +1,19 @@
+deploy-backup-worker:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - cd workers/backup
+    - apk add --update npm
+    - npm install -g serverless
+  script:
+    - sls deploy --stage prod
+  only:
+    refs:
+      - main
+    changes:
+      - workers/backup/**/*
+  variables:
+    AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY

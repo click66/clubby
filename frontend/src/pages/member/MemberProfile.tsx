@@ -88,6 +88,23 @@ function SignedUpFor({ doSignUp, member, undoSignUp }: { doSignUp: (course: Cour
     )
 }
 
+function Subscriptions({ member }: { member: Member }) {
+    return (
+        <>
+            <h2>Active Subscriptions</h2>
+            {
+                member.subscriptions.length === 0 ? <p>No active subscriptions</p> : <ul>
+                    {member.subscriptions.map((subscription, index) => (
+                        <li className="signedUpCourse pb-1" key={index}>
+                            {subscription.course.label} (Until {subscription.expiryDate.toLocaleDateString()})
+                        </li>
+                    ))}
+                </ul>
+            }
+        </>
+    )
+}
+
 function MemberProfile() {
     const navigate = useNavigate()
     const [member, setMember] = useContext(MemberContext)
@@ -218,7 +235,7 @@ function MemberProfile() {
                                                         }}>Reactivate Member</Button>)}
                                                     <Button type="submit" disabled={isSubmitting} variant="danger" className="text-light" onClick={() => {
                                                         confirmModal({
-                                                            title: "Delete Member",
+                                                            title: "Confirm Member Deletion",
                                                             body: "Are you sure? This will delete this member's record and all associated attendance records.",
                                                             onConfirm: () => {
                                                                 setFieldValue('action', 'delete', false)
@@ -234,12 +251,20 @@ function MemberProfile() {
                                         )}
                                     </Formik>
                                 </div>
-                                <div className="memberProfileCourses col-lg-3 col-sm-12 mb-3">
-                                    <div className="pb-2">
-                                        <SignedUpFor member={member} doSignUp={doSignUp} undoSignUp={undoSignUp} />
+                                <div className="col-lg-3 col-sm-12 mb-3">
+                                    <div className="memberProfileCourses">
+                                        <div className="pb-2">
+                                            <SignedUpFor member={member} doSignUp={doSignUp} undoSignUp={undoSignUp} />
+                                        </div>
+                                        <div className="actions">
+                                            <EscapeLink to="/courses">Manage Courses</EscapeLink>
+                                        </div>
                                     </div>
-                                    <div className="actions">
-                                        <EscapeLink to="/coures">Manage Courses</EscapeLink>
+                                    <div className="memberProfileCourses">
+                                        <Subscriptions member={member} />
+                                        <div className="actions">
+                                            <EscapeLink to={`/members/${member.uuid}/payments`}>Manage Subscriptions</EscapeLink>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
