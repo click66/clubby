@@ -12,7 +12,6 @@ deploy-backup-worker:
   only:
     refs:
       - main
-      - feature/backup
     changes:
       - workers/backup/**/*
   variables:
