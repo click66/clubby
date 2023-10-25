@@ -99,7 +99,7 @@ function MemberQuickSignup({ courses, onChange }: MemberQuickSignupProps) {
 function MemberQuickSignupButton(props: MemberQuickSignupProps) {
     return (
         <OverlayTrigger trigger="click" placement="bottom" overlay={MemberQuickSignup(props)} rootClose>
-            <Button variant="primary"><span className="btn-text">Add Existing</span> <PersonPlusFill /></Button>
+            <Button variant="primary"><span className="btn-text">New/Add Member</span> <PersonPlusFill /></Button>
         </OverlayTrigger>
     )
 }
