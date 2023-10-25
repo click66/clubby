@@ -12,6 +12,7 @@ const v2Factory = new V2MemberFactory(new Date())
 export const membersApi = {
     getMember: members.getMember(http, v2Factory),
     getMembersByCourses: members.getMembersByCourses(http, v2Factory),
+    getMembersLikeName: members.getMembersLikeName(http, v2Factory),
 
     getMembers: members.getMembers(http, v1Factory),
     createMember: members.createMember(http, v2Factory),

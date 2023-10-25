@@ -13,7 +13,6 @@ export default {
     addCourse: courses.addCourse(http, cache),
     getCourse: courses.getCourse(http, cache),
     getCourses: courses.getCourses(http, cache),
-    courseHappensOnDay: courses.courseHappensOnDay,
     courseHappensOnDate: courses.courseHappensOnDate,
     deleteCourse: courses.deleteCourse(http, cache),
 }

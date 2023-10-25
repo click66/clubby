@@ -22,6 +22,7 @@ class CourseSerializer(BaseSerialiser):
 class MemberQuerySerializer(BaseSerialiser):
     courses = CourseSerializer(many=True, required=False)
     user = serializers.UUIDField(required=False)
+    name = serializers.CharField(required=False, allow_blank=True)
 
 
 class LicenceSerializer(BaseSerialiser):
@@ -115,6 +116,7 @@ def query(request):
     members = Member.fetch_query(
         course_uuids=courses,
         user=user,
+        name=query.get('name', None),
         tenant_uuid=request.user.tenant_uuid,
     )
 

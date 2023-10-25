@@ -218,7 +218,7 @@ class Student(models.Model):
         return objects
 
     @classmethod
-    def fetch_query(cls, course_uuids: list[str] = None, user: User = None, tenant_uuid: str = None):
+    def fetch_query(cls, course_uuids: list[str] = None, user: User = None, name: str = None, tenant_uuid: str = None):
         queryset = cls.objects\
             .select_related('licence')\
             .prefetch_related('note_set')\
@@ -236,6 +236,9 @@ class Student(models.Model):
 
         if user:
             queryset = queryset.filter(profile_email=user.email)
+
+        if name:
+            queryset = queryset.filter(profile_name__icontains=name)
 
         for o in queryset:
             payments = o.payment_set.all()

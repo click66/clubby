@@ -1,6 +1,6 @@
 import { isSameDay } from 'date-fns'
 import { HttpInstance } from '../../utils/http'
-import { Course, Day, NewCourse } from './types'
+import { Course, NewCourse } from './types'
 
 type CourseCache = Map<string, Course>
 
@@ -51,10 +51,6 @@ export function addCourse(http: HttpInstance, cache: CourseCache) {
 export function deleteCourse(http: HttpInstance, cache: CourseCache) {
     return (course: Course): Promise<void> => http.post(`/courses/${course.uuid}/delete`)
         .then(() => { cache.delete(course.uuid) })
-}
-
-export function courseHappensOnDay(course: Course, day: Day): boolean {
-    return course.days.includes(day)
 }
 
 export function courseHappensOnDate(course: Course, date: Date): boolean {
