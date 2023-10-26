@@ -15,6 +15,13 @@ export class DomainObjectCreationError extends Error {
 export class ConnectivityError extends Error {
     constructor(message: string) {
         super(message)
-        this.name = 'Connectivity Error'
+        this.name = 'ConnectivityError'
+    }
+}
+
+export class AuthenticationError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'AuthenticationError'
     }
 }

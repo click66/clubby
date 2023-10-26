@@ -1,63 +1,30 @@
-import axios, { AxiosResponse } from 'axios'
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, useState } from 'react'
 import { Navigate } from 'react-router'
-import Cookies from 'universal-cookie'
-
-const API_URL = import.meta.env.VITE_AUTH_API_URL
-
-function successOrError(r: AxiosResponse) {
-    let data = r.data
-    if (data.hasOwnProperty('error')) {
-        return Promise.reject(new Error(data.error))
-    }
-
-    r.data = data.success ?? data
-    return r
-}
+import { authentication, tokens } from '../domain/authentication/authentication'
 
 function LoginGuard({ children, loggedIn, setLoggedIn }: PropsWithChildren & { loggedIn: boolean, setLoggedIn: (val: boolean) => void }) {
-    const cookies = new Cookies(),
-        tokens = cookies
-    const token = cookies.get('jwt_authorisation')
-    const refreshToken = tokens.get('jwt_refreshtoken')
+    const [pending, setPending] = useState<boolean>(false)
 
-    const login = (token: string, expireTs: number, refreshToken: string) => {
-        const cookies = new Cookies()
-        cookies.set('jwt_authorisation', token, {
-            expires: new Date(expireTs * 1000),
-            path: '/',
-        })
-        cookies.set('jwt_refreshtoken', refreshToken, {
-            expires: new Date(Date.now() + (2592000 * 1000)),
-            path: '/',
-        })
-    }
-
-    const attemptLoginRefresh = () => {
-        axios.post(`${API_URL}/refresh`, { token: refreshToken })
-            .then(successOrError).then(({ data }) => {
-                login(data.token, data.expires, data.refreshToken)
-                setLoggedIn(true)
-            }).catch(() => {
-                tokens.remove('jwt_authorisation', { path: '/' })
-                tokens.remove('jwt_refreshtoken', { path: '/' })
-            })
-    }
-
-    if (!token) {
-        setLoggedIn(false)
-    }
-
-    if (!loggedIn) {
-        if (refreshToken) {
-            attemptLoginRefresh()
-            return '...'
+    if (!loggedIn && !pending) {
+        if (tokens.exist()) {
+            setPending(true)
+            authentication.attemptRefresh()
+                .then(() => setLoggedIn(true))
+                .finally(() => setPending(false))
+        } else {
+            setLoggedIn(false)
         }
-
-        return <Navigate to='/auth/login' />
     }
 
-    return children
+    if (pending) {
+        return <div className="loading bg-dark" />
+    }
+
+    if (loggedIn) {
+        return children
+    }
+
+    return <Navigate to="/auth/login" />
 }
 
 export default LoginGuard

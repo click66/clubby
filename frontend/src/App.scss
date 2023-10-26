@@ -88,8 +88,13 @@ nav ol.breadcrumb {
   }
 }
 
+.memberPopover {
+  width: 250px;
+}
+
 .tableActions {
   display: flex;
+  gap: 5px;
   justify-content: right;
   align-items: center;
   margin-bottom: 5px;

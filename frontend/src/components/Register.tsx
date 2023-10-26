@@ -2,7 +2,6 @@ import '../assets/Register.component.scss'
 
 import { RowData, SortingState, createColumnHelper, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table'
 import { notifyError, notifySuccess } from '../utils/notifications'
-import { MemberQuickAddButton } from './MemberQuickAdd'
 import { Fragment, memo, useCallback, useEffect, useRef, useState } from 'react'
 import { Badge } from 'react-bootstrap'
 import { ArrowClockwise, Cash } from 'react-bootstrap-icons'
@@ -15,6 +14,7 @@ import { attendanceApi } from '../domain/attendance/provider'
 import coursesApi from '../domain/courses/provider'
 import { membersApi } from '../domain/members/provider'
 import { Course } from '../domain/courses/types'
+import { MemberQuickSignupButton } from './MemberQuickSignup'
 
 interface RegisterProps {
     courses: Course[]
@@ -76,9 +76,7 @@ function generatePrevious30Dates(courses: Course[], squash: boolean): Session[] 
     let daysCount = 0
 
     courses = courses.filter((c) => c.uuid != undefined)
-console.log(courses)
     while (result.length < 30 && daysCount < 365) {
-        // const matchingCourses = courses.filter((c) => coursesApi.courseHappensOnDay(c, (currentDate.getDay() + 6) % 7))    // For some reason I didn't index Sunday as 0
         const matchingCourses = courses.filter((c) => coursesApi.courseHappensOnDate(c, currentDate))
 
         if (matchingCourses.length > 0) {
@@ -362,8 +360,8 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
     return (
         <>
             <div className="tableActions">
-                <MemberQuickAddButton courses={courses} onChange={(newMember) => table.options.meta?.updateData(newMember)} />
-                <div className="ps-2">
+                <MemberQuickSignupButton courses={courses} onChange={(newMember) => table.options.meta?.updateData(newMember)} />
+                <div>
                     <input type="text" className="form-control" placeholder="Search" onChange={(e) => setGlobalFilter(String(e.target.value))} />
                 </div>
             </div>

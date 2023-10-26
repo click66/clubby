@@ -64,7 +64,7 @@ function Members() {
             <div className="rounded-3 bg-white p-3 text-dark fullTable" id="copy">
                 <div className="tableActions">
                     <MemberQuickAddButton courses={[]} onChange={() => membersApi.getMembers().then(setData)} />
-                    <div className='ps-2'>
+                    <div>
                         <input type="text" className="form-control" placeholder="Search" onChange={(e) => setGlobalFilter(String(e.target.value))} />
                     </div>
                 </div>

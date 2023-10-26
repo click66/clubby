@@ -19,6 +19,13 @@ export function getMembersByCourses(http: HttpInstance, factory: MemberFactory) 
     ).then(({ data }) => data.map((d: any) => factory.makeMember(d)))
 }
 
+export function getMembersLikeName(http: HttpInstance, factory: MemberFactory) {
+    return ({ searchString } : { searchString: string }): Promise<Member[]> => http.post(
+        '/members/query',
+        { name: searchString },
+    ).then(({ data }) => data.map((d: any) => factory.makeMember(d)))
+}
+
 export function createMember(http: HttpInstance, factory: MemberFactory) {
     return (data: NewMember): Promise<Member> => http.post('/members/create', data)
         .then(({ data }) => factory.makeMember(data))
@@ -41,7 +48,7 @@ export function removeFromCourse(http: HttpInstance) {
 export function updateProfile(http: HttpInstance) {
     return ({ member, profile }: { member: Member, profile: Profile }) => http.post(
         `/members/${member.uuid}/profile`,
-        { ...profile, dob: profile.dateOfBirth ? isoDate(profile.dateOfBirth): null },
+        { ...profile, dob: profile.dateOfBirth ? isoDate(profile.dateOfBirth) : null },
     ).then(() => member.withProfile(profile))
 }
 

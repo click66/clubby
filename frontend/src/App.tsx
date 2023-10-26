@@ -10,7 +10,6 @@ import Members from './pages/Members'
 import Attendance from './pages/Attendance'
 import Reporting from './pages/Reporting'
 import Breadcrumb from './components/Breadcrumb'
-import Cookies from 'universal-cookie'
 import { Button } from 'react-bootstrap'
 import { Flip, ToastContainer } from 'react-toastify'
 import MemberProfile from './pages/member/MemberProfile'
@@ -23,6 +22,7 @@ import LoginGuard from './components/LoginGuard'
 import User from './pages/User'
 import Admin from './pages/Admin'
 import Member from './pages/member/Member'
+import { authentication } from './domain/authentication/authentication'
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false)
@@ -43,13 +43,11 @@ function App() {
 
   const LoggedInLayout = () => {
     const navigate = useNavigate()
-    const cookies = new Cookies()
     return (
       <LoginGuard loggedIn={loggedIn} setLoggedIn={setLoggedIn}>
         <div className="topBar">
           <Button variant="light" onClick={() => {
-            cookies.remove('jwt_authorisation', { path: '/' })
-            cookies.remove('jwt_refreshtoken', { path: '/' })
+            authentication.logout()
             setLoggedIn(false)
             navigate('/auth/login')
           }}>Sign Out</Button>
@@ -66,7 +64,7 @@ function App() {
           <Routes>
             <Route element={<PortalLayout />}>
               <Route path="*" element={<_404 />} />
-              <Route path="/auth/login" element={<Login loggedIn={loggedIn} setLoggedIn={setLoggedIn} />} />
+              <Route path="/auth/login" element={<Login loggedIn={loggedIn} />} />
               <Route element={<LoggedInLayout />}>
                 <Route path="/" element={<Portal />} />
               </Route>
