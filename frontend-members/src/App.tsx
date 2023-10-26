@@ -122,7 +122,7 @@ function App() {
             <div className="flex items-center justify-between">
               <div className="flex items-center"><h1 className="text-primary text-2xl font-bold">
                 <Link to="/">{appTitle}</Link>
-                </h1></div>
+              </h1></div>
               <UserDetails />
             </div>
           </div>
@@ -131,7 +131,8 @@ function App() {
             <div className="container mx-auto w-1/2 flex flex-col items-center space-y-5">
               <Routes>
                 <Route path="/" element={<LoginGuard />}>
-                  <Route index path="dashboard" element={<Dashboard />} />
+                  <Route index element={<Navigate to="dashboard" replace />} />
+                  <Route path="dashboard" element={<Dashboard />} />
                   <Route path="profile" element={<Profile />} />
                   <Route path="calendar" element={<Calendar />} />
                   <Route path="history" element={<History />} />

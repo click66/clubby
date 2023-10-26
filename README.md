@@ -18,3 +18,7 @@ docker compose exec attendance-service poetry run alembic upgrade head
 
 * Admin site: http://localhost:8080
 * Member site: http://localhost:8081
+
+### Accessing local tools
+
+* Dummy email exchange: http://localhost:8025

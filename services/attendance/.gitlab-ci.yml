@@ -24,7 +24,10 @@ terraform-attendance-service:
     - terraform plan -out=tfplan -input=false
     - terraform apply -input=false tfplan
   only:
-    - main
+    refs:
+      - main
+    changes:
+      - services/attendance/terraform/**/*
   variables:
     AWS_ACCESS_KEY_ID: $TERRAFORM_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $TERRAFORM_AWS_SECRET_ACCESS_KEY
@@ -46,7 +49,10 @@ deploy-attendance-service:
     - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin-attendance/app
     - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
   only:
-    - main
+    refs:
+      - main
+    changes:
+      - sevices/attendance/**/*
   variables:
     AWS_ACCESS_KEY_ID: $DEPLOY_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $DEPLOY_AWS_SECRET_ACCESS_KEY
