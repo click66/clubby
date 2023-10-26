@@ -64,7 +64,10 @@ deploy-monolith:
     - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx
     - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
   only:
-    - main
+    refs:
+      - main
+    changes:
+      - sjcadmin/**/*
   variables:
     AWS_ACCESS_KEY_ID: $DEPLOY_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $DEPLOY_AWS_SECRET_ACCESS_KEY
