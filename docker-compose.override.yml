@@ -8,6 +8,13 @@ services:
       - 8080:5173
     volumes:
       - ./frontend:/app
+  
+  frontend-members:
+    ports:
+      - 8081:5173
+    volumes:
+      - ./frontend-members:/app
+
   app:
     build:
       context: .

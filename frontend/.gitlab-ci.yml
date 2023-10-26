@@ -1,10 +1,10 @@
-# test-frontend:
-#   stage: test
-#   image: node:20-alpine
-#   script:
-#     - cd frontend
-#     - npm ci
-#     - npm run test
+test-frontend:
+  stage: test
+  image: node:20-alpine
+  script:
+    - cd frontend
+    - npm ci
+    - npm run test
 
 deploy-frontend:
   stage: deploy

@@ -1,0 +1,23 @@
+test-frontend-members:
+  stage: test
+  image: node:latest
+  script:
+    - cd frontend
+    - npm ci
+    - npm run test
+
+deploy-frontend-members:
+  stage: deploy
+  image: node:latest
+  before_script:
+    - apt update -y && apt install -y awscli
+  script:
+    - cd frontend
+    - npm ci --production
+    - npm run build
+    - aws s3 sync --delete dist s3://sjcadmin-frontend-members
+  only:
+    - main
+  variables:
+    AWS_ACCESS_KEY_ID: $DEPLOY_AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $DEPLOY_AWS_SECRET_ACCESS_KEY

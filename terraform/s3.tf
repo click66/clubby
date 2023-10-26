@@ -76,3 +76,46 @@ resource "aws_s3_bucket_policy" "sjcadmin_frontend" {
     bucket = aws_s3_bucket.sjcadmin_frontend.id
     policy = data.aws_iam_policy_document.sjcadmin_frontend.json
 }
+
+resource "aws_s3_bucket" "sjcadmin_frontend_members" {
+    bucket = "sjcadmin-frontend-members"
+}
+
+data "aws_iam_policy_document" "sjcadmin_frontend_members" {
+    statement {
+        principals {
+            type        = "AWS"
+            identifiers = ["*"]
+        }
+
+        actions = ["s3:GetObject"]
+
+        resources = ["${aws_s3_bucket.sjcadmin_frontend_members.arn}/*"]
+
+        condition {
+            test = "StringEquals"
+            variable = "aws:SourceVpc"
+
+            values = [data.aws_vpc.services-01.id]
+        }
+    }
+
+    statement {
+        principals {
+            type        = "AWS"
+            identifiers = [aws_iam_user.sjcadmin-deploy.arn]
+        }
+
+        actions = ["s3:*"]
+
+        resources = [
+            aws_s3_bucket.sjcadmin_frontend_members.arn,
+            "${aws_s3_bucket.sjcadmin_frontend_members.arn}/*",
+        ]
+    }
+}
+
+resource "aws_s3_bucket_policy" "sjcadmin_frontend_members" {
+    bucket = aws_s3_bucket.sjcadmin_frontend_members.id
+    policy = data.aws_iam_policy_document.sjcadmin_frontend_members.json
+}

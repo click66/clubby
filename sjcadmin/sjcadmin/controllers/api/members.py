@@ -11,6 +11,7 @@ from ..baseserializer import BaseSerialiser
 from ...models.attendance import Attendance
 from ...models.student import Student as Member, Payment, Subscription
 from ...models.course import Course
+from ...schemas import BaseSerialiser
 from ....sjcauth.models import User
 
 
