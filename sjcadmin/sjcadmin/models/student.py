@@ -100,7 +100,8 @@ class Student(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     _creator = models.UUIDField(null=True, db_column='creator_id')
     _creator_name = models.TextField(null=True, max_length=120)
-    tenant_uuid = models.UUIDField(null=True, blank=True)
+    tenant = models.ForeignKey(
+        'Tenant', null=True, blank=True, on_delete=models.SET_NULL, db_column='tenant_uuid')
 
     active = models.BooleanField(default=True)
 
@@ -142,7 +143,7 @@ class Student(models.Model):
             .prefetch_related('subscription_set')\
             .prefetch_related('attendance_set')\
             .prefetch_related('_courses')\
-            .filter(tenant_uuid=tenant_uuid)
+            .filter(tenant__uuid=tenant_uuid)
 
         for o in objects:
             payments = o.payment_set.all().order_by('-_datetime')
@@ -165,7 +166,7 @@ class Student(models.Model):
     @classmethod
     def fetch_by_uuid(cls, uuid: str, tenant_uuid: str = None):
         o = cls.objects.get(
-            pk=uuid, tenant_uuid=tenant_uuid) if tenant_uuid else cls.objects.get(pk=uuid)
+            pk=uuid, tenant__uuid=tenant_uuid) if tenant_uuid else cls.objects.get(pk=uuid)
 
         o._unused_payments = list(o.payment_set.filter(
             _used=False).order_by('-_datetime'))
@@ -232,7 +233,7 @@ class Student(models.Model):
             queryset = queryset.filter(_courses__in=course_uuids)
 
         if tenant_uuid:
-            queryset = queryset.filter(tenant_uuid=tenant_uuid)
+            queryset = queryset.filter(tenant__uuid=tenant_uuid)
 
         if user:
             queryset = queryset.filter(profile_email=user.email)
@@ -325,6 +326,10 @@ class Student(models.Model):
 
     def is_user(self, user: User) -> bool:
         return user.email == self.email
+    
+    @property
+    def club_name(self) -> str:
+        return self.tenant.name
 
     @property
     def name(self) -> str:

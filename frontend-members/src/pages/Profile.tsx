@@ -6,6 +6,7 @@ import Spinner from '../components/Spinner'
 import { Danger, Warning } from '../components/Alerts'
 import { Danger as DangerBadge, Success, Warning as WarningBadge } from '../components/Badges'
 import { Field, Form, Formik } from 'formik'
+import { HomeIcon } from '@heroicons/react/24/outline'
 
 interface HasMember {
     member: Member
@@ -37,25 +38,23 @@ function ProfileForm({ member }: HasMember) {
     return (
         <Formik
             initialValues={member}
-            onSubmit={(values, { setSubmitting }) => {
-
-            }}
+            onSubmit={() => { }}
         >
-            {({ isSubmitting }) => (
+            {() => (
                 <Form>
                     <div className="p-8">
                         <div className="flex flex-wrap -mx-3 mb-6">
-                            <div className="w-full md:w-1/2 px-3">
+                            <div className="w-1/2 px-3">
                                 <label className="block tracking-wide text-gray-700 text-sm font-bold mb-2" htmlFor="phone">
                                     Phone
                                 </label>
-                                <Field name="phone" className="appearance-none text-sm block w-full bg-gray-100 text-gray-700 border border-gray-200 rounded py-3 px-4 focus:outline-none focus:bg-white focus:border-primary" id="phone" type="text" />
+                                <Field name="phone" placeholder="None recorded" className="appearance-none text-sm block w-full bg-gray-100 text-gray-700 border border-gray-200 rounded py-3 px-4 focus:outline-none focus:bg-white focus:border-primary" id="phone" type="text" />
                             </div>
-                            <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                            <div className="w-1/2 px-3 mb-6 md:mb-0">
                                 <label className="block tracking-wide text-gray-700 text-sm font-bold mb-2" htmlFor="dateOfBirth">
                                     Date of Birth
                                 </label>
-                                <Field name="dateOfBirth" className="appearance-none text-sm block w-full bg-gray-100 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 focus:outline-none focus:bg-white" id="dateOfBirth" type="text" />
+                                <Field name="dateOfBirth" placeholder="None recorded" className="appearance-none text-sm block w-full bg-gray-100 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 focus:outline-none focus:bg-white" id="dateOfBirth" type="text" />
                             </div>
                         </div>
                         <div className="flex flex-wrap -mx-3 mb-6">
@@ -63,7 +62,7 @@ function ProfileForm({ member }: HasMember) {
                                 <label className="block tracking-wide text-gray-700 text-sm font-bold mb-2" htmlFor="address">
                                     Address
                                 </label>
-                                <Field name="address" className="appearance-none text-sm minblock w-full bg-gray-100 text-gray-700 border border-gray-200 rounded py-3 px-4 focus:outline-none focus:bg-white focus:border-primary" id="address" type="text" component="textarea" />
+                                <Field name="address" placeholder="None recorded" className="appearance-none text-sm minblock w-full bg-gray-100 text-gray-700 border border-gray-200 rounded py-3 px-4 focus:outline-none focus:bg-white focus:border-primary" id="address" type="text" component="textarea" />
                             </div>
                         </div>
                     </div>
@@ -86,6 +85,7 @@ function MemberCard({ initiallyActive = false, member, children }: MemberCardPro
                 <h2 className="grow font-medium text-neutral-800">
                     {member.name}
                 </h2>
+                <Club member={member} />
                 <div className="mx-5">
                     <LicenceBadge member={member} />
                 </div>
@@ -118,6 +118,15 @@ function MemberCard({ initiallyActive = false, member, children }: MemberCardPro
     )
 }
 
+function Club({ member }: HasMember) {
+    return (
+        <div className="px-8 flex gap-2 items-center text-gray-700">
+            <HomeIcon className="h-5 w-5" />
+            <span className="clubName">{member.clubName}</span>
+        </div>
+    )
+}
+
 export default function Profile() {
     const [error, setError] = useState<Error | null>(null)
     const [pending, setPending] = useState<boolean>(true)
@@ -145,7 +154,7 @@ export default function Profile() {
         <>
             {membersData.map((member: Member, index) => (
                 <MemberCard key={index} member={member} initiallyActive={membersData.length === 1}>
-                    {!member.licence ? <div className="p-8 pb-0"><Warning>You have {member.remainingTrialSessions} trial sessions remaining.</Warning></div>: ''}
+                    {!member.licence ? <div className="p-8 pb-0"><Warning>You have {member.remainingTrialSessions} trial sessions remaining.</Warning></div> : ''}
                     <ProfileForm member={member} />
                 </MemberCard>
             ))}

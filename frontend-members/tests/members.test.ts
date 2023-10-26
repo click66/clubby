@@ -28,7 +28,12 @@ describe('Members', () => {
                     'licence': {
                         'number': 8383,
                         'expiryDate': '2024-01-01',
-                    }
+                    },
+                    'phone': '555-8383',
+                    'clubName': 'Chikara Dojo',
+                    'dateOfBirth': '1963-02-02',
+                    'address': '129 West 81st',
+                    'remainingTrialSessions': 2,
                 },
                 {
                     'uuid': '2e580ead-a4ac-4d6b-adce-eee4da2951ac',
@@ -36,7 +41,12 @@ describe('Members', () => {
                     'licence': {
                         'number': 9191,
                         'expiryDate': '2019-01-01',
-                    }
+                    },
+                    'phone': '555-6820',
+                    'clubName': 'Chikara Dojo',
+                    'dateOfBirth': '1963-02-02',
+                    'address': '129 West 81st',
+                    'remainingTrialSessions': 0,
                 },
             ]
 
@@ -59,6 +69,11 @@ describe('Members', () => {
                     'uuid': '33123bcf-97ce-49d7-add4-fcae62e31b7d',
                     'name': 'Cosmo Kramer',
                     'licence': null,
+                    'phone': '555-6820',
+                    'clubName': 'Chikara Dojo',
+                    'dateOfBirth': '1963-02-02',
+                    'address': '129 West 81st',
+                    'remainingTrialSessions': 84,
                 },
             ]
 

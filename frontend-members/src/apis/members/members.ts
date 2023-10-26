@@ -16,6 +16,7 @@ const memberSchema = z.object({
         expiryDate: z.coerce.date(),
     }).nullable(),
     remainingTrialSessions: z.number(),
+    clubName: z.string(),
 })
 
 export type Member = z.infer<typeof memberSchema>

@@ -128,7 +128,7 @@ function App() {
           </div>
           <div className="container mx-auto mt-8 mb-20">
             <Navigation />
-            <div className="container mx-auto w-1/2 flex flex-col items-center space-y-5">
+            <div className="container mx-auto md:w-3/4 xl:w-1/2 flex flex-col items-center space-y-5">
               <Routes>
                 <Route path="/" element={<LoginGuard />}>
                   <Route index element={<Navigate to="dashboard" replace />} />

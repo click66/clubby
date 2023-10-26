@@ -54,6 +54,7 @@ class MemberSerializer(BaseSerialiser):
     join_date = serializers.DateField()
     remaining_trial_sessions = serializers.IntegerField()
     added_by = serializers.CharField()
+    club_name = serializers.CharField()
 
     licence = LicenceSerializer(required=False)
     courses = CourseSerializer(many=True, read_only=True)
