@@ -11,6 +11,7 @@ from ..baseserializer import BaseSerialiser
 from ...models.attendance import Attendance
 from ...models.student import Student as Member, Payment, Subscription
 from ...models.course import Course
+from ...models.tenant import Tenant
 from ...schemas import BaseSerialiser
 from ....sjcauth.models import User
 
@@ -89,7 +90,7 @@ class AttendanceSerializer(BaseSerialiser):
 @role_required(['member', 'staff'])
 @api_view(['GET'])
 def member(request, member_uuid: UUID):
-    m = Member.fetch_by_uuid(member_uuid, tenant_uuid=request.user.tenant_uuid)
+    m = Member.fetch_by_uuid(member_uuid, club_uuid=request.user.tenant_uuid)
 
     if request.user.is_member_user and not m.is_user(request.user):
         return Response({'error': 'Member is not authorised.'}, 403)
@@ -119,7 +120,7 @@ def query(request):
         course_uuids=courses,
         user=user,
         name=query.get('name', None),
-        tenant_uuid=request.user.tenant_uuid,
+        club_uuid=request.user.tenant_uuid,
     )
 
     return Response(list(map(lambda m: MemberSerializer(m, context={'today': date.today()}).data, members)))
@@ -137,7 +138,7 @@ def create(request):
     data = data.validated_data
 
     member = Member.make(name=data.get('name'), creator=request.user)
-    member.tenant_uuid = request.user.tenant_uuid
+    member.club = Tenant.objects.get(uuid=request.user.tenant_uuid)
 
     if 'email' in data:
         member.profile_email = data.get('email')
@@ -161,7 +162,7 @@ def create(request):
 @api_view(['POST'])
 def delete(request, member_uuid):
     member = Member.fetch_by_uuid(
-        member_uuid, tenant_uuid=request.user.tenant_uuid)
+        member_uuid, club_uuid=request.user.tenant_uuid)
 
     if member:
         Attendance.objects.filter(student=member).delete()
@@ -182,13 +183,13 @@ def log_attendance(request, member_uuid):
     data = data.validated_data
 
     member = Member.fetch_by_uuid(member_uuid) if request.user.is_member_user else Member.fetch_by_uuid(
-        member_uuid, tenant_uuid=request.user.tenant_uuid)
+        member_uuid, club_uuid=request.user.tenant_uuid)
 
     if request.user.is_member_user and not member.is_user(request.user):
         return Response({'error': 'Member is not authorised'}, 403)
 
     course = Course.objects.get(_uuid=data.get('course').get(
-        'uuid'), tenant_uuid=member.tenant_uuid)
+        'uuid'), tenant_uuid=member.club_uuid)
 
     Attendance.clear(member, date=data.get('date'))
 
@@ -226,7 +227,7 @@ def delete_attendance(request, member_uuid):
     data = data.validated_data
 
     member = Member.fetch_by_uuid(member_uuid) if request.user.is_member_user else Member.fetch_by_uuid(
-        member_uuid, tenant_uuid=request.user.tenant_uuid)
+        member_uuid, club_uuid=request.user.tenant_uuid)
 
     if request.user.is_member_user and not member.is_user(request.user):
         return Response({'error': 'Member is not authorised'}, 403)
@@ -248,13 +249,13 @@ def add_payment(request, member_uuid):
     data = data.validated_data
 
     member = Member.fetch_by_uuid(member_uuid) if request.user.is_member_user else Member.fetch_by_uuid(
-        member_uuid, tenant_uuid=request.user.tenant_uuid)
+        member_uuid, club_uuid=request.user.tenant_uuid)
 
     if request.user.is_member_user and not member.is_user(request.user):
         return Response({'error': 'Member is not authorised'}, 403)
 
     course = Course.objects.get(_uuid=data.get(
-        'course').get('uuid'), tenant_uuid=member.tenant_uuid)
+        'course').get('uuid'), tenant_uuid=member.club_uuid)
 
     payment = Payment.make(timezone.now(), course)
     member.take_payment(payment)
@@ -269,7 +270,7 @@ def add_payment(request, member_uuid):
 @handle_error
 def payments(request, member_uuid):
     member = Member.fetch_by_uuid(member_uuid) if request.user.is_member_user else Member.fetch_by_uuid(
-        member_uuid, tenant_uuid=request.user.tenant_uuid)
+        member_uuid, club_uuid=request.user.tenant_uuid)
 
     if request.user.is_member_user and not member.is_user(request.user):
         return Response({'error': 'Member is not authorised'}, 403)
@@ -292,13 +293,13 @@ def add_subscription(request, member_uuid):
     data = data.validated_data
 
     member = Member.fetch_by_uuid(member_uuid) if request.user.is_member_user else Member.fetch_by_uuid(
-        member_uuid, tenant_uuid=request.user.tenant_uuid)
+        member_uuid, club_uuid=request.user.tenant_uuid)
 
     if request.user.is_member_user and not member.is_user(request.user):
         return Response({'error': 'Member is not authorised'}, 403)
 
     course = Course.objects.get(_uuid=data.get('course').get(
-        'uuid'), tenant_uuid=member.tenant_uuid)
+        'uuid'), tenant_uuid=member.club_uuid)
 
     subscription = Subscription.make('time', data.get('expiry_date'), course)
     member.subscribe(subscription)
@@ -313,7 +314,7 @@ def add_subscription(request, member_uuid):
 @handle_error
 def subscriptions(request, member_uuid):
     member = Member.fetch_by_uuid(member_uuid) if request.user.is_member_user else Member.fetch_by_uuid(
-        member_uuid, tenant_uuid=request.user.tenant_uuid)
+        member_uuid, club_uuid=request.user.tenant_uuid)
 
     if request.user.is_member_user and not member.is_user(request.user):
         return Response({'error': 'Member is not authorised'}, 403)
@@ -333,13 +334,13 @@ def cancel_subscription(request, member_uuid):
     data = data.validated_data
 
     member = Member.fetch_by_uuid(member_uuid) if request.user.is_member_user else Member.fetch_by_uuid(
-        member_uuid, tenant_uuid=request.user.tenant_uuid)
+        member_uuid, club_uuid=request.user.tenant_uuid)
 
     if request.user.is_member_user and not member.is_user(request.user):
         return Response({'error': 'Member is not authorised'}, 403)
 
     course = Course.objects.get(_uuid=data.get(
-        'uuid'), tenant_uuid=member.tenant_uuid)
+        'uuid'), tenant_uuid=member.club_uuid)
 
     Subscription.objects.filter(student=member, course=course).delete()
 

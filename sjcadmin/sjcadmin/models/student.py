@@ -100,8 +100,9 @@ class Student(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     _creator = models.UUIDField(null=True, db_column='creator_id')
     _creator_name = models.TextField(null=True, max_length=120)
-    tenant = models.ForeignKey(
-        'Tenant', null=True, blank=True, on_delete=models.SET_NULL, db_column='tenant_uuid')
+    tenant_uuid = models.UUIDField(null=True, db_column='tenant_uuid')
+    club = models.ForeignKey(
+        'Tenant', null=False, blank=False, on_delete=models.RESTRICT, db_column='club_uuid')
 
     active = models.BooleanField(default=True)
 
@@ -135,7 +136,7 @@ class Student(models.Model):
     _new_subscriptions = []
 
     @classmethod
-    def fetch_all(cls, tenant_uuid: str):
+    def fetch_all(cls, club_uuid: str):
         objects = cls.objects\
             .select_related('licence')\
             .prefetch_related('note_set')\
@@ -143,7 +144,7 @@ class Student(models.Model):
             .prefetch_related('subscription_set')\
             .prefetch_related('attendance_set')\
             .prefetch_related('_courses')\
-            .filter(tenant__uuid=tenant_uuid)
+            .filter(club__uuid=club_uuid)
 
         for o in objects:
             payments = o.payment_set.all().order_by('-_datetime')
@@ -164,9 +165,9 @@ class Student(models.Model):
         return objects
 
     @classmethod
-    def fetch_by_uuid(cls, uuid: str, tenant_uuid: str = None):
+    def fetch_by_uuid(cls, uuid: str, club_uuid: str = None):
         o = cls.objects.get(
-            pk=uuid, tenant__uuid=tenant_uuid) if tenant_uuid else cls.objects.get(pk=uuid)
+            pk=uuid, club__uuid=club_uuid) if club_uuid else cls.objects.get(pk=uuid)
 
         o._unused_payments = list(o.payment_set.filter(
             _used=False).order_by('-_datetime'))
@@ -219,7 +220,7 @@ class Student(models.Model):
         return objects
 
     @classmethod
-    def fetch_query(cls, course_uuids: list[str] = None, user: User = None, name: str = None, tenant_uuid: str = None):
+    def fetch_query(cls, course_uuids: list[str] = None, user: User = None, name: str = None, club_uuid: str = None):
         queryset = cls.objects\
             .select_related('licence')\
             .prefetch_related('note_set')\
@@ -232,8 +233,8 @@ class Student(models.Model):
         if course_uuids:
             queryset = queryset.filter(_courses__in=course_uuids)
 
-        if tenant_uuid:
-            queryset = queryset.filter(tenant__uuid=tenant_uuid)
+        if club_uuid:
+            queryset = queryset.filter(club__uuid=club_uuid)
 
         if user:
             queryset = queryset.filter(profile_email=user.email)
@@ -329,7 +330,11 @@ class Student(models.Model):
     
     @property
     def club_name(self) -> str:
-        return self.tenant.name
+        return self.club.name
+    
+    @property
+    def club_uuid(self) -> str:
+        return self.club.uuid
 
     @property
     def name(self) -> str:

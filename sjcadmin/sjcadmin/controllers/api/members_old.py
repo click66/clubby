@@ -20,7 +20,7 @@ def _username(student) -> str:
 @role_required(['staff'])
 @require_http_methods(['GET'])
 def get_members(request):
-    students = Student.fetch_all(tenant_uuid=request.user.tenant_uuid)
+    students = Student.fetch_all(club_uuid=request.user.tenant_uuid)
     students_data = []
     for s in students:
         student_data = {
@@ -62,7 +62,7 @@ def get_members_query(request):
     students = Student.fetch_query(
         course_uuids=course_uuids,
         user=user,
-        tenant_uuid=request.user.tenant_uuid,
+        club_uuid=request.user.tenant_uuid,
     )
 
     return JsonResponse(list(map(lambda s: {
@@ -95,7 +95,7 @@ def get_members_query(request):
 @role_required(['staff'])
 @require_http_methods(['GET'])
 def get_member_licences(request, pk):
-    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
+    s = Student.fetch_by_uuid(pk, club_uuid=request.user.tenant_uuid)
     return JsonResponse(s.licences)
 
 
@@ -103,45 +103,8 @@ def get_member_licences(request, pk):
 @role_required(['staff'])
 @require_http_methods(['POST'])
 @handle_error
-def post_add_member(request):
-    data = json.loads(request.body)
-    s = Student.make(name=data.get('studentName'), creator=request.user)
-    s.tenant_uuid = request.user.tenant_uuid
-    s.save()
-
-    product_uuid = data.get('product')
-    if product_uuid:
-        c = Course.objects.get(
-            _uuid=product_uuid, tenant_uuid=request.user.tenant_uuid)
-        s.sign_up(c)
-        s.save()
-
-    r = {
-        'uuid': str(s.uuid),
-        'active': s.active,
-        'name': s.name,
-        'dob': s.dob,
-        'address': s.address,
-        'phone': s.phone,
-        'email': s.email,
-        'membership': 'trial' if not s.has_licence() else 'licenced',
-        'allowed_trial_sessions': s.allowed_trial_sessions,
-        'rem_trial_sessions': s.remaining_trial_sessions,
-        'signed_up_for': list(map(lambda c: str(c.uuid), s.courses)),
-        'member_since': s.join_date,
-        'added_by': _username(s),
-        'unused_payments': list(map(lambda p: {'course_uuid': p.course.uuid if p.course else None}, s.get_unused_payments()))
-    }
-
-    return JsonResponse({'success': r})
-
-
-@login_required_401
-@role_required(['staff'])
-@require_http_methods(['POST'])
-@handle_error
 def post_update_member_profile(request, pk):
-    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
+    s = Student.fetch_by_uuid(pk, club_uuid=request.user.tenant_uuid)
 
     json_data = json.loads(request.body)
     s.set_profile(Profile(**{key: json_data[key] for key in [
@@ -161,7 +124,7 @@ def post_update_member_profile(request, pk):
 @require_http_methods(['POST'])
 @handle_error
 def post_delete_member(request, pk):
-    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
+    s = Student.fetch_by_uuid(pk, club_uuid=request.user.tenant_uuid)
     if s:
         Attendance.objects.filter(student=s).delete()
     s.delete()
@@ -174,7 +137,7 @@ def post_delete_member(request, pk):
 @require_http_methods(['POST'])
 @handle_error
 def post_mark_member_inactive(request, pk):
-    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
+    s = Student.fetch_by_uuid(pk, club_uuid=request.user.tenant_uuid)
     s.active = False
     s.save()
     return JsonResponse({'success': None})
@@ -185,7 +148,7 @@ def post_mark_member_inactive(request, pk):
 @require_http_methods(['POST'])
 @handle_error
 def post_mark_member_active(request, pk):
-    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
+    s = Student.fetch_by_uuid(pk, club_uuid=request.user.tenant_uuid)
     s.active = True
     s.save()
     return JsonResponse({'success': None})
@@ -197,7 +160,7 @@ def post_mark_member_active(request, pk):
 @handle_error
 def post_add_member_licence(request, pk):
     data = json.loads(request.body)
-    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
+    s = Student.fetch_by_uuid(pk, club_uuid=request.user.tenant_uuid)
     number = data.get('number')
     expire_date = date.fromisoformat(data.get('expiryDate'))
     s.add_licence(Licence(number=number, expires=expire_date))
@@ -210,9 +173,9 @@ def post_add_member_licence(request, pk):
 @role_required(['staff'])
 @require_http_methods(['POST'])
 @handle_error
-def post_add_member_note(request, pk):
+def post_add_member_note(rtenant_uuidequest, pk):
     data = json.loads(request.body)
-    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
+    s = Student.fetch_by_uuid(pk, club_uuid=request.user.tenant_uuid)
     text = data.get('text')
 
     s.add_note(Note.make(text, author=request.user.uuid, datetime=timezone.now()))
@@ -227,7 +190,7 @@ def post_add_member_note(request, pk):
 @handle_error
 def post_add_member_to_course(request, pk):
     data = json.loads(request.body)
-    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
+    s = Student.fetch_by_uuid(pk, club_uuid=request.user.tenant_uuid)
     course = Course.fetch_by_uuid(
         data.get('uuid'), tenant_uuid=request.user.tenant_uuid)
     s._courses.add(course)
@@ -242,7 +205,7 @@ def post_add_member_to_course(request, pk):
 @handle_error
 def post_remove_member_from_course(request, pk):
     data = json.loads(request.body)
-    s = Student.fetch_by_uuid(pk, tenant_uuid=request.user.tenant_uuid)
+    s = Student.fetch_by_uuid(pk, club_uuid=request.user.tenant_uuid)
     course = Course.fetch_by_uuid(
         data.get('uuid'), tenant_uuid=request.user.tenant_uuid)
     s._courses.remove(course)
