@@ -1,6 +1,7 @@
 import { PropsWithChildren, useState } from 'react'
 import { Navigate } from 'react-router'
-import { authentication, tokens } from '../domain/authentication/authentication'
+import { authentication } from '../domain/authentication/authentication'
+import { tokens } from '../utils/tokens'
 
 function LoginGuard({ children, loggedIn, setLoggedIn }: PropsWithChildren & { loggedIn: boolean, setLoggedIn: (val: boolean) => void }) {
     const [pending, setPending] = useState<boolean>(false)

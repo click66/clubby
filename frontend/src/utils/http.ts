@@ -1,20 +1,22 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { AuthenticationError, ConnectivityError, DomainError } from '../errors'
+import { TokenContainer } from './tokens'
 
 export type HttpInstance = AxiosInstance
 
-interface TokenContainer {
-    get(tokenName: string): any
-}
-
-function appendAuthorisation(tokens: TokenContainer, refreshToken?: () => Promise<void>) {
+function appendAuthorisation(tokens: TokenContainer, refresh?: () => Promise<void>) {
     return (r: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
-        const token = tokens.get('jwt_authorisation')
-        if (!token && refreshToken) {
-            return refreshToken().then(() => appendAuthorisation(tokens, refreshToken)(r))
-                .catch(() => {
-                    throw new AuthenticationError('Failed to refresh token')
-                })
+        const token = tokens.getAuthorisationToken()
+        const refreshToken = tokens.getRefreshToken()
+        if (!token) {
+            if (refreshToken && refresh) {
+                return refresh().then(() => appendAuthorisation(tokens, refresh)(r))
+                    .catch(() => {
+                        throw new AuthenticationError('Failed to refresh token')
+                    })
+            }
+
+            throw new AuthenticationError('Not logged in')
         }
 
         r.headers = r.headers ?? {}
@@ -33,7 +35,10 @@ function successOrError(r: AxiosResponse) {
     return r
 }
 
-function handleError() {
+function handleError(e: Error) {
+    if (e instanceof AuthenticationError) {
+        throw e
+    }
     throw new ConnectivityError('Please check your internet connection or try again later.')
 }
 

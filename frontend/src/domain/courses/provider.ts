@@ -1,5 +1,5 @@
 import * as courses from './courses'
-import tokens from '../../utils/tokens'
+import { tokens } from '../../utils/tokens'
 import { createApiInstance } from '../../utils/http'
 import { Course } from './types'
 import { authentication } from '../authentication/authentication'

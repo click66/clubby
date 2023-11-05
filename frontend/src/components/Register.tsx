@@ -334,27 +334,29 @@ const Register = ({ courses = [], squashDates }: RegisterProps) => {
     const fetchActiveAttendees = () => membersApi.getMembersByCourses({ courses }).then((members) => members.filter((m) => m.active)) as Promise<Attendee[]>
 
     useEffect(() => {
-        fetchActiveAttendees().then((members) => {
-            const dates = generatePrevious30Dates(courses, squashDates)
-            setDates(dates)
+        fetchActiveAttendees()
+            .then((members) => {
+                const dates = generatePrevious30Dates(courses, squashDates)
+                setDates(dates)
 
-            // Might be more efficient to have the attendance API read by course, then these can be performed in unison
-            if (dates.length) {
-                attendanceApi.getAttendance({
-                    attendees: members,
-                    courses,
-                    dateEarliest: dates[dates.length - 1].date,
-                    dateLatest: dates[0].date,
-                })
-                    .then(storeAttendance)
-                    .then(() => {
-                        setMembers(members)
-                        setLoaded(true)
+                // Might be more efficient to have the attendance API read by course, then these can be performed in unison
+                if (dates.length) {
+                    attendanceApi.getAttendance({
+                        attendees: members,
+                        courses,
+                        dateEarliest: dates[dates.length - 1].date,
+                        dateLatest: dates[0].date,
                     })
-            } else {
-                setLoaded(true)
-            }
-        })
+                        .then(storeAttendance)
+                        .then(() => {
+                            setMembers(members)
+                            setLoaded(true)
+                        })
+                } else {
+                    setLoaded(true)
+                }
+            })
+            .catch(notifyError)
     }, [courses])
 
     return (

@@ -1,12 +1,10 @@
 import { AxiosResponse } from 'axios'
-import { z } from 'zod'
-import Cookies from 'universal-cookie'
+import { tokens, LoginToken, makeLoginToken } from '../../utils/tokens'
 import { http, withInterceptors } from '../../utils/http'
 import { AuthenticationError } from '../../errors'
 
 const API_URL = import.meta.env.VITE_AUTH_API_URL
-const api = withInterceptors(http.create({ baseURL: API_URL }), new Cookies(), false)
-const cookies = new Cookies()
+const api = withInterceptors(http.create({ baseURL: API_URL }), tokens, false)
 
 interface DtoChangePassword {
     confirmNewPassword: string
@@ -19,36 +17,8 @@ export interface Login {
     password: string
 }
 
-const loginTokenSchema = z.object({
-    token: z.string(),
-    expires: z.number(),
-    refreshToken: z.string().nullable(),
-})
-
-export type LoginToken = z.infer<typeof loginTokenSchema>
-
-export const tokens = {
-    getAuthorisationToken: () => cookies.get('jwt_authorisation'),
-    getRefreshToken: () => cookies.get('jwt_refreshtoken'),
-    exist: () => cookies.get('jwt_refreshtoken') !== undefined || cookies.get('jwt_authorisation') !== undefined,
-    setToken: (token: LoginToken) => {
-        cookies.set('jwt_authorisation', token.token, {
-            expires: new Date(token.expires * 1000),
-            path: '/',
-        })
-        cookies.set('jwt_refreshtoken', token.refreshToken, {
-            expires: new Date(Date.now() + 2592000 * 1000),
-            path: '/',
-        })
-    },
-    clear: () => {
-        cookies.remove('jwt_authorisation', { path: '/' })
-        cookies.remove('jwt_refreshtoken', { path: '/' })
-    },
-}
-
 function handleTokenResponse({ data }: AxiosResponse) {
-    return loginTokenSchema.parse(data)
+    return makeLoginToken(data)
 }
 
 function getLoginToken(data: Login): Promise<LoginToken> {
@@ -64,12 +34,13 @@ export const authentication = {
     login: (data: Login): Promise<void> => getLoginToken(data)
         .then(tokens.setToken),
     attemptRefresh: (): Promise<void> => {
-        if (tokens.getAuthorisationToken() !== undefined) {
+        if (tokens.getAuthorisationToken() !== null) {
             return Promise.resolve()
         }
 
-        if (tokens.getRefreshToken() !== undefined) {
-            return refreshLoginToken(tokens.getRefreshToken())
+        const refreshToken = tokens.getRefreshToken()
+        if (refreshToken !== null) {
+            return refreshLoginToken(refreshToken)
                 .then(tokens.setToken)
                 .catch(() => {
                     tokens.clear()

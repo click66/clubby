@@ -30,7 +30,9 @@ function App() {
   const PortalLayout = () => (
     <div className="copyHome">
       <div id="topLogo">South Coast Jiu Jitsu</div>
-      <Outlet />
+      <div id="portalContainer">
+        <Outlet />
+      </div>
     </div>
   )
 

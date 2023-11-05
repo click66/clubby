@@ -1,5 +1,5 @@
 import * as members from './members'
-import tokens from '../../utils/tokens'
+import { tokens } from '../../utils/tokens'
 import { createApiInstance } from '../../utils/http'
 import { V1MemberFactory, V2MemberFactory } from '../MemberFactory'
 import { authentication } from '../authentication/authentication'

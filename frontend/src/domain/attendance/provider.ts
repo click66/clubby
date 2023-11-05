@@ -1,5 +1,5 @@
 import * as attendance from './attendance'
-import tokens from '../../utils/tokens'
+import { tokens } from '../../utils/tokens'
 import { createApiInstance } from '../../utils/http'
 import { authentication } from '../authentication/authentication'
 
