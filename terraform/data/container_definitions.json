@@ -1,7 +1,7 @@
 [
     {
         "name": "app",
-        "image": "082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app:latest",
+        "image": "082624796438.dkr.ecr.eu-west-2.amazonaws.com/clubby/app:latest",
         "cpu": 0,
         "portMappings": [],
         "essential": true,
@@ -55,7 +55,7 @@
     },
     {
         "name": "nginx",
-        "image": "082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx:latest",
+        "image": "082624796438.dkr.ecr.eu-west-2.amazonaws.com/clubby/nginx:latest",
         "cpu": 0,
         "links": [
             "app"

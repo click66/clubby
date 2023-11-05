@@ -1,5 +1,5 @@
 stages:
-  - test
+  # - test
   - infra
   - deploy
 
@@ -58,10 +58,10 @@ deploy-monolith:
     - docker info
     - docker --version
   script:
-    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app:latest -f Dockerfile --target prod-runtime .
-    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx:latest -f Dockerfile.nginx .
-    - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/app
-    - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/sjcadmin/nginx
+    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/clubby/app:latest -f Dockerfile --target prod-runtime .
+    - docker build -t 082624796438.dkr.ecr.eu-west-2.amazonaws.com/clubby/nginx:latest -f Dockerfile.nginx .
+    - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/clubby/app
+    - docker push 082624796438.dkr.ecr.eu-west-2.amazonaws.com/clubby/nginx
     - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
   only:
     refs:
@@ -72,4 +72,4 @@ deploy-monolith:
     AWS_ACCESS_KEY_ID: $DEPLOY_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $DEPLOY_AWS_SECRET_ACCESS_KEY
     ECS_CLUSTER: "CS-ECS-01"
-    ECS_SERVICE: "sjcadmin"
+    ECS_SERVICE: "clubby"

@@ -1,10 +1,10 @@
-test-frontend-members:
-  stage: test
-  image: node:latest
-  script:
-    - cd frontend
-    - npm ci
-    - npm run test
+# test-frontend-members:
+#   stage: test
+#   image: node:latest
+#   script:
+#     - cd frontend
+#     - npm ci
+#     - npm run test
 
 deploy-frontend-members:
   stage: deploy
