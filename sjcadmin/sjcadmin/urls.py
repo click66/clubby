@@ -63,7 +63,6 @@ urlpatterns = [
     # Admin routes
     path('api/clubs', api_admin.get_clubs),
     path('api/clubs/create', api_admin.create_club),
-    path('api/clubs/<uuid:club_uuid>/create_user', api_admin.create_club_user),
     path('api/clubs/<uuid:club_uuid>/users/create', api_admin.create_club_user),
     path('api/users/create', api_admin.create_member_user),
     path('api/users/<uuid:user_uuid>/delete', api_admin.delete_user),

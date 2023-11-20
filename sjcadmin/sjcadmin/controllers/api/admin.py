@@ -64,7 +64,7 @@ def create_club_user(request, club_uuid):
     password = generate_secure_password()
 
     u = User.objects.create_user(
-        email=email, is_staff=is_staff, password=password, club_uuid=club_uuid)
+        email=email, is_staff=is_staff, password=password, tenant_uuid=club_uuid)
 
     return JsonResponse({'success': {
         'uuid': u.uuid,
