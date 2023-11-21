@@ -6,7 +6,7 @@ import {
 } from '../../../src/domain/members/members'
 import { V1MemberFactory } from '../../../src/domain/MemberFactory'
 import makeMockHttp from '../mock-http'
-import { ConnectivityError, DomainObjectCreationError } from '../../../src/errors'
+import { ConnectivityError, DomainError, DomainObjectCreationError } from '../../../src/errors'
 
 const mockHttp = makeMockHttp(http)
 
@@ -54,7 +54,7 @@ describe('members module', () => {
         test('handles server error during member retrieval', async () => {
             const uuid = 'some-uuid'
 
-            mockHttp.onGet(`/members/${uuid}`).reply(500, { error: 'Internal Server Error' })
+            mockHttp.onGet(`/members/${uuid}`).reply(500)
 
             return expect(getMember(http, memberFactory)(uuid)).rejects.toThrowError(ConnectivityError)
         })
@@ -73,7 +73,7 @@ describe('members module', () => {
             mockHttp.onGet(`/members/${uuid}`).reply(404, { error: 'Member not found' })
 
             // API currently 500s - this should be updated
-            return expect(getMember(http, memberFactory)(uuid)).rejects.toThrowError(ConnectivityError)
+            return expect(getMember(http, memberFactory)(uuid)).rejects.toThrowError(DomainError)
         })
 
         test('handles invalid response format', async () => {

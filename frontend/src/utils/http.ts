@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { AuthenticationError, ConnectivityError, DomainError } from '../errors'
 import { TokenContainer } from './tokens'
 
@@ -39,6 +39,11 @@ function handleError(e: Error) {
     if (e instanceof AuthenticationError) {
         throw e
     }
+
+    if (e instanceof AxiosError && e.response && e.response.data && e.response.data.hasOwnProperty('error')) {
+        throw new DomainError(e.response.data.error)
+    }
+
     throw new ConnectivityError('Please check your internet connection or try again later.')
 }
 

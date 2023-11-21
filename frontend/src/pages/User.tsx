@@ -2,8 +2,8 @@ import '../assets/Settings.page.scss'
 
 import { ErrorMessage, Field, Form, Formik } from 'formik'
 import { Button } from 'react-bootstrap'
-import { authentication } from '../domain/authentication/authentication'
 import { notifyError, notifySuccess } from '../utils/notifications'
+import user from '../domain/user'
 
 function ChangePassword() {
     const validateConfirmPassword = (proposed: string, confirm: string) => {
@@ -22,7 +22,7 @@ function ChangePassword() {
                     'confirmNewPassword': '',
                 }}
                 onSubmit={(values, { resetForm, setSubmitting }) => {
-                    authentication.changePassword(values)
+                    user.changePassword(values)
                         .then(() => {
                             notifySuccess('Your password has been changed')
                             resetForm()

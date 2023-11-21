@@ -6,12 +6,6 @@ import { AuthenticationError } from '../../errors'
 const API_URL = import.meta.env.VITE_AUTH_API_URL
 const api = withInterceptors(http.create({ baseURL: API_URL }), tokens, false)
 
-interface DtoChangePassword {
-    confirmNewPassword: string
-    existingPassword: string
-    newPassword: string
-}
-
 export interface Login {
     email: string
     password: string
@@ -30,7 +24,6 @@ function refreshLoginToken(refreshToken: string): Promise<LoginToken> {
 }
 
 export const authentication = {
-    changePassword: (data: DtoChangePassword) => api.post('/change_password', data),
     login: (data: Login): Promise<void> => getLoginToken(data)
         .then(tokens.setToken),
     attemptRefresh: (): Promise<void> => {

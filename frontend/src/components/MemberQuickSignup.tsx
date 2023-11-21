@@ -33,7 +33,7 @@ function MemberQuickSignup({ courses, onChange }: MemberQuickSignupProps) {
     const [selectedMember, setSelectedMember] = useState<Member | undefined>(undefined)
     const [newMember, setNewMember] = useState<string | undefined>(undefined)
 
-    const submitNewMember = (data: { productUuid: string }) => {
+    const submitNewMember = (data: { productUuid: string }, { setSubmitting }: { setSubmitting: (submitting: boolean) => void}) => {
         const selectedCourse = courses.find((c) => c.uuid === data.productUuid)
         if (!selectedCourse) {
             notifyError('Please select a course')
@@ -41,15 +41,19 @@ function MemberQuickSignup({ courses, onChange }: MemberQuickSignupProps) {
             if (newMember) {
                 membersApi.createMember({ name: newMember, course: selectedCourse })
                     .then(onChange)
+                    .then(() => setNewMember(undefined))
                     .then(() => notifySuccess('Member created and signed up successfully'))
                     .catch(notifyError)
                     .finally(() => { document.body.click() })
             } else if (selectedMember) {
                 membersApi.signUpForCourse({ member: selectedMember, course: selectedCourse })
                     .then(onChange)
+                    .then(() => setSelectedMember(undefined))
                     .then(() => notifySuccess('Member signed up successfully'))
                     .catch(notifyError)
                     .finally(() => { document.body.click() })
+            } else {
+                setSubmitting(false)
             }
         }
     }
