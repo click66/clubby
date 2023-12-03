@@ -93,7 +93,7 @@ export default function Subscriptions() {
                     {({ errors, isSubmitting }) => (
                         <Form>
                             <Modal.Header>
-                                <Modal.Title>Add Payment</Modal.Title>
+                                <Modal.Title>Add Subscription</Modal.Title>
                             </Modal.Header>
                             <Modal.Body>
                                 <div className="mb-3 row">
